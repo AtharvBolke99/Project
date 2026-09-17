@@ -137,6 +137,23 @@
       "status": "ACTIVE",
       "createdAt": "2026-09-17T14:25:37.040Z",
       "updatedAt": "2026-09-17T14:25:37.040Z"
+    },
+    {
+      "id": "usr_27c0c3fa",
+      "name": "Demo User",
+      "email": "demo@conceptifyyy.com",
+      "passwordHash": "$2a$10$md/nHTOmVd/8IIVK8tWbJ.ZspuLbwrO7ZafV5vE5PBK7ugIo9t6eS",
+      "role": "STUDENT",
+      "xp": 50,
+      "streak": 1,
+      "lastActiveDate": "2026-09-17",
+      "badges": [
+        "Early Adopter"
+      ],
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=Demo%20User",
+      "status": "ACTIVE",
+      "createdAt": "2026-09-17T17:03:25.711Z",
+      "updatedAt": "2026-09-17T17:03:25.711Z"
     }
   ],
   "problems": [
@@ -56433,6 +56450,16 @@
       "link": "/my-purchases",
       "isRead": false,
       "createdAt": "2026-09-17T14:28:01.875Z"
+    },
+    {
+      "id": "notif_32ebdf6c",
+      "userId": "usr_27c0c3fa",
+      "title": "🚀 Welcome to CONCEPTIFYYY!",
+      "message": "Explore interactive DSA visualizations, solve aptitude challenges, and unlock placement notes.",
+      "type": "info",
+      "link": "/dsa",
+      "isRead": false,
+      "createdAt": "2026-09-17T17:03:25.778Z"
     }
   ],
   "payments": [
