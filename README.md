@@ -58,20 +58,6 @@ cd server && npm install
 cd ../client && npm install
 ```
 
-### 2. Configure Environment Variables
-Edit `server/.env`:
-```env
-PORT=5000
-NODE_ENV=development
-CLIENT_URL=http://localhost:5173
-JWT_SECRET=conceptifyyy_super_secure_jwt_token_secret_key_2026
-
-# Real Razorpay Keys (from https://dashboard.razorpay.com/app/keys)
-RAZORPAY_KEY_ID=rzp_test_58conceptifyyy_demo
-RAZORPAY_KEY_SECRET=conceptifyyy_rzp_secret_key_demo
-RAZORPAY_WEBHOOK_SECRET=conceptifyyy_whsec_demo
-```
-
 ### 3. Launch Development Servers
 From the root directory:
 ```bash
