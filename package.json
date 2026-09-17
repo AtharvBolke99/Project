@@ -1,0 +1,24 @@
+{
+  "name": "conceptifyyy",
+  "version": "1.0.0",
+  "description": "CONCEPTIFYYY — Complete Production-Ready Visual DSA & Education Platform",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --workspace=server\" \"npm run dev --workspace=client\"",
+    "dev:server": "npm run dev --workspace=server",
+    "dev:client": "npm run dev --workspace=client",
+    "build": "npm run build --workspace=server && npm run build --workspace=client",
+    "start": "npm run start --workspace=server",
+    "seed": "npm run seed --workspace=server"
+  },
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "keywords": ["education", "dsa", "visualizer", "aptitude", "razorpay", "marketplace"],
+  "author": "Conceptifyyy Team",
+  "license": "MIT"
+}

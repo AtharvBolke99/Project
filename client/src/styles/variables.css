@@ -1,0 +1,125 @@
+/* ==========================================================================
+   CONCEPTIFYYY — MODERN LIGHT & VIBRANT DESIGN SYSTEM
+   Luminous surfaces, Electric Indigo & Sky accents, Crisp Typography
+   ========================================================================== */
+
+:root {
+  /* Fonts */
+  --font-sans: 'Plus Jakarta Sans', 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Space Grotesk', 'Plus Jakarta Sans', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+
+  /* Brand Accents — Fresh, Vibrant & Modern */
+  --color-primary: #4F46E5;        /* Electric Indigo */
+  --color-primary-hover: #4338CA;
+  --color-primary-glow: rgba(79, 70, 229, 0.22);
+  
+  --color-cyan: #0284C7;           /* Vivid Sky Blue */
+  --color-cyan-glow: rgba(2, 132, 199, 0.20);
+
+  --color-blue: #2563EB;
+  --color-blue-glow: rgba(37, 99, 235, 0.20);
+
+  --color-purple: #7C3AED;
+  --color-purple-glow: rgba(124, 58, 237, 0.20);
+
+  --color-emerald: #059669;        /* Fresh Mint/Emerald */
+  --color-emerald-glow: rgba(5, 150, 105, 0.18);
+
+  --color-amber: #D97706;          /* Warm Sun Amber */
+  --color-amber-glow: rgba(217, 119, 6, 0.18);
+
+  --color-rose: #E11D48;           /* Coral Rose */
+  --color-rose-glow: rgba(225, 29, 72, 0.18);
+
+  /* Light Theme (Default & Primary Vibe) */
+  --bg-primary: #F8FAFC;           /* Crisp porcelain snow */
+  --bg-secondary: #FFFFFF;         /* Pure brilliant white */
+  --bg-tertiary: #F1F5F9;          /* Soft cool slate */
+  --bg-card: #FFFFFF;              /* Pure white card */
+  --bg-card-hover: #F8FAFC;
+  --bg-glass: rgba(255, 255, 255, 0.88);
+  --bg-glass-card: rgba(255, 255, 255, 0.94);
+  
+  --border-subtle: #E2E8F0;        /* Clean slate outline */
+  --border-medium: #CBD5E1;
+  --border-highlight: #A5B4FC;     /* Soft indigo highlight */
+
+  --text-primary: #0F172A;         /* Deep obsidian text - high contrast */
+  --text-secondary: #475569;       /* Slate text */
+  --text-muted: #64748B;          /* Soft muted hints */
+  --text-inverse: #FFFFFF;
+
+  --code-bg: #0F172A;              /* Elegant deep editor for high contrast */
+  --code-text: #E2E8F0;
+
+  /* Diffused Modern Shadows */
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: 0 2px 8px -2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 10px 25px -4px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 20px 40px -8px rgba(15, 23, 42, 0.10), 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+  --shadow-glow: 0 0 30px rgba(79, 70, 229, 0.16);
+  --shadow-focus: 0 0 0 3px rgba(79, 70, 229, 0.25);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --radius-full: 9999px;
+
+  --header-height: 70px;
+  --mobile-nav-height: 68px;
+
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+  --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Light Theme Attributes Explicit */
+[data-theme="light"] {
+  --bg-primary: #F8FAFC;
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #F1F5F9;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F8FAFC;
+  --bg-glass: rgba(255, 255, 255, 0.88);
+  --bg-glass-card: rgba(255, 255, 255, 0.94);
+  
+  --border-subtle: #E2E8F0;
+  --border-medium: #CBD5E1;
+  --border-highlight: #A5B4FC;
+
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+  --text-inverse: #FFFFFF;
+}
+
+/* Dark Theme Support (Preserved with Modern Sleek Deep Indigo/Navy) */
+[data-theme="dark"] {
+  --bg-primary: #0B0F19;
+  --bg-secondary: #111827;
+  --bg-tertiary: #1F2937;
+  --bg-card: #131D31;
+  --bg-card-hover: #1E293B;
+  --bg-glass: rgba(17, 24, 39, 0.88);
+  --bg-glass-card: rgba(19, 29, 49, 0.92);
+
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.15);
+  --border-highlight: rgba(99, 102, 241, 0.40);
+
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --text-inverse: #0F172A;
+
+  --code-bg: #090D16;
+  --code-text: #F1F5F9;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 10px 26px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 20px 45px rgba(0, 0, 0, 0.5);
+  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.25);
+}
