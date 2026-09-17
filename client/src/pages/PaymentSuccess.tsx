@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle2, Download, ShoppingBag, ArrowRight, ShieldCheck, FileText } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { api } from '../services/api';
+import { api, getApiUrl } from '../services/api';
 import { SkeletonLoader } from '../components/SkeletonLoader';
 
 export const PaymentSuccess: React.FC = () => {
@@ -32,7 +32,7 @@ export const PaymentSuccess: React.FC = () => {
 
   const handleDownload = () => {
     if (orderData?.productId) {
-      window.location.href = `/api/downloads/${orderData.productId}`;
+      window.location.href = getApiUrl(`/downloads/${orderData.productId}`);
     }
   };
 

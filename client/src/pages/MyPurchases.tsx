@@ -10,7 +10,7 @@ import {
   Key,
   FolderGit2
 } from 'lucide-react';
-import { api } from '../services/api';
+import { api, getApiUrl } from '../services/api';
 import { SkeletonLoader } from '../components/SkeletonLoader';
 import { EmptyState } from '../components/EmptyState';
 import { getAssetUrl, handleImageError } from '../utils/imageUrl';
@@ -37,7 +37,7 @@ export const MyPurchases: React.FC = () => {
 
   const handleDownload = (productId: string) => {
     const token = localStorage.getItem('conceptifyyy_token') || '';
-    const url = `/api/downloads/${productId}?download=true${token ? `&token=${token}` : ''}`;
+    const url = getApiUrl(`/downloads/${productId}?download=true${token ? `&token=${token}` : ''}`);
     const a = document.createElement('a');
     a.href = url;
     a.download = '';
@@ -48,7 +48,7 @@ export const MyPurchases: React.FC = () => {
 
   const handleView = (productId: string) => {
     const token = localStorage.getItem('conceptifyyy_token') || '';
-    const url = `/api/downloads/${productId}?view=true${token ? `&token=${token}` : ''}`;
+    const url = getApiUrl(`/downloads/${productId}?view=true${token ? `&token=${token}` : ''}`);
     window.open(url, '_blank');
   };
 

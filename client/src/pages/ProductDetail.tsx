@@ -19,7 +19,7 @@ import {
   X,
   KeyRound
 } from 'lucide-react';
-import { api } from '../services/api';
+import { api, getApiUrl } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { SkeletonLoader } from '../components/SkeletonLoader';
@@ -189,7 +189,7 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
 
   const handleDownload = () => {
     const token = localStorage.getItem('conceptifyyy_token') || '';
-    const url = `/api/downloads/${product.id}?download=true${token ? `&token=${token}` : ''}`;
+    const url = getApiUrl(`/downloads/${product.id}?download=true${token ? `&token=${token}` : ''}`);
     const a = document.createElement('a');
     a.href = url;
     a.download = '';
@@ -200,7 +200,7 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
 
   const handleView = () => {
     const token = localStorage.getItem('conceptifyyy_token') || '';
-    const url = `/api/downloads/${product.id}?view=true${token ? `&token=${token}` : ''}`;
+    const url = getApiUrl(`/downloads/${product.id}?view=true${token ? `&token=${token}` : ''}`);
     window.open(url, '_blank');
   };
 

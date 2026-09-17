@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingBag, Plus, Trash2, ChevronLeft, IndianRupee } from 'lucide-react';
-import { api } from '../../services/api';
+import { api, getApiUrl } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { SkeletonLoader } from '../../components/SkeletonLoader';
 import { getAssetUrl, handleImageError } from '../../utils/imageUrl';
@@ -64,7 +64,7 @@ export const AdminProducts: React.FC = () => {
 
     try {
       const token = localStorage.getItem('conceptifyyy_token');
-      const response = await fetch('/api/admin/upload', {
+      const response = await fetch(getApiUrl('/admin/upload'), {
         method: 'POST',
         headers: {
           ...(token ? { 'Authorization': `Bearer ${token}` } : {})

@@ -1,4 +1,36 @@
-const API_BASE = '/api';
+// Determine API Base URL dynamically (supports production cloud deployments via VITE_API_URL)
+const getApiBase = (): string => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim() !== '') {
+    const clean = envUrl.trim().replace(/\/$/, '');
+    return clean.endsWith('/api') ? clean : `${clean}/api`;
+  }
+  return '/api';
+};
+
+export const API_BASE = getApiBase();
+
+/**
+ * Returns full API URL for custom fetch or navigation downloads
+ */
+export const getApiUrl = (endpoint: string = ''): string => {
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  return `${API_BASE}${cleanEndpoint}`;
+};
+
+/**
+ * Returns full backend asset URL for uploads or thumbnails
+ */
+export const getUploadUrl = (pathStr?: string): string => {
+  if (!pathStr) return '';
+  if (pathStr.startsWith('http://') || pathStr.startsWith('https://')) return pathStr;
+  const envUrl = import.meta.env.VITE_API_URL;
+  const cleanPath = pathStr.startsWith('/') ? pathStr : `/${pathStr}`;
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim() !== '') {
+    return `${envUrl.trim().replace(/\/$/, '')}${cleanPath}`;
+  }
+  return cleanPath;
+};
 
 export interface ApiResponse<T = any> {
   success: boolean;

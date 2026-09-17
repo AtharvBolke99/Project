@@ -14,7 +14,12 @@ export const getAssetUrl = (url?: string): string => {
   if (clean.startsWith('http://') || clean.startsWith('https://')) {
     return clean;
   }
-  return clean.startsWith('/') ? clean : `/${clean}`;
+  const cleanPath = clean.startsWith('/') ? clean : `/${clean}`;
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim() !== '') {
+    return `${envUrl.trim().replace(/\/$/, '')}${cleanPath}`;
+  }
+  return cleanPath;
 };
 
 /**
