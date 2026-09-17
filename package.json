@@ -17,9 +17,10 @@
     "server",
     "client"
   ],
-  "devDependencies": {
+  "dependencies": {
     "concurrently": "^8.2.2"
   },
+  "devDependencies": {},
   "keywords": ["education", "dsa", "visualizer", "aptitude", "razorpay", "marketplace"],
   "author": "Conceptifyyy Team",
   "license": "MIT"

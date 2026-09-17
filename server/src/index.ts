@@ -76,14 +76,30 @@ app.get('/health', (req: Request, res: Response) => {
 app.use('/api', apiRouter);
 
 // Serve static client build if present (Supports unified fullstack deployment on single service)
-const clientDist = path.resolve(__dirname, '../../client/dist');
-if (fs.existsSync(path.join(clientDist, 'index.html'))) {
-  app.use(express.static(clientDist));
+const clientDistCandidates = [
+  path.resolve(__dirname, '../../client/dist'),
+  path.resolve(__dirname, '../client/dist'),
+  path.resolve(process.cwd(), 'client/dist'),
+  path.resolve(process.cwd(), '../client/dist'),
+  path.resolve(process.cwd(), 'dist')
+];
+
+let activeClientDist: string | null = null;
+for (const cand of clientDistCandidates) {
+  if (fs.existsSync(path.join(cand, 'index.html'))) {
+    activeClientDist = cand;
+    break;
+  }
+}
+
+if (activeClientDist) {
+  console.log(`📦 Serving static client build from: ${activeClientDist}`);
+  app.use(express.static(activeClientDist));
   app.get('*', (req: Request, res: Response, next: NextFunction) => {
     if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
       return next();
     }
-    res.sendFile(path.join(clientDist, 'index.html'));
+    res.sendFile(path.join(activeClientDist!, 'index.html'));
   });
 } else {
   // Direct root API message when frontend is deployed separately

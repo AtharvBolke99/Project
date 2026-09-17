@@ -10,12 +10,13 @@ export async function seedDatabaseIfEmpty() {
   
   db.delete('users', u => demoUserIds.includes(u.id) || demoEmails.includes(u.email));
 
-  // 2. Ensure Real Admin Account (atharvbolke99@gmail.com) exists with role ADMIN
+  // 2. Ensure Real Admin Account (atharvbolke99@gmail.com) exists with role ADMIN and verified password
   const adminEmail = 'atharvbolke99@gmail.com';
+  const salt = await bcrypt.genSalt(10);
+  const passwordHash = await bcrypt.hash('Admin@Conceptifyyy2026', salt);
   const existingAdmin = db.findOne('users', u => u.email === adminEmail);
+
   if (!existingAdmin) {
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash('Admin@Conceptifyyy2026', salt);
     const adminUser: User = {
       id: 'usr_admin_primary',
       name: 'Atharv Bolke',
@@ -31,8 +32,13 @@ export async function seedDatabaseIfEmpty() {
     };
     db.insert('users', adminUser);
     console.log(`👑 Real Admin Account initialized: ${adminEmail}`);
-  } else if (existingAdmin.role !== 'ADMIN') {
-    db.update('users', u => u.id === existingAdmin.id, () => ({ role: 'ADMIN' as const }));
+  } else {
+    // Keep role as ADMIN and ensure known working password
+    db.update('users', u => u.id === existingAdmin.id, () => ({
+      role: 'ADMIN' as const,
+      passwordHash,
+      status: 'ACTIVE' as const
+    }));
   }
 
   // 2. Seed DSA Problems if not populated
