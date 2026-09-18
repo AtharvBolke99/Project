@@ -17,8 +17,8 @@ for (const envPath of potentialEnvPaths) {
   }
 }
 
-const keyId = process.env.RAZORPAY_KEY_ID || '';
-const keySecret = process.env.RAZORPAY_KEY_SECRET || '';
+const keyId = process.env.RAZORPAY_KEY_ID || process.env.LIVE_API_KEY || 'rzp_live_TdWOOe8pJsTv4a';
+const keySecret = process.env.RAZORPAY_KEY_SECRET || process.env.LIVE_SECRET_KEY || 'AMX36S7ivlSsiQgzn2JZOEXj';
 
 export const config = {
   port: parseInt(process.env.PORT || '5000', 10),

@@ -501,13 +501,13 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
               </strong>
               <ol style={{ paddingLeft: '1.25rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '6px', color: 'var(--text-secondary)' }}>
                 <li>
-                  Open your <a href="https://dashboard.razorpay.com/app/keys" target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'underline' }}>Razorpay Dashboard &gt; API Keys</a> in <strong>Test Mode</strong>.
+                  Open your <a href="https://dashboard.razorpay.com/app/keys" target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'underline' }}>Razorpay Dashboard &gt; API Keys</a> in <strong>Live Mode</strong>.
                 </li>
                 <li>
-                  Click <strong>Generate New Key</strong> (or copy your active Test Key pair).
+                  Click <strong>Generate New Key</strong> (or copy your active Live Key pair).
                 </li>
                 <li>
-                  Update both <code style={{ fontWeight: 600 }}>RAZORPAY_KEY_ID</code> and <code style={{ fontWeight: 600 }}>RAZORPAY_KEY_SECRET</code> in <code style={{ fontWeight: 600 }}>server/.env</code> and restart the server.
+                  Update both <code style={{ fontWeight: 600 }}>RAZORPAY_KEY_ID</code> and <code style={{ fontWeight: 600 }}>RAZORPAY_KEY_SECRET</code> in <code style={{ fontWeight: 600 }}>server/.env</code> or your Render environment variables and restart.
                 </li>
               </ol>
             </div>
@@ -523,13 +523,13 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
                 overflowX: 'auto',
                 margin: 0
               }}>
-{`# Update in server/.env:
-RAZORPAY_KEY_ID=rzp_test_YourFreshKeyId
-RAZORPAY_KEY_SECRET=YourFreshSecret`}
+{`# Update in server/.env or Render Dashboard:
+RAZORPAY_KEY_ID=rzp_live_TdWOOe8pJsTv4a
+RAZORPAY_KEY_SECRET=AMX36S7ivlSsiQgzn2JZOEXj`}
               </pre>
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText('RAZORPAY_KEY_ID=rzp_test_YourFreshKeyId\nRAZORPAY_KEY_SECRET=YourFreshSecret');
+                  navigator.clipboard.writeText('RAZORPAY_KEY_ID=rzp_live_TdWOOe8pJsTv4a\nRAZORPAY_KEY_SECRET=AMX36S7ivlSsiQgzn2JZOEXj');
                   setCopiedEnv(true);
                   setTimeout(() => setCopiedEnv(false), 2000);
                 }}

@@ -65,7 +65,7 @@ export class RazorpayService {
       const errorMsg = error?.error?.description || error?.message || 'Razorpay Order Creation Failed';
       console.error(`[RAZORPAY] Order creation failed:`, errorMsg);
       if (errorMsg.toLowerCase().includes('authentication failed')) {
-        throw new Error('Razorpay Authentication Failed: The RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET in server/.env is invalid or placeholder. Please update server/.env with your real Razorpay Test Key and Secret from https://dashboard.razorpay.com/app/keys');
+        throw new Error('Razorpay Authentication Failed: The RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET is invalid or rejected by Razorpay. Please verify your Razorpay Live or Test Key and Secret on https://dashboard.razorpay.com/app/keys');
       }
       throw new Error(`Razorpay Order Creation Failed: ${errorMsg}`);
     }
