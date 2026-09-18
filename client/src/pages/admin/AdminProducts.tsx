@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Plus, Trash2, ChevronLeft, IndianRupee } from 'lucide-react';
+import { ShoppingBag, Plus, Trash2, Edit2, ChevronLeft, IndianRupee } from 'lucide-react';
 import { api, getApiUrl } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { SkeletonLoader } from '../../components/SkeletonLoader';
@@ -10,13 +10,15 @@ export const AdminProducts: React.FC = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Form State
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<'DSA Notes' | 'Aptitude Notes' | 'Placement Bundles' | 'Projects'>('DSA Notes');
   const [price, setPrice] = useState(39);
   const [originalPrice, setOriginalPrice] = useState(199);
-  const [description, setDescription] = useState('');
+  const [cardDescription, setCardDescription] = useState('');
+  const [stepDescription, setStepDescription] = useState('');
   const [thumbnail, setThumbnail] = useState('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop&q=80');
   const [githubRepoUrl, setGithubRepoUrl] = useState('');
   const [liveDemoUrl, setLiveDemoUrl] = useState('');
@@ -48,6 +50,48 @@ export const AdminProducts: React.FC = () => {
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  const resetForm = () => {
+    setEditingId(null);
+    setTitle('');
+    setCategory('DSA Notes');
+    setPrice(39);
+    setOriginalPrice(199);
+    setCardDescription('');
+    setStepDescription('');
+    setThumbnail('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop&q=80');
+    setGithubRepoUrl('');
+    setLiveDemoUrl('');
+    setTechStack('React, Node.js, Express, TypeScript');
+    setFileFormat('PDF');
+    setDigitalFile('');
+    setDigitalFileName('');
+    setWhatIncluded('180+ Pages Visual PDF, Top 100 Company Patterns, Cheat Sheet');
+  };
+
+  const handleOpenAddModal = () => {
+    resetForm();
+    setIsModalOpen(true);
+  };
+
+  const handleEditProduct = (p: any) => {
+    setEditingId(p.id);
+    setTitle(p.title || '');
+    setCategory(p.category || 'DSA Notes');
+    setPrice(p.price || 0);
+    setOriginalPrice(p.originalPrice || 0);
+    setCardDescription(p.cardDescription || p.shortDescription || p.description || '');
+    setStepDescription(p.stepDescription || p.detailedDescription || p.description || '');
+    setThumbnail(p.thumbnail || '');
+    setFileFormat(p.fileFormat || 'PDF');
+    setDigitalFile(p.digitalFile || '');
+    setDigitalFileName(p.digitalFile ? p.digitalFile.split('/').pop() || p.digitalFile : '');
+    setGithubRepoUrl(p.githubRepoUrl || '');
+    setLiveDemoUrl(p.liveDemoUrl || '');
+    setTechStack(Array.isArray(p.techStack) ? p.techStack.join(', ') : (p.techStack || ''));
+    setWhatIncluded(Array.isArray(p.whatIncluded) ? p.whatIncluded.join(', ') : (p.whatIncluded || ''));
+    setIsModalOpen(true);
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, isThumbnail: boolean) => {
     const file = e.target.files?.[0];
@@ -109,25 +153,31 @@ export const AdminProducts: React.FC = () => {
         category,
         price: Number(price),
         originalPrice: Number(originalPrice),
-        discountPercent: Math.round(((originalPrice - price) / originalPrice) * 100),
-        description,
+        discountPercent: originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0,
+        cardDescription,
+        shortDescription: cardDescription,
+        stepDescription,
+        detailedDescription: stepDescription,
+        description: stepDescription || cardDescription,
         thumbnail,
         digitalFile: digitalFile || undefined,
         githubRepoUrl: category === 'Projects' ? githubRepoUrl : undefined,
         liveDemoUrl: category === 'Projects' ? liveDemoUrl : undefined,
-        techStack: category === 'Projects' ? techStack.split(',').map(s => s.trim()) : undefined,
-        whatIncluded: whatIncluded.split(',').map(item => item.trim()),
+        techStack: category === 'Projects' ? techStack.split(',').map(s => s.trim()).filter(Boolean) : undefined,
+        whatIncluded: whatIncluded.split(',').map(item => item.trim()).filter(Boolean),
         fileFormat: category === 'Projects' ? 'ZIP' : fileFormat
       };
 
-      await api.post('/admin/products', payload);
-      showToast('Product added to Store live!', 'success');
+      if (editingId) {
+        await api.put(`/admin/products/${editingId}`, payload);
+        showToast('Product updated successfully!', 'success');
+      } else {
+        await api.post('/admin/products', payload);
+        showToast('Product added to Store live!', 'success');
+      }
+
       setIsModalOpen(false);
-      // Reset form
-      setTitle('');
-      setDescription('');
-      setDigitalFile('');
-      setDigitalFileName('');
+      resetForm();
       fetchProducts();
     } catch (err: any) {
       showToast(err.message || 'Failed to save product', 'error');
@@ -162,9 +212,9 @@ export const AdminProducts: React.FC = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <div>
             <h1 style={{ fontSize: '1.75rem', fontWeight: 800 }}>Store Products & Notes CMS</h1>
-            <p style={{ color: 'var(--text-secondary)' }}>Publish handwritten notes, formula cheat sheets, and source code packages.</p>
+            <p style={{ color: 'var(--text-secondary)' }}>Publish and edit handwritten notes, formula cheat sheets, and source code packages.</p>
           </div>
-          <button onClick={() => setIsModalOpen(true)} className="btn btn-primary">
+          <button onClick={handleOpenAddModal} className="btn btn-primary">
             <Plus size={16} /> Add New Store Product
           </button>
         </div>
@@ -178,7 +228,7 @@ export const AdminProducts: React.FC = () => {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Product Title</th>
+                  <th>Product Title & Card Info</th>
                   <th>Category</th>
                   <th>Price</th>
                   <th>Format</th>
@@ -192,15 +242,23 @@ export const AdminProducts: React.FC = () => {
                     <td>
                       <strong style={{ color: 'var(--text-primary)' }}>{p.title}</strong>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>/store/{p.slug}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--color-cyan)', marginTop: '3px', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        📇 {p.cardDescription || p.shortDescription || p.description}
+                      </div>
                     </td>
                     <td><span className="badge badge-purple">{p.category}</span></td>
                     <td style={{ fontWeight: 800, color: 'var(--color-cyan)', fontFamily: 'var(--font-mono)' }}>₹{p.price}</td>
                     <td><span className="badge badge-cyan">{p.fileFormat}</span></td>
                     <td>⭐ {p.rating}</td>
                     <td style={{ textAlign: 'right' }}>
-                      <button onClick={() => handleDelete(p.id)} className="btn-icon" style={{ color: 'var(--color-rose)' }}>
-                        <Trash2 size={16} />
-                      </button>
+                      <div style={{ display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
+                        <button onClick={() => handleEditProduct(p)} className="btn-icon" title="Edit Product" style={{ color: 'var(--color-cyan)' }}>
+                          <Edit2 size={16} />
+                        </button>
+                        <button onClick={() => handleDelete(p.id)} className="btn-icon" title="Delete Product" style={{ color: 'var(--color-rose)' }}>
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -213,8 +271,10 @@ export const AdminProducts: React.FC = () => {
       {/* Modal */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px' }}>
-            <h3 style={{ fontSize: '1.25rem', marginBottom: '1.25rem' }}>Publish New Store Product</h3>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '660px' }}>
+            <h3 style={{ fontSize: '1.25rem', marginBottom: '1.25rem' }}>
+              {editingId ? 'Edit Store Product / Notes' : 'Publish New Store Product'}
+            </h3>
             <form onSubmit={handleSaveProduct}>
               <div className="form-group">
                 <label className="form-label">Product Name</label>
@@ -318,9 +378,46 @@ export const AdminProducts: React.FC = () => {
                 </div>
               )}
 
-              <div className="form-group">
-                <label className="form-label">Description</label>
-                <textarea className="textarea" rows={3} value={description} onChange={e => setDescription(e.target.value)} required />
+              {/* 1. Card Info / Preview Summary */}
+              <div className="form-group" style={{ background: 'rgba(56, 189, 248, 0.05)', border: '1px solid rgba(56, 189, 248, 0.25)', padding: '14px', borderRadius: '8px', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <label className="form-label" style={{ color: 'var(--color-cyan)', fontWeight: 700, margin: 0, fontSize: '0.9rem' }}>
+                    📇 1. Card Info / Preview Summary (Shown on Store Card)
+                  </label>
+                  <span className="badge badge-cyan" style={{ fontSize: '0.65rem' }}>Storefront Card</span>
+                </div>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '8px', lineHeight: '1.4' }}>
+                  Brief summary shown directly on the catalog card in the Store (1-3 lines). This is what students see while browsing.
+                </p>
+                <textarea
+                  className="textarea"
+                  rows={2}
+                  value={cardDescription}
+                  onChange={e => setCardDescription(e.target.value)}
+                  placeholder="e.g. 180+ Pages Visual Hand-drawn Notes covering Top 25 FAANG Algorithms, Complexity Maps & Code Templates."
+                  required
+                />
+              </div>
+
+              {/* 2. Complete Step Description / Detailed Content */}
+              <div className="form-group" style={{ background: 'rgba(168, 85, 247, 0.05)', border: '1px solid rgba(168, 85, 247, 0.25)', padding: '14px', borderRadius: '8px', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <label className="form-label" style={{ color: 'var(--color-purple)', fontWeight: 700, margin: 0, fontSize: '0.9rem' }}>
+                    📖 2. Complete Step Description / Detailed Content (Shown After Opening Card)
+                  </label>
+                  <span className="badge badge-purple" style={{ fontSize: '0.65rem' }}>Detail Page</span>
+                </div>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '8px', lineHeight: '1.4' }}>
+                  Comprehensive step-by-step breakdown shown on the product detail page when the student opens the card. Detail all steps, syllabus, modules, and what they will learn.
+                </p>
+                <textarea
+                  className="textarea"
+                  rows={6}
+                  value={stepDescription}
+                  onChange={e => setStepDescription(e.target.value)}
+                  placeholder={`Step 1: Foundational Array & Two Pointer Algorithms&#10;Step 2: Tree & Graph Traversals with Recursion Trees&#10;Step 3: Dynamic Programming Patterns & Memoization Tables&#10;Step 4: Top 100 Solved FAANG Interview Problems`}
+                  required
+                />
               </div>
 
               <div className="form-group">
@@ -330,7 +427,9 @@ export const AdminProducts: React.FC = () => {
 
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
                 <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" disabled={saving} className="btn btn-primary">{saving ? 'Publishing...' : 'Publish to Store'}</button>
+                <button type="submit" disabled={saving} className="btn btn-primary">
+                  {saving ? 'Saving...' : (editingId ? 'Update Product' : 'Publish to Store')}
+                </button>
               </div>
             </form>
           </div>

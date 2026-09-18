@@ -165,7 +165,7 @@ export const Store: React.FC = () => {
                   </h3>
 
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem', flex: 1, lineHeight: '1.5' }}>
-                    {prod.description}
+                    {prod.cardDescription || prod.shortDescription || prod.description}
                   </p>
 
                   {/* Price & Action */}

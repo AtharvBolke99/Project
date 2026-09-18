@@ -82,7 +82,7 @@ export const Projects: React.FC = () => {
                   </h3>
 
                   <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '1.25rem', flex: 1, lineHeight: '1.6' }}>
-                    {proj.description}
+                    {proj.cardDescription || proj.shortDescription || proj.description}
                   </p>
 
                   {/* Tech Stack tags */}

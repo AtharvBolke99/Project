@@ -264,14 +264,21 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
 
     const slug = (data.slug || data.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
+    const cardDesc = data.cardDescription || data.shortDescription || (data.description ? data.description.substring(0, 140) : '');
+    const stepDesc = data.stepDescription || data.detailedDescription || data.description || '';
+    const mainDesc = stepDesc || cardDesc || 'Premium comprehensive notes curated for placement interviews.';
+
     const newProduct: Product = {
       id: 'prod_' + uuidv4().substring(0, 8),
       title: data.title,
       slug,
       category: data.category || 'DSA Notes',
       subcategory: data.subcategory || '',
-      shortDescription: data.shortDescription || data.description?.substring(0, 120),
-      description: data.description || 'Premium comprehensive notes curated for placement interviews.',
+      cardDescription: cardDesc,
+      shortDescription: cardDesc,
+      stepDescription: stepDesc,
+      detailedDescription: stepDesc,
+      description: mainDesc,
       price: Number(data.price),
       originalPrice: Number(data.originalPrice || Number(data.price) * 2),
       salePrice: data.salePrice ? Number(data.salePrice) : undefined,
@@ -294,7 +301,7 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
       synopsis: data.synopsis || '',
       difficulty: data.difficulty || 'Intermediate',
       seoTitle: data.seoTitle || data.title,
-      seoDescription: data.seoDescription || data.description,
+      seoDescription: data.seoDescription || cardDesc || mainDesc,
       isFeatured: Boolean(data.isFeatured),
       isPublished: data.isPublished !== undefined ? Boolean(data.isPublished) : true,
       createdAt: new Date().toISOString(),
@@ -318,11 +325,34 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const data = req.body;
 
+    const existing = db.findOne('products', p => p.id === id);
+    if (!existing) {
+      return res.status(404).json({ success: false, message: 'Product not found.' });
+    }
+
+    const cardDesc = data.cardDescription !== undefined 
+      ? data.cardDescription 
+      : (data.shortDescription !== undefined ? data.shortDescription : existing.cardDescription);
+
+    const stepDesc = data.stepDescription !== undefined 
+      ? data.stepDescription 
+      : (data.detailedDescription !== undefined ? data.detailedDescription : existing.stepDescription);
+
+    const mainDesc = data.description !== undefined 
+      ? data.description 
+      : (stepDesc || existing.description);
+
     const updated = db.update(
       'products',
       p => p.id === id,
       p => ({
+        ...p,
         ...data,
+        cardDescription: cardDesc,
+        shortDescription: cardDesc || p.shortDescription,
+        stepDescription: stepDesc,
+        detailedDescription: stepDesc,
+        description: mainDesc,
         updatedAt: new Date().toISOString()
       })
     );

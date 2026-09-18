@@ -151,6 +151,9 @@ export interface Product {
   category: 'DSA Notes' | 'Aptitude Notes' | 'Cheat Sheets' | 'Interview Prep' | 'Placement Bundles' | 'Projects' | 'Test Mode';
   subcategory?: string;
   shortDescription?: string;
+  cardDescription?: string;
+  stepDescription?: string;
+  detailedDescription?: string;
   description: string;
   price: number; // in INR
   originalPrice: number;

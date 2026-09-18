@@ -333,12 +333,27 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
               </span>
             </div>
 
-            {/* Description */}
+            {/* Quick Summary / Card Overview (if provided and different) */}
+            {(product.cardDescription || product.shortDescription) && 
+             (product.cardDescription || product.shortDescription) !== (product.stepDescription || product.detailedDescription || product.description) && (
+              <div className="card" style={{ marginBottom: '1.5rem', background: 'rgba(56, 189, 248, 0.06)', borderLeft: '4px solid var(--color-cyan)', padding: '1rem 1.25rem' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-cyan)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
+                  Quick Overview
+                </div>
+                <p style={{ fontSize: '0.925rem', color: 'var(--text-primary)', lineHeight: '1.6', margin: 0 }}>
+                  {product.cardDescription || product.shortDescription}
+                </p>
+              </div>
+            )}
+
+            {/* Complete Step Description */}
             <div className="card" style={{ marginBottom: '1.5rem', background: 'var(--bg-secondary)' }}>
-              <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>About this resource</h3>
-              <p style={{ fontSize: '0.925rem', color: 'var(--text-secondary)', lineHeight: '1.7', whiteSpace: 'pre-line' }}>
-                {product.description}
-              </p>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.85rem' }}>
+                {product.stepDescription || product.detailedDescription ? 'Complete Step-by-Step Description' : 'About this resource'}
+              </h3>
+              <div style={{ fontSize: '0.925rem', color: 'var(--text-secondary)', lineHeight: '1.75', whiteSpace: 'pre-line' }}>
+                {product.stepDescription || product.detailedDescription || product.description}
+              </div>
             </div>
 
             {/* What's Included */}

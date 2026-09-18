@@ -32,25 +32,33 @@ export const getProducts = async (req: AuthRequest, res: Response) => {
       db.find('purchases', p => p.userId === userId).forEach(p => purchasedProductIds.add(p.productId));
     }
 
-    const items = products.map(p => ({
-      id: p.id,
-      title: p.title,
-      slug: p.slug,
-      category: p.category,
-      description: p.description,
-      price: p.price,
-      originalPrice: p.originalPrice,
-      discountPercent: p.discountPercent,
-      thumbnail: p.thumbnail,
-      rating: p.rating,
-      reviewsCount: p.reviewsCount,
-      fileFormat: p.fileFormat,
-      pageCount: p.pageCount,
-      techStack: p.techStack,
-      tags: p.tags,
-      isFeatured: p.isFeatured,
-      isPurchased: purchasedProductIds.has(p.id)
-    }));
+    const items = products.map(p => {
+      const cardDesc = p.cardDescription || p.shortDescription || p.description;
+      const stepDesc = p.stepDescription || p.detailedDescription || p.description;
+      return {
+        id: p.id,
+        title: p.title,
+        slug: p.slug,
+        category: p.category,
+        cardDescription: cardDesc,
+        shortDescription: cardDesc,
+        stepDescription: stepDesc,
+        detailedDescription: stepDesc,
+        description: cardDesc,
+        price: p.price,
+        originalPrice: p.originalPrice,
+        discountPercent: p.discountPercent,
+        thumbnail: p.thumbnail,
+        rating: p.rating,
+        reviewsCount: p.reviewsCount,
+        fileFormat: p.fileFormat,
+        pageCount: p.pageCount,
+        techStack: p.techStack,
+        tags: p.tags,
+        isFeatured: p.isFeatured,
+        isPurchased: purchasedProductIds.has(p.id)
+      };
+    });
 
     return res.json({
       success: true,
@@ -87,10 +95,17 @@ export const getProductBySlug = async (req: AuthRequest, res: Response) => {
       }
     }
 
+    const cardDesc = product.cardDescription || product.shortDescription || product.description;
+    const stepDesc = product.stepDescription || product.detailedDescription || product.description;
+
     return res.json({
       success: true,
       data: {
         ...product,
+        cardDescription: cardDesc,
+        shortDescription: cardDesc,
+        stepDescription: stepDesc,
+        detailedDescription: stepDesc,
         isPurchased,
         purchaseInfo
       }
@@ -102,7 +117,14 @@ export const getProductBySlug = async (req: AuthRequest, res: Response) => {
 
 export const getFeaturedProjects = async (req: AuthRequest, res: Response) => {
   try {
-    const projects = db.find('products', p => p.category === 'Projects' && p.isPublished);
+    const rawProjects = db.find('products', p => p.category === 'Projects' && p.isPublished);
+    const projects = rawProjects.map(p => ({
+      ...p,
+      cardDescription: p.cardDescription || p.shortDescription || p.description,
+      shortDescription: p.cardDescription || p.shortDescription || p.description,
+      stepDescription: p.stepDescription || p.detailedDescription || p.description,
+      detailedDescription: p.stepDescription || p.detailedDescription || p.description
+    }));
 
     return res.json({
       success: true,
