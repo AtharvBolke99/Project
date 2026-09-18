@@ -68,6 +68,8 @@ app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({
     status: 'online',
     platform: 'CONCEPTIFYYY API Server',
+    version: '2.1.0-live-rzp',
+    activeKeyPrefix: config.razorpay.keyId.substring(0, 10),
     timestamp: new Date().toISOString()
   });
 });
