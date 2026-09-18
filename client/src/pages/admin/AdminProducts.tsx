@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Plus, Trash2, Edit2, ChevronLeft, IndianRupee } from 'lucide-react';
+import { ShoppingBag, Plus, Trash2, Edit2, ChevronLeft, IndianRupee, Download, Upload, Database } from 'lucide-react';
 import { api, getApiUrl } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { SkeletonLoader } from '../../components/SkeletonLoader';
@@ -11,6 +11,7 @@ export const AdminProducts: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [restoring, setRestoring] = useState(false);
 
   // Form State
   const [title, setTitle] = useState('');
@@ -44,6 +45,65 @@ export const AdminProducts: React.FC = () => {
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExportBackup = async () => {
+    try {
+      const res = await api.get('/admin/products/backup');
+      const dataToExport = (res.success && res.data) ? res.data : products;
+      const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `conceptifyyy-products-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Catalog exported to JSON backup!', 'success');
+    } catch (e: any) {
+      const blob = new Blob([JSON.stringify(products, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `conceptifyyy-products-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Catalog exported to JSON backup!', 'success');
+    }
+  };
+
+  const handleRestoreBackup = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setRestoring(true);
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      const productList = Array.isArray(parsed) ? parsed : (parsed.products || parsed.data);
+
+      if (!Array.isArray(productList) || productList.length === 0) {
+        showToast('Invalid JSON: expected an array of products.', 'error');
+        setRestoring(false);
+        return;
+      }
+
+      const res = await api.post('/admin/products/restore', { products: productList });
+      if (res.success) {
+        showToast(res.message || 'Catalog restored successfully!', 'success');
+        fetchProducts();
+      } else {
+        showToast(res.message || 'Failed to restore catalog.', 'error');
+      }
+    } catch (err: any) {
+      showToast('Failed to restore JSON: ' + err.message, 'error');
+    } finally {
+      setRestoring(false);
+      e.target.value = '';
     }
   };
 
@@ -209,14 +269,36 @@ export const AdminProducts: React.FC = () => {
       </aside>
 
       <main className="admin-content">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <h1 style={{ fontSize: '1.75rem', fontWeight: 800 }}>Store Products & Notes CMS</h1>
-            <p style={{ color: 'var(--text-secondary)' }}>Publish and edit handwritten notes, formula cheat sheets, and source code packages.</p>
+            <h1 style={{ fontSize: 'clamp(1.4rem, 4vw, 1.75rem)', fontWeight: 800 }}>Store Products & Notes CMS</h1>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Publish, edit and permanently safeguard notes, formula cheat sheets, and source code packages.</p>
           </div>
-          <button onClick={handleOpenAddModal} className="btn btn-primary">
-            <Plus size={16} /> Add New Store Product
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <button onClick={handleExportBackup} className="btn btn-secondary btn-sm" title="Download catalog backup JSON">
+              <Download size={15} /> Export Backup
+            </button>
+            <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer', margin: 0 }} title="Restore catalog from JSON file">
+              <Upload size={15} /> {restoring ? 'Restoring...' : 'Restore Backup'}
+              <input type="file" accept=".json" onChange={handleRestoreBackup} style={{ display: 'none' }} disabled={restoring} />
+            </label>
+            <button onClick={handleOpenAddModal} className="btn btn-primary btn-sm">
+              <Plus size={16} /> Add New Store Product
+            </button>
+          </div>
+        </div>
+
+        {/* Persistence Status Notice */}
+        <div className="card" style={{ marginBottom: '1.5rem', background: 'rgba(79, 70, 229, 0.05)', border: '1px solid rgba(79, 70, 229, 0.2)', padding: '0.875rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Database size={18} color="var(--color-primary)" />
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>
+              <strong>Permanent Catalog Persistence Active:</strong> All {products.length} products are seeded into the database and preserved across container reboots.
+            </span>
+          </div>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+            Click <strong>Export Backup</strong> to download an offline copy anytime.
+          </span>
         </div>
 
         <div className="data-table-wrapper">
@@ -271,7 +353,7 @@ export const AdminProducts: React.FC = () => {
       {/* Modal */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '660px' }}>
+          <div className="modal-content modal-content-lg" onClick={e => e.stopPropagation()}>
             <h3 style={{ fontSize: '1.25rem', marginBottom: '1.25rem' }}>
               {editingId ? 'Edit Store Product / Notes' : 'Publish New Store Product'}
             </h3>
@@ -281,7 +363,7 @@ export const AdminProducts: React.FC = () => {
                 <input type="text" className="input" value={title} onChange={e => setTitle(e.target.value)} required />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div className="form-grid-2">
                 <div className="form-group">
                   <label className="form-label">Category</label>
                   <select className="select" value={category} onChange={e => setCategory(e.target.value as any)}>
@@ -298,7 +380,7 @@ export const AdminProducts: React.FC = () => {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div className="form-grid-2">
                 <div className="form-group">
                   <label className="form-label">Original Strikethrough Price (₹)</label>
                   <input type="number" className="input" value={originalPrice} onChange={e => setOriginalPrice(Number(e.target.value))} />
@@ -316,7 +398,7 @@ export const AdminProducts: React.FC = () => {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div className="form-grid-2">
                 <div className="form-group">
                   <label className="form-label">Digital Resource File Upload (PDF, ZIP, DOCX, PPTX)</label>
                   <input

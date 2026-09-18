@@ -316,7 +316,7 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
               {product.pageCount && <span className="badge">{product.pageCount} Pages</span>}
             </div>
 
-            <h1 style={{ fontSize: '2rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--text-primary)' }}>
+            <h1 style={{ fontSize: 'clamp(1.35rem, 4.5vw, 2rem)', fontWeight: 800, marginBottom: '1rem', color: 'var(--text-primary)', lineHeight: 1.25 }}>
               {product.title}
             </h1>
 

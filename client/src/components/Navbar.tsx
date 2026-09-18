@@ -298,28 +298,35 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
 
       {/* Mobile Slide-Out Drawer */}
       {isMobileDrawerOpen && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(15, 23, 42, 0.45)',
-          backdropFilter: 'blur(12px)',
-          zIndex: 1000,
-          display: 'flex',
-          justifyContent: 'flex-end',
-          animation: 'fadeIn 0.2s ease'
-        }}>
-          <div style={{
-            width: '80%',
-            maxWidth: '320px',
-            height: '100%',
-            background: 'var(--bg-secondary)',
-            borderLeft: '1px solid var(--border-subtle)',
-            padding: '1.5rem',
+        <div 
+          onClick={() => setIsMobileDrawerOpen(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.45)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            zIndex: 1000,
             display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            boxShadow: 'var(--shadow-lg)'
-          }}>
+            justifyContent: 'flex-end',
+            animation: 'fadeIn 0.2s ease'
+          }}
+        >
+          <div 
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '80%',
+              maxWidth: '320px',
+              height: '100%',
+              background: 'var(--bg-secondary)',
+              borderLeft: '1px solid var(--border-subtle)',
+              padding: '1.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              boxShadow: 'var(--shadow-lg)'
+            }}
+          >
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

@@ -294,15 +294,21 @@
 }
 
 .modal-content {
-  width: min(100%, 480px);
-  max-height: calc(100vh - 2.5rem);
+  width: min(100%, 540px);
+  max-width: 95vw;
+  max-height: calc(100vh - 2rem);
   overflow-y: auto;
-  padding: clamp(1.25rem, 4vw, 2rem);
+  padding: clamp(1rem, 4vw, 1.75rem);
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
   animation: modalScale 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-content-lg {
+  width: min(100%, 680px) !important;
+  max-width: 95vw !important;
 }
 
 /* ================= DATA TABLES ================= */

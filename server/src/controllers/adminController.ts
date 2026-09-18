@@ -619,6 +619,60 @@ export const bulkImportAptitudeQuestions = async (req: AuthRequest, res: Respons
   }
 };
 
+// ================= CATALOG BACKUP & RESTORE CMS =================
+export const exportCatalogBackup = async (req: AuthRequest, res: Response) => {
+  try {
+    const products = db.find('products');
+    return res.json({
+      success: true,
+      data: products,
+      count: products.length,
+      exportedAt: new Date().toISOString()
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const restoreCatalogBackup = async (req: AuthRequest, res: Response) => {
+  try {
+    const { products } = req.body;
+    if (!Array.isArray(products) || products.length === 0) {
+      return res.status(400).json({ success: false, message: 'Valid array of products is required for catalog restore.' });
+    }
+
+    let restoredCount = 0;
+    for (const item of products) {
+      if (!item.title || !item.price) continue;
+      const existing = db.findOne('products', p => p.id === item.id || p.slug === item.slug);
+      if (existing) {
+        db.update('products', p => p.id === existing.id, () => ({
+          ...item,
+          updatedAt: new Date().toISOString()
+        }));
+      } else {
+        db.insert('products', {
+          ...item,
+          id: item.id || ('prod_' + uuidv4().substring(0, 8)),
+          createdAt: item.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+      }
+      restoredCount++;
+    }
+
+    db.save();
+
+    return res.json({
+      success: true,
+      message: `Catalog restored successfully: ${restoredCount} products synced to database!`,
+      count: restoredCount
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 // ================= FILE & THUMBNAIL UPLOADER =================
 export const uploadAdminFile = async (req: AuthRequest, res: Response) => {
   try {
@@ -646,4 +700,3 @@ export const uploadAdminFile = async (req: AuthRequest, res: Response) => {
     return res.status(500).json({ success: false, message: error.message || 'File upload failed.' });
   }
 };
-

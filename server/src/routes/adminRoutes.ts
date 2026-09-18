@@ -11,6 +11,8 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  exportCatalogBackup,
+  restoreCatalogBackup,
   getAdminOrders,
   getAdminUsers,
   updateUserStatus,
@@ -41,6 +43,8 @@ router.post('/aptitude/import', bulkImportAptitudeQuestions);
 router.delete('/aptitude/:id', deleteAptitudeQuestion);
 
 // Products & Projects CMS
+router.get('/products/backup', exportCatalogBackup);
+router.post('/products/restore', restoreCatalogBackup);
 router.post('/products', createProduct);
 router.put('/products/:id', updateProduct);
 router.delete('/products/:id', deleteProduct);
