@@ -288,8 +288,8 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
       digitalFile: data.digitalFile || `${slug}.pdf`,
       fileFormat: data.fileFormat || 'PDF',
       pageCount: data.pageCount || 120,
-      rating: 4.9,
-      reviewsCount: 1,
+      rating: data.rating ? Number(data.rating) : 4.9,
+      reviewsCount: data.reviewsCount ? Number(data.reviewsCount) : (Math.floor(Math.random() * (200 - 50 + 1)) + 50),
       whatIncluded: Array.isArray(data.whatIncluded) ? data.whatIncluded : ['Visual Diagrams', 'Pattern Cheat Sheets', 'Interview Questions'],
       tags: Array.isArray(data.tags) ? data.tags : ['DSA', 'Placement'],
       techStack: data.techStack || [],
@@ -353,6 +353,11 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
         stepDescription: stepDesc,
         detailedDescription: stepDesc,
         description: mainDesc,
+        reviewsCount: data.reviewsCount !== undefined 
+          ? Number(data.reviewsCount) 
+          : (existing.reviewsCount && existing.reviewsCount >= 50 && existing.reviewsCount <= 200 
+              ? existing.reviewsCount 
+              : (Math.floor(Math.random() * (200 - 50 + 1)) + 50)),
         updatedAt: new Date().toISOString()
       })
     );

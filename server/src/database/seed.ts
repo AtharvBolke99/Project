@@ -130,7 +130,7 @@ export async function seedDatabaseIfEmpty() {
       fileFormat: 'PDF',
       pageCount: 184,
       rating: 4.9,
-      reviewsCount: 1420,
+      reviewsCount: 186,
       whatIncluded: [
         '184 Pages High-Resolution Color PDF',
         'All 25 DSA Pattern Flowcharts & Visual Walkthroughs',
@@ -164,7 +164,7 @@ export async function seedDatabaseIfEmpty() {
       fileFormat: 'PDF',
       pageCount: 95,
       rating: 4.8,
-      reviewsCount: 890,
+      reviewsCount: 142,
       whatIncluded: [
         '95 Pages Quantitative & Logical Formula Sheet',
         '50+ Speed-Math Vedic Shortcuts',
@@ -198,7 +198,7 @@ export async function seedDatabaseIfEmpty() {
       fileFormat: 'ZIP',
       pageCount: 450,
       rating: 5.0,
-      reviewsCount: 2310,
+      reviewsCount: 196,
       whatIncluded: [
         'Complete DSA Visual Notes (184 Pages)',
         'Aptitude Speed Formulas (95 Pages)',
@@ -232,7 +232,7 @@ export async function seedDatabaseIfEmpty() {
       digitalFile: 'mern_job_portal_complete.zip',
       fileFormat: 'ZIP',
       rating: 4.9,
-      reviewsCount: 460,
+      reviewsCount: 164,
       whatIncluded: [
         'Complete Source Code (React, Node.js, Express, MongoDB)',
         'Detailed Synopsis & 45-Page Project Report (.DOCX & .PDF)',
@@ -287,7 +287,7 @@ export async function seedDatabaseIfEmpty() {
       db.insert('products', prod);
       console.log(`📦 Seeded core product: ${prod.title}`);
     } else {
-      // Ensure existing items have cardDescription and stepDescription populated
+      // Ensure existing items have cardDescription, stepDescription, and reviewsCount between 50 and 200
       db.update('products', p => p.id === existing.id, p => ({
         cardDescription: p.cardDescription || prod.cardDescription || p.shortDescription || p.description,
         stepDescription: p.stepDescription || prod.stepDescription || p.detailedDescription || p.description,
@@ -297,7 +297,19 @@ export async function seedDatabaseIfEmpty() {
         originalPrice: p.originalPrice ?? prod.originalPrice,
         discountPercent: p.discountPercent ?? prod.discountPercent,
         whatIncluded: p.whatIncluded && p.whatIncluded.length > 0 ? p.whatIncluded : prod.whatIncluded,
-        tags: p.tags && p.tags.length > 0 ? p.tags : prod.tags
+        tags: p.tags && p.tags.length > 0 ? p.tags : prod.tags,
+        reviewsCount: (p.reviewsCount && p.reviewsCount >= 50 && p.reviewsCount <= 200)
+          ? p.reviewsCount
+          : (Math.floor(Math.random() * (200 - 50 + 1)) + 50)
+      }));
+    }
+  }
+
+  // Ensure all products in the database have a reviews count in the 50-200 range
+  for (const prod of db.find('products')) {
+    if (!prod.reviewsCount || prod.reviewsCount < 50 || prod.reviewsCount > 200) {
+      db.update('products', p => p.id === prod.id, () => ({
+        reviewsCount: Math.floor(Math.random() * (200 - 50 + 1)) + 50
       }));
     }
   }

@@ -157,7 +157,7 @@ export const Store: React.FC = () => {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px' }}>
                     <Star size={14} color="#F59E0B" fill="#F59E0B" />
                     <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-primary)' }}>{prod.rating}</span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({prod.reviewsCount} reviews)</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({prod.reviewsCount || 120} reviews)</span>
                   </div>
 
                   <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginBottom: '0.5rem', lineHeight: '1.4' }}>

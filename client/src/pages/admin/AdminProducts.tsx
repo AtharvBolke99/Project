@@ -13,11 +13,14 @@ export const AdminProducts: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [restoring, setRestoring] = useState(false);
 
+  const getRandomReviews = () => Math.floor(Math.random() * (200 - 50 + 1)) + 50;
+
   // Form State
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<'DSA Notes' | 'Aptitude Notes' | 'Placement Bundles' | 'Projects'>('DSA Notes');
   const [price, setPrice] = useState(39);
   const [originalPrice, setOriginalPrice] = useState(199);
+  const [reviewsCount, setReviewsCount] = useState<number>(getRandomReviews);
   const [cardDescription, setCardDescription] = useState('');
   const [stepDescription, setStepDescription] = useState('');
   const [thumbnail, setThumbnail] = useState('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop&q=80');
@@ -117,6 +120,7 @@ export const AdminProducts: React.FC = () => {
     setCategory('DSA Notes');
     setPrice(39);
     setOriginalPrice(199);
+    setReviewsCount(getRandomReviews());
     setCardDescription('');
     setStepDescription('');
     setThumbnail('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop&q=80');
@@ -140,6 +144,7 @@ export const AdminProducts: React.FC = () => {
     setCategory(p.category || 'DSA Notes');
     setPrice(p.price || 0);
     setOriginalPrice(p.originalPrice || 0);
+    setReviewsCount(p.reviewsCount || getRandomReviews());
     setCardDescription(p.cardDescription || p.shortDescription || p.description || '');
     setStepDescription(p.stepDescription || p.detailedDescription || p.description || '');
     setThumbnail(p.thumbnail || '');
@@ -214,6 +219,7 @@ export const AdminProducts: React.FC = () => {
         price: Number(price),
         originalPrice: Number(originalPrice),
         discountPercent: originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0,
+        reviewsCount: Number(reviewsCount) || getRandomReviews(),
         cardDescription,
         shortDescription: cardDescription,
         stepDescription,
@@ -331,7 +337,7 @@ export const AdminProducts: React.FC = () => {
                     <td><span className="badge badge-purple">{p.category}</span></td>
                     <td style={{ fontWeight: 800, color: 'var(--color-cyan)', fontFamily: 'var(--font-mono)' }}>₹{p.price}</td>
                     <td><span className="badge badge-cyan">{p.fileFormat}</span></td>
-                    <td>⭐ {p.rating}</td>
+                    <td>⭐ {p.rating} <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({p.reviewsCount || 120})</span></td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
                         <button onClick={() => handleEditProduct(p)} className="btn-icon" title="Edit Product" style={{ color: 'var(--color-cyan)' }}>
@@ -387,15 +393,28 @@ export const AdminProducts: React.FC = () => {
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">File Format</label>
-                  <select className="select" value={fileFormat} onChange={e => setFileFormat(e.target.value)}>
-                    <option value="PDF">PDF Document</option>
-                    <option value="ZIP">ZIP Archive (Source Code)</option>
-                    <option value="DOCX">Word Document (.docx)</option>
-                    <option value="PPTX">PowerPoint (.pptx)</option>
-                    <option value="CSV">Data / Sheets (.csv)</option>
-                  </select>
+                  <label className="form-label">Student Reviews Count (50–200)</label>
+                  <input 
+                    type="number" 
+                    className="input" 
+                    min={50} 
+                    max={200} 
+                    value={reviewsCount} 
+                    onChange={e => setReviewsCount(Number(e.target.value))} 
+                    placeholder="e.g. 142" 
+                  />
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">File Format</label>
+                <select className="select" value={fileFormat} onChange={e => setFileFormat(e.target.value)}>
+                  <option value="PDF">PDF Document</option>
+                  <option value="ZIP">ZIP Archive (Source Code)</option>
+                  <option value="DOCX">Word Document (.docx)</option>
+                  <option value="PPTX">PowerPoint (.pptx)</option>
+                  <option value="CSV">Data / Sheets (.csv)</option>
+                </select>
               </div>
 
               <div className="form-grid-2">
