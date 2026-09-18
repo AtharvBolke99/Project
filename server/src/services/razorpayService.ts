@@ -4,14 +4,14 @@ import { config } from '../config/env';
 
 export class RazorpayService {
   private getClient(): any {
-    const keyId = config.razorpay.keyId || process.env.RAZORPAY_KEY_ID || '';
-    const keySecret = config.razorpay.keySecret || process.env.RAZORPAY_KEY_SECRET || '';
+    const keyId = config.razorpay.keyId;
+    const keySecret = config.razorpay.keySecret;
 
     if (!keyId || !keySecret) {
       throw new Error('Razorpay SDK client is not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in your environment.');
     }
 
-    console.log(`[RAZORPAY] Initializing SDK with Key ID: ${keyId}`);
+    console.log(`[RAZORPAY] Initializing SDK with Key ID: ${keyId} (Live Production Mode)`);
 
     return new Razorpay({
       key_id: keyId,
@@ -86,7 +86,7 @@ export class RazorpayService {
       return false;
     }
 
-    const keySecret = config.razorpay.keySecret || process.env.RAZORPAY_KEY_SECRET || '';
+    const keySecret = config.razorpay.keySecret;
     if (!keySecret) {
       console.error('[RAZORPAY] RAZORPAY_KEY_SECRET missing in environment');
       return false;

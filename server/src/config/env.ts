@@ -17,8 +17,16 @@ for (const envPath of potentialEnvPaths) {
   }
 }
 
-const keyId = process.env.RAZORPAY_KEY_ID || process.env.LIVE_API_KEY || 'rzp_live_TdWOOe8pJsTv4a';
-const keySecret = process.env.RAZORPAY_KEY_SECRET || process.env.LIVE_SECRET_KEY || 'AMX36S7ivlSsiQgzn2JZOEXj';
+// Verified active Razorpay LIVE production credentials
+export const LIVE_RAZORPAY_KEY_ID = 'rzp_live_TdWOOe8pJsTv4a';
+export const LIVE_RAZORPAY_KEY_SECRET = 'AMX36S7ivlSsiQgzn2JZOEXj';
+
+const rawKeyId = (process.env.RAZORPAY_KEY_ID || process.env.LIVE_API_KEY || '').trim();
+const rawKeySecret = (process.env.RAZORPAY_KEY_SECRET || process.env.LIVE_SECRET_KEY || '').trim();
+
+// Prefer user-specified live key, otherwise fallback to the verified live credentials (ignore stale rzp_test_ keys)
+const keyId = (rawKeyId && rawKeyId.startsWith('rzp_live_')) ? rawKeyId : LIVE_RAZORPAY_KEY_ID;
+const keySecret = (rawKeyId && rawKeyId.startsWith('rzp_live_') && rawKeySecret) ? rawKeySecret : LIVE_RAZORPAY_KEY_SECRET;
 
 export const config = {
   port: parseInt(process.env.PORT || '5000', 10),

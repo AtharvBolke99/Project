@@ -88,7 +88,7 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
       currency: 'INR',
       status: 'PENDING',
       razorpayOrderId: rzpOrder.id,
-      isTestMode: (process.env.RAZORPAY_KEY_ID || config.razorpay.keyId).startsWith('rzp_test_'),
+      isTestMode: config.razorpay.keyId.startsWith('rzp_test_'),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -97,7 +97,7 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
 
     console.log(`[RAZORPAY] Internal order stored: ${newOrder.id}, Razorpay Order ID: ${rzpOrder.id}`);
 
-    const keyId = process.env.RAZORPAY_KEY_ID || config.razorpay.keyId;
+    const keyId = config.razorpay.keyId;
 
     // 7. Return Razorpay Order ID and configuration to frontend
     return res.json({

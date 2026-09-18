@@ -167,8 +167,8 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
 
       rzp.open();
     } catch (err: any) {
-      if (err.alreadyOwned) {
-        showToast(err.message, 'info');
+      if (err.alreadyOwned || err.message?.toLowerCase().includes('already own')) {
+        showToast(err.message || 'You already own this resource.', 'info');
         navigate('/my-purchases');
       } else if (
         err.message?.toLowerCase().includes('authentication failed') ||
