@@ -13,7 +13,7 @@ export async function seedDatabaseIfEmpty() {
   // 2. Ensure Real Admin Account (atharvbolke99@gmail.com) exists with role ADMIN and verified password
   const adminEmail = 'atharvbolke99@gmail.com';
   const salt = await bcrypt.genSalt(10);
-  const passwordHash = await bcrypt.hash('Admin@Conceptifyyy2026', salt);
+  const passwordHash = await bcrypt.hash('#Atharvb@99', salt);
   const existingAdmin = db.findOne('users', u => u.email === adminEmail);
 
   if (!existingAdmin) {

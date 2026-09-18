@@ -28,6 +28,11 @@ export const getApiBase = (): string => {
     }
   }
 
+  // 3. Seamless Production Auto-Binding for Render (Connects frontend to live backend automatically)
+  if (typeof window !== 'undefined' && window.location.hostname.includes('onrender.com')) {
+    return 'https://project-backend-objs.onrender.com/api';
+  }
+
   return '/api';
 };
 

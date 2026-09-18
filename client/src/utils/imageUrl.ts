@@ -1,4 +1,5 @@
 import React from 'react';
+import { getUploadUrl } from '../services/api';
 
 export const DEFAULT_PRODUCT_THUMBNAIL = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop&q=80';
 
@@ -14,12 +15,7 @@ export const getAssetUrl = (url?: string): string => {
   if (clean.startsWith('http://') || clean.startsWith('https://')) {
     return clean;
   }
-  const cleanPath = clean.startsWith('/') ? clean : `/${clean}`;
-  const envUrl = import.meta.env.VITE_API_URL;
-  if (envUrl && typeof envUrl === 'string' && envUrl.trim() !== '') {
-    return `${envUrl.trim().replace(/\/$/, '')}${cleanPath}`;
-  }
-  return cleanPath;
+  return getUploadUrl(clean);
 };
 
 /**
