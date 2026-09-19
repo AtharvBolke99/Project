@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { triggerCloudPersistence } from '../services/persistenceService';
 
 export interface User {
   id: string;
@@ -348,6 +349,8 @@ class Database {
       const tempPath = `${DB_FILE}.tmp`;
       fs.writeFileSync(tempPath, JSON.stringify(this.data, null, 2), 'utf-8');
       fs.renameSync(tempPath, DB_FILE);
+      // Trigger cloud persistence if configured
+      triggerCloudPersistence().catch(() => {});
     } catch (err) {
       console.error('Failed to save database file:', err);
     }
