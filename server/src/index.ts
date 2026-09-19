@@ -153,6 +153,23 @@ const server = app.listen(config.port, '0.0.0.0', async () => {
   } catch (seedErr) {
     console.error('Error during auto-seed check:', seedErr);
   }
+
+  // Keep-alive heartbeat: Pings the server every 13 minutes to prevent Render free tier from sleeping
+  const PING_INTERVAL_MS = 13 * 60 * 1000;
+  const pingUrl = process.env.RENDER_EXTERNAL_URL 
+    ? `${process.env.RENDER_EXTERNAL_URL}/health` 
+    : 'https://project-backend-objs.onrender.com/health';
+
+  setInterval(async () => {
+    try {
+      const pingRes = await fetch(pingUrl);
+      if (pingRes.ok) {
+        console.log(`💓 [Anti-Sleep Heartbeat] Server kept awake: ${pingUrl}`);
+      }
+    } catch (pingErr: any) {
+      // Non-critical background ping
+    }
+  }, PING_INTERVAL_MS);
 });
 
 export default app;

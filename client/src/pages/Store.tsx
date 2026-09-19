@@ -16,31 +16,50 @@ import { SkeletonLoader } from '../components/SkeletonLoader';
 import { EmptyState } from '../components/EmptyState';
 import { getAssetUrl, handleImageError } from '../utils/imageUrl';
 
+const STORE_CACHE_KEY = 'conceptifyyy_store_catalog_cache';
+const VAULT_KEY = 'conceptifyyy_admin_products_vault';
+
+const getCachedProducts = (): any[] => {
+  try {
+    const cached = localStorage.getItem(STORE_CACHE_KEY) || localStorage.getItem(VAULT_KEY);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.filter((p: any) => 
+          p.category !== 'Test Mode' && 
+          p.slug !== 'conceptifyyy-test-product' && 
+          p.id !== 'prod_test_mode_item'
+        );
+      }
+    }
+  } catch (e) {
+    // Ignore storage parse errors
+  }
+  return [];
+};
+
 export const Store: React.FC = () => {
-  const [products, setProducts] = useState<any[]>([]);
+  const [allProducts, setAllProducts] = useState<any[]>(getCachedProducts);
   const [category, setCategory] = useState<string>('All');
   const [search, setSearch] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(() => getCachedProducts().length === 0);
 
   const fetchProducts = async () => {
-    setLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (category !== 'All') params.append('category', category);
-      if (search) params.append('search', search);
-
-      const res = await api.get(`/store/products?${params.toString()}`);
-      if (res.success && res.data) {
-        // Filter out any demo / test items so customers only see real notes & products
+      const res = await api.get('/store/products');
+      if (res.success && Array.isArray(res.data)) {
         const realProducts = res.data.filter((p: any) => 
           p.category !== 'Test Mode' && 
           p.slug !== 'conceptifyyy-test-product' && 
           p.id !== 'prod_test_mode_item'
         );
-        setProducts(realProducts);
+        setAllProducts(realProducts);
+        try {
+          localStorage.setItem(STORE_CACHE_KEY, JSON.stringify(realProducts));
+        } catch (e) {}
       }
     } catch (e) {
-      console.error('Failed to load products:', e);
+      console.warn('Backend waking up from sleep, using cached store products:', e);
     } finally {
       setLoading(false);
     }
@@ -48,15 +67,47 @@ export const Store: React.FC = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, [category]);
+  }, []);
 
   const categories = [
     'All',
+    'Python',
+    'MySQL / DBMS',
     'DSA Notes',
     'Aptitude Notes',
     'Placement Bundles',
     'Projects'
   ];
+
+  // Real-time filtering across categories, title, tags, and descriptions
+  const filteredProducts = allProducts.filter(p => {
+    if (category !== 'All') {
+      if (category === 'Python') {
+        const isPython = p.title?.toLowerCase().includes('python') || 
+                         (p.tags && p.tags.some((t: string) => t.toLowerCase().includes('python')));
+        if (!isPython) return false;
+      } else if (category === 'MySQL / DBMS') {
+        const isSql = p.title?.toLowerCase().includes('mysql') || 
+                      p.title?.toLowerCase().includes('dbms') || 
+                      (p.tags && p.tags.some((t: string) => t.toLowerCase().includes('mysql') || t.toLowerCase().includes('dbms') || t.toLowerCase().includes('sql')));
+        if (!isSql) return false;
+      } else if (p.category?.toLowerCase() !== category.toLowerCase()) {
+        return false;
+      }
+    }
+
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      const matches = p.title?.toLowerCase().includes(q) ||
+                      (p.cardDescription && p.cardDescription.toLowerCase().includes(q)) ||
+                      (p.description && p.description.toLowerCase().includes(q)) ||
+                      (p.tags && p.tags.some((t: string) => t.toLowerCase().includes(q))) ||
+                      (p.techStack && p.techStack.some((t: string) => t.toLowerCase().includes(q)));
+      if (!matches) return false;
+    }
+
+    return true;
+  });
 
   return (
     <div className="page-wrapper store-page animate-fade-in">
@@ -98,7 +149,6 @@ export const Store: React.FC = () => {
               placeholder="Search notes or projects..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && fetchProducts()}
               className="input"
               style={{ paddingLeft: '36px', fontSize: '0.875rem' }}
             />
@@ -110,16 +160,16 @@ export const Store: React.FC = () => {
           <div className="grid-3">
             <SkeletonLoader rows={3} height="280px" />
           </div>
-        ) : products.length === 0 ? (
+        ) : filteredProducts.length === 0 ? (
           <EmptyState
             title="No Resources Found"
             description="No digital products match your filter criteria."
             actionText="View All Notes"
-            onAction={() => setCategory('All')}
+            onAction={() => { setCategory('All'); setSearch(''); }}
           />
         ) : (
           <div className="grid-3">
-            {products.map(prod => (
+            {filteredProducts.map(prod => (
               <div key={prod.id} className="card card-hover" style={{ display: 'flex', flexDirection: 'column' }}>
                 {/* Thumbnail Image */}
                 <div style={{
