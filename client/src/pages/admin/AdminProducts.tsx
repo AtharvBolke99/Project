@@ -63,7 +63,7 @@ export const AdminProducts: React.FC = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/store/products');
+      const res = await api.get('/admin/products');
       if (res.success && Array.isArray(res.data)) {
         let serverProducts = res.data;
         const vaultProducts = getVaultProducts();

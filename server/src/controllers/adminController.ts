@@ -72,11 +72,26 @@ export const getAdminOverview = async (req: AuthRequest, res: Response) => {
           paidOrdersCount: paidOrders.length,
           totalRevenue,
           todayRevenue,
-          conversionRate
+          conversionRate,
+          totalProducts: products.length
         },
         topProducts,
+        recentProducts: products,
         revenueTrend: last7Days
       }
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getAdminProducts = async (req: AuthRequest, res: Response) => {
+  try {
+    const products = db.find('products');
+    return res.json({
+      success: true,
+      data: products,
+      total: products.length
     });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });
