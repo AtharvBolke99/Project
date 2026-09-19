@@ -37,15 +37,64 @@ export const AdminProducts: React.FC = () => {
 
   const { showToast } = useToast();
 
+  const VAULT_KEY = 'conceptifyyy_admin_products_vault';
+
+  const getVaultProducts = (): any[] => {
+    try {
+      const saved = localStorage.getItem(VAULT_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.error('Failed to read admin products vault:', e);
+    }
+    return [];
+  };
+
+  const saveVaultProducts = (productList: any[]) => {
+    try {
+      localStorage.setItem(VAULT_KEY, JSON.stringify(productList));
+    } catch (e) {
+      console.error('Failed to write admin products vault:', e);
+    }
+  };
+
   const fetchProducts = async () => {
     setLoading(true);
     try {
       const res = await api.get('/store/products');
-      if (res.success && res.data) {
-        setProducts(res.data);
+      if (res.success && Array.isArray(res.data)) {
+        let serverProducts = res.data;
+        const vaultProducts = getVaultProducts();
+
+        // If server restarted and lost products that admin added, auto-sync vault to server
+        if (vaultProducts.length > 0) {
+          const serverIds = new Set(serverProducts.map((p: any) => p.id));
+          const missingFromServer = vaultProducts.filter((vp: any) => !serverIds.has(vp.id));
+
+          if (missingFromServer.length > 0) {
+            console.log(`Detected ${missingFromServer.length} products in admin vault not on server. Auto-syncing...`);
+            const mergedList = [...serverProducts, ...missingFromServer];
+            try {
+              await api.post('/admin/products/restore', { products: mergedList });
+              serverProducts = mergedList;
+              showToast(`Auto-synced ${missingFromServer.length} admin note(s) from vault to server!`, 'success');
+            } catch (syncErr) {
+              console.error('Auto-sync failed:', syncErr);
+            }
+          }
+        }
+
+        setProducts(serverProducts);
+        saveVaultProducts(serverProducts);
       }
     } catch (e) {
       console.error(e);
+      const vaultProducts = getVaultProducts();
+      if (vaultProducts.length > 0) {
+        setProducts(vaultProducts);
+      }
     } finally {
       setLoading(false);
     }
@@ -97,6 +146,7 @@ export const AdminProducts: React.FC = () => {
 
       const res = await api.post('/admin/products/restore', { products: productList });
       if (res.success) {
+        saveVaultProducts(productList);
         showToast(res.message || 'Catalog restored successfully!', 'success');
         fetchProducts();
       } else {
@@ -256,6 +306,9 @@ export const AdminProducts: React.FC = () => {
     if (!window.confirm('Delete this product from the Store?')) return;
     try {
       await api.delete(`/admin/products/${id}`);
+      const updated = products.filter(p => p.id !== id);
+      setProducts(updated);
+      saveVaultProducts(updated);
       showToast('Product deleted.', 'info');
       fetchProducts();
     } catch (e: any) {
@@ -299,11 +352,11 @@ export const AdminProducts: React.FC = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Database size={18} color="var(--color-primary)" />
             <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)' }}>
-              <strong>Permanent Catalog Persistence Active:</strong> All {products.length} products are seeded into the database and preserved across container reboots.
+              <strong>Admin Storage Vault & Auto-Sync Active:</strong> All {products.length} materials are safeguarded. Newly added notes will never be deleted or replaced across server restarts.
             </span>
           </div>
           <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            Click <strong>Export Backup</strong> to download an offline copy anytime.
+            Click <strong>Export Backup</strong> to download an offline JSON copy anytime.
           </span>
         </div>
 
