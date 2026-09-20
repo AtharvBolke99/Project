@@ -55,6 +55,10 @@ export const AdminProducts: React.FC = () => {
   const saveVaultProducts = (productList: any[]) => {
     try {
       localStorage.setItem(VAULT_KEY, JSON.stringify(productList));
+      const cleanStoreList = productList.filter((p: any) => 
+        p && p.category !== 'Test Mode' && p.id !== 'prod_test_mode_item'
+      );
+      localStorage.setItem('conceptifyyy_store_catalog_cache', JSON.stringify(cleanStoreList));
     } catch (e) {
       console.error('Failed to write admin products vault:', e);
     }
