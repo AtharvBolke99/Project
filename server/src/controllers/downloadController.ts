@@ -70,21 +70,24 @@ export const downloadDigitalAsset = async (req: AuthRequest, res: Response) => {
     // 3. Check for physical file in uploads directory
     const cleanTitle = product.title.replace(/[^a-zA-Z0-9_-]/g, '_');
     const uploadsDir = path.resolve(__dirname, '../../uploads/documents');
+    const uploadsRoot = path.resolve(__dirname, '../../uploads');
 
     let physicalFilePath: string | null = null;
 
     if (product.digitalFile) {
-      // Check direct filename or basename
-      const possiblePath1 = path.join(uploadsDir, product.digitalFile);
-      const possiblePath2 = path.join(uploadsDir, path.basename(product.digitalFile));
-      const possiblePath3 = path.resolve(__dirname, '../../', product.digitalFile);
+      const candidates = [
+        path.join(uploadsDir, product.digitalFile),
+        path.join(uploadsDir, path.basename(product.digitalFile)),
+        path.join(uploadsRoot, product.digitalFile),
+        path.join(uploadsRoot, path.basename(product.digitalFile)),
+        path.resolve(__dirname, '../../', product.digitalFile)
+      ];
 
-      if (fs.existsSync(possiblePath1) && fs.statSync(possiblePath1).isFile()) {
-        physicalFilePath = possiblePath1;
-      } else if (fs.existsSync(possiblePath2) && fs.statSync(possiblePath2).isFile()) {
-        physicalFilePath = possiblePath2;
-      } else if (fs.existsSync(possiblePath3) && fs.statSync(possiblePath3).isFile()) {
-        physicalFilePath = possiblePath3;
+      for (const candidate of candidates) {
+        if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+          physicalFilePath = candidate;
+          break;
+        }
       }
     }
 
@@ -98,78 +101,14 @@ export const downloadDigitalAsset = async (req: AuthRequest, res: Response) => {
       return res.sendFile(physicalFilePath);
     }
 
-    // 4. Generate structured digital document if no physical file was uploaded
-    const isZip = product.fileFormat === 'ZIP' || product.category === 'Projects';
-    const filename = `${cleanTitle}_Conceptifyyy_Official.${isZip ? 'zip' : 'pdf'}`;
-    const disposition = isViewMode && !isZip ? 'inline' : 'attachment';
-
-    let packageContent = '';
-
-    if (isZip) {
-      packageContent = `========================================================================
-CONCEPTIFYYY DIGITAL PRODUCT VAULT
-PRODUCT: ${product.title}
-CATEGORY: ${product.category}
-ACCESS: ${isFree ? 'Free Community Resource' : `Verified Licensed Access (${user?.email})`}
-SECURITY HASH: SHA256-${Buffer.from(product.id).toString('hex')}
-========================================================================
-
-WHAT IS INCLUDED:
-${(product.whatIncluded || ['Full Source Code', 'Architecture Diagram', 'Setup Guide']).map(item => `[✔] ${item}`).join('\n')}
-
-PROJECT SETUP GUIDE & INSTRUCTIONS:
-1. Extract this archive into your working project directory.
-2. Ensure Node.js (v18+) and npm are installed.
-3. Run \`npm install\` to install dependencies.
-4. Configure .env with your database and API keys.
-5. Run \`npm run dev\` to launch the development server.
-
-ARCHITECTURE SUMMARY:
-Tech Stack: ${(product.techStack || ['React', 'Node.js', 'Express', 'TypeScript']).join(', ')}
-
-SYNOPSIS & ACADEMIC VIVA Q&A:
-Q1: What is the core problem this project solves?
-A1: High-concurrency educational telemetry, sandboxed code compilation, and interactive algorithmic visualization.
-
-Q2: How is security handled?
-A2: JWT authorization with HttpOnly tokens, parameterized ORM queries, rate-limiting, and sanitized inputs.
-
-Support: support@conceptifyyy.com
-© ${new Date().getFullYear()} CONCEPTIFYYY. All rights reserved.
-`;
-      res.setHeader('Content-Type', 'application/octet-stream');
-    } else {
-      packageContent = `%PDF-1.4
-% CONCEPTIFYYY VERIFIED EDUCATIONAL RESOURCE
-% Title: ${product.title}
-% Category: ${product.category}
-% Access: ${isFree ? 'Free Community Resource' : `Verified Licensed Access (${user?.email})`}
-% Pages: ${product.pageCount || 120}
-
-[CONCEPTIFYYY OFFICIAL STUDY GUIDE & CHEAT SHEET]
-Category: ${product.category}
-
-KEY TOPICS & INTERVIEW PATTERNS COVERED:
-${(product.whatIncluded || ['Visual Diagrams', 'Pattern Cheat Sheets', 'Interview Questions']).map((item, idx) => `${idx + 1}. ${item}`).join('\n')}
-
-CORE ALGORITHMIC PATTERNS & COMPLEXITY CHEAT SHEET:
-- Two Pointer Technique: O(N) Time | O(1) Space
-- Sliding Window: O(N) Time | O(K) Space
-- Fast & Slow Pointer (Floyd's Cycle): O(N) Time | O(1) Space
-- Binary Search on Answer: O(log(Max-Min)) Time
-- Monotonic Stack (Next Greater Element): O(N) Time | O(N) Space
-- Dynamic Programming (0/1 Knapsack): O(N*W) Time | O(W) Space
-- Graph BFS/DFS & Dijkstra Shortest Path: O((V+E) log V) Time
-
-Verified & Certified for Campus Placements & Product Companies.
-`;
-      res.setHeader('Content-Type', 'application/pdf');
-    }
-
-    res.setHeader('Content-Disposition', `${disposition}; filename="${filename}"`);
-    return res.send(Buffer.from(packageContent, 'utf-8'));
+    // 4. If no physical file exists on disk, never hallucinate or invent fake notes
+    console.warn(`[NOTES] Download requested for product "${product.title}" (ID: ${product.id}), but physical file "${product.digitalFile || 'none'}" was not found on disk.`);
+    return res.status(404).json({
+      success: false,
+      message: 'The digital file for this product is not available for download. Please contact support or the administrator.'
+    });
   } catch (error: any) {
-    console.error('Download error:', error);
+    console.error('[NOTES] Download error:', error);
     return res.status(500).json({ success: false, message: error.message || 'Download failed.' });
   }
 };

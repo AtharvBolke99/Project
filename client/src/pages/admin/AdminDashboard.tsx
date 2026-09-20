@@ -36,22 +36,7 @@ export const AdminDashboard: React.FC = () => {
     fetchOverview();
   }, []);
 
-  const getVaultProducts = (): any[] => {
-    try {
-      const saved = localStorage.getItem('conceptifyyy_admin_products_vault');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (e) {}
-    return [];
-  };
-
   const stats = data?.stats;
-  const displayProducts = ((data?.recentProducts && data.recentProducts.length > 0)
-    ? data.recentProducts
-    : getVaultProducts()
-  ).filter((p: any) => p && p.category !== 'Test Mode' && p.id !== 'prod_test_mode_item');
 
   return (
     <div className="admin-layout animate-fade-in">
@@ -168,74 +153,17 @@ export const AdminDashboard: React.FC = () => {
                 </div>
               </div>
 
-              {/* Store Catalog Summary */}
+              {/* Top Products */}
               <div className="card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                  <h3 style={{ fontSize: '1.1rem', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <ShoppingBag size={18} color="var(--color-primary)" /> Store Notes & Projects ({displayProducts.length})
-                  </h3>
-                  <Link to="/admin/products" className="btn btn-secondary btn-sm">
-                    Manage All
-                  </Link>
-                </div>
+                <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Top Selling Placement Notes</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {displayProducts.map((p: any) => (
+                  {data?.topProducts?.map((p: any) => (
                     <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
-                      <div>
-                        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>{p.title}</span>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{p.category} • ⭐ {p.rating} ({p.reviewsCount || 120} reviews)</div>
-                      </div>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--color-cyan)', fontFamily: 'var(--font-mono)' }}>₹{p.price}</span>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>{p.title}</span>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--color-cyan)', fontFamily: 'var(--font-mono)' }}>₹{p.revenue}</span>
                     </div>
                   ))}
                 </div>
-              </div>
-            </div>
-
-            {/* Complete All Notes & Projects Table on Admin Dashboard Panel */}
-            <div className="card" style={{ marginBottom: '2rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '10px' }}>
-                <div>
-                  <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0 }}>All Published Store Materials & Projects</h3>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', margin: 0 }}>Real-time catalog rendering directly from the database snapshot.</p>
-                </div>
-                <Link to="/admin/products" className="btn btn-primary btn-sm">
-                  <PlusCircle size={15} /> Add / Edit Notes
-                </Link>
-              </div>
-
-              <div className="data-table-wrapper" style={{ margin: 0 }}>
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Title & Card Preview</th>
-                      <th>Category</th>
-                      <th>Price</th>
-                      <th>Format</th>
-                      <th>Reviews</th>
-                      <th style={{ textAlign: 'right' }}>Store Link</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {displayProducts.map((p: any) => (
-                      <tr key={p.id}>
-                        <td>
-                          <strong style={{ color: 'var(--text-primary)' }}>{p.title}</strong>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>/store/{p.slug}</div>
-                        </td>
-                        <td><span className="badge badge-purple">{p.category}</span></td>
-                        <td style={{ fontWeight: 800, color: 'var(--color-cyan)', fontFamily: 'var(--font-mono)' }}>₹{p.price}</td>
-                        <td><span className="badge badge-cyan">{p.fileFormat || 'PDF'}</span></td>
-                        <td>⭐ {p.rating} ({p.reviewsCount || 120})</td>
-                        <td style={{ textAlign: 'right' }}>
-                          <Link to={`/store/${p.slug}`} className="btn btn-secondary btn-sm" target="_blank">
-                            View on Store
-                          </Link>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
               </div>
             </div>
           </>

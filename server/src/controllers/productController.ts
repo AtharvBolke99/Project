@@ -7,7 +7,8 @@ export const getProducts = async (req: AuthRequest, res: Response) => {
     const { category, search, tag } = req.query as Record<string, string>;
     const userId = req.user?.id;
 
-    let products = db.find('products', p => p.isPublished);
+    let products = db.find('products', p => p.isPublished !== false);
+    console.log(`[NOTES] Fetching store products (category: ${category || 'All'}, search: ${search || 'none'}). Total published in DB: ${products.length}`);
 
     if (category && category !== 'All') {
       products = products.filter(p => p.category.toLowerCase() === category.toLowerCase());
@@ -76,6 +77,7 @@ export const getProductBySlug = async (req: AuthRequest, res: Response) => {
     const userId = req.user?.id;
 
     const product = db.findOne('products', p => p.slug === slug);
+    console.log(`[NOTES] Fetching product by slug: "${slug}" (Found: ${!!product})`);
     if (!product) {
       return res.status(404).json({ success: false, message: 'Product not found.' });
     }

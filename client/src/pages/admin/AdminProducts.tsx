@@ -37,68 +37,18 @@ export const AdminProducts: React.FC = () => {
 
   const { showToast } = useToast();
 
-  const VAULT_KEY = 'conceptifyyy_admin_products_vault';
-
-  const getVaultProducts = (): any[] => {
-    try {
-      const saved = localStorage.getItem(VAULT_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (e) {
-      console.error('Failed to read admin products vault:', e);
-    }
-    return [];
-  };
-
-  const saveVaultProducts = (productList: any[]) => {
-    try {
-      localStorage.setItem(VAULT_KEY, JSON.stringify(productList));
-      const cleanStoreList = productList.filter((p: any) => 
-        p && p.category !== 'Test Mode' && p.id !== 'prod_test_mode_item'
-      );
-      localStorage.setItem('conceptifyyy_store_catalog_cache', JSON.stringify(cleanStoreList));
-    } catch (e) {
-      console.error('Failed to write admin products vault:', e);
-    }
-  };
-
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/admin/products');
+      const res = await api.get('/store/products');
       if (res.success && Array.isArray(res.data)) {
-        let serverProducts = res.data;
-        const vaultProducts = getVaultProducts();
-
-        // If server restarted and lost products that admin added, auto-sync vault to server
-        if (vaultProducts.length > 0) {
-          const serverIds = new Set(serverProducts.map((p: any) => p.id));
-          const missingFromServer = vaultProducts.filter((vp: any) => !serverIds.has(vp.id));
-
-          if (missingFromServer.length > 0) {
-            console.log(`Detected ${missingFromServer.length} products in admin vault not on server. Auto-syncing...`);
-            const mergedList = [...serverProducts, ...missingFromServer];
-            try {
-              await api.post('/admin/products/restore', { products: mergedList });
-              serverProducts = mergedList;
-              showToast(`Auto-synced ${missingFromServer.length} admin note(s) from vault to server!`, 'success');
-            } catch (syncErr) {
-              console.error('Auto-sync failed:', syncErr);
-            }
-          }
-        }
-
-        setProducts(serverProducts);
-        saveVaultProducts(serverProducts);
+        setProducts(res.data);
+      } else {
+        showToast(res.message || 'Failed to fetch products', 'error');
       }
-    } catch (e) {
-      console.error(e);
-      const vaultProducts = getVaultProducts();
-      if (vaultProducts.length > 0) {
-        setProducts(vaultProducts);
-      }
+    } catch (e: any) {
+      console.error('[NOTES] Failed to fetch products for admin:', e);
+      showToast('Unable to connect to backend database. Please check your connection.', 'error');
     } finally {
       setLoading(false);
     }
@@ -150,7 +100,6 @@ export const AdminProducts: React.FC = () => {
 
       const res = await api.post('/admin/products/restore', { products: productList });
       if (res.success) {
-        saveVaultProducts(productList);
         showToast(res.message || 'Catalog restored successfully!', 'success');
         fetchProducts();
       } else {
@@ -310,9 +259,6 @@ export const AdminProducts: React.FC = () => {
     if (!window.confirm('Delete this product from the Store?')) return;
     try {
       await api.delete(`/admin/products/${id}`);
-      const updated = products.filter(p => p.id !== id);
-      setProducts(updated);
-      saveVaultProducts(updated);
       showToast('Product deleted.', 'info');
       fetchProducts();
     } catch (e: any) {

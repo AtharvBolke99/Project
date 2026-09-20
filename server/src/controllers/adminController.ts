@@ -72,26 +72,11 @@ export const getAdminOverview = async (req: AuthRequest, res: Response) => {
           paidOrdersCount: paidOrders.length,
           totalRevenue,
           todayRevenue,
-          conversionRate,
-          totalProducts: products.length
+          conversionRate
         },
         topProducts,
-        recentProducts: products,
         revenueTrend: last7Days
       }
-    });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-export const getAdminProducts = async (req: AuthRequest, res: Response) => {
-  try {
-    const products = db.find('products');
-    return res.json({
-      success: true,
-      data: products,
-      total: products.length
     });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });
@@ -324,6 +309,7 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
     };
 
     db.insert('products', newProduct);
+    console.log(`[NOTES] Admin created product: "${newProduct.title}" (ID: ${newProduct.id}, Category: ${newProduct.category}, Price: ₹${newProduct.price})`);
 
     return res.status(201).json({
       success: true,
@@ -331,6 +317,7 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
       data: newProduct
     });
   } catch (error: any) {
+    console.error('[NOTES] Error creating product:', error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -381,12 +368,15 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ success: false, message: 'Product not found.' });
     }
 
+    console.log(`[NOTES] Admin updated product ID: ${id} ("${updated.title}")`);
+
     return res.json({
       success: true,
       message: 'Product updated successfully!',
       data: updated
     });
   } catch (error: any) {
+    console.error('[NOTES] Error updating product:', error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -398,8 +388,10 @@ export const deleteProduct = async (req: AuthRequest, res: Response) => {
     if (!deleted) {
       return res.status(404).json({ success: false, message: 'Product not found.' });
     }
+    console.log(`[NOTES] Admin deleted product ID: ${id}`);
     return res.json({ success: true, message: 'Product deleted.' });
   } catch (error: any) {
+    console.error('[NOTES] Error deleting product:', error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -682,6 +674,7 @@ export const restoreCatalogBackup = async (req: AuthRequest, res: Response) => {
     }
 
     db.save();
+    console.log(`[NOTES] Admin restored ${restoredCount} products into database.`);
 
     return res.json({
       success: true,
@@ -689,6 +682,7 @@ export const restoreCatalogBackup = async (req: AuthRequest, res: Response) => {
       count: restoredCount
     });
   } catch (error: any) {
+    console.error('[NOTES] Error restoring catalog backup:', error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };
