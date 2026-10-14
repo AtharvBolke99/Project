@@ -1,28 +1,22 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
-  Code2, 
-  BrainCircuit, 
   ShoppingBag, 
-  Trophy, 
-  Compass, 
   Search, 
   Moon, 
   Sun, 
-  Bell, 
   User, 
   LogOut, 
-  BookOpen, 
-  FolderGit2, 
   ShieldCheck, 
   Menu, 
   X,
-  PlaySquare
+  Sparkles,
+  Download,
+  FolderGit2,
+  FileText
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { NotificationDropdown } from './NotificationDropdown';
-import { GlobalSearchModal } from './GlobalSearchModal';
 
 interface NavbarProps {
   onOpenAuth: (mode?: 'login' | 'register') => void;
@@ -34,23 +28,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   const isActive = (path: string) => {
-    if (path === '/' && location.pathname === '/') return true;
+    if (path === '/' && (location.pathname === '/' || location.pathname === '/store')) return true;
     if (path !== '/' && location.pathname.startsWith(path)) return true;
     return false;
   };
 
   const navLinks = [
-    { label: 'DSA Arena', path: '/dsa', badge: 'Interactive' },
-    { label: 'Visual Lab', path: '/visual-lab', badge: 'Lab' },
-    { label: 'Aptitude', path: '/aptitude' },
-    { label: 'Roadmaps', path: '/learning-paths' },
-    { label: 'Store', path: '/store' },
+    { label: 'Store Catalog', path: '/', icon: ShoppingBag, badge: 'Live' },
+    { label: 'My Purchases', path: '/my-purchases', icon: Download },
   ];
 
   return (
@@ -58,86 +47,111 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
       <header className="navbar">
         <div className="container navbar-inner">
           {/* Logo */}
-          <Link to="/" className="brand-logo">
-            <div className="brand-logo-icon">
-              <PlaySquare size={20} strokeWidth={2.5} />
+          <Link to="/" className="brand-logo" style={{ textDecoration: 'none' }}>
+            <div 
+              className="brand-logo-icon" 
+              style={{ 
+                background: 'var(--gradient-brand)', 
+                color: '#FFFFFF', 
+                borderRadius: '12px', 
+                boxShadow: '0 4px 14px rgba(99, 102, 241, 0.35)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '36px',
+                height: '36px'
+              }}
+            >
+              <ShoppingBag size={20} strokeWidth={2.4} />
             </div>
-            <span>CONCEPT<span style={{ color: 'var(--color-primary)' }}>IFYYY</span></span>
+            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
+              <span style={{ fontWeight: 800, letterSpacing: '-0.02em', fontSize: '1.25rem', color: 'var(--text-primary)' }}>
+                CONCEPT<span style={{ background: 'var(--gradient-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>IFYYY</span>
+              </span>
+              <span style={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--color-cyan)', textTransform: 'uppercase', marginTop: '2px' }}>
+                Digital Notes & Projects
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav>
-            <ul className="nav-links">
-              {navLinks.map(link => (
-                <li key={link.path}>
+          <nav className="desktop-only">
+            <ul className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '4px', listStyle: 'none', margin: 0, padding: 0 }}>
+              {navLinks.map(link => {
+                const IconComponent = link.icon;
+                return (
+                  <li key={link.path}>
+                    <Link
+                      to={link.path}
+                      className={`nav-link ${isActive(link.path) ? 'active' : ''}`}
+                      style={{ 
+                        position: 'relative', 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        gap: '6px',
+                        padding: '8px 14px',
+                        borderRadius: 'var(--radius-md)',
+                        fontSize: '0.875rem',
+                        fontWeight: 600,
+                        textDecoration: 'none'
+                      }}
+                    >
+                      <IconComponent size={16} />
+                      <span>{link.label}</span>
+                      {link.badge && (
+                        <span style={{
+                          fontSize: '0.625rem',
+                          fontWeight: 700,
+                          background: 'var(--gradient-brand)',
+                          color: '#FFFFFF',
+                          padding: '1px 6px',
+                          borderRadius: '6px',
+                          textTransform: 'uppercase',
+                          boxShadow: '0 2px 6px rgba(99, 102, 241, 0.3)'
+                        }}>
+                          {link.badge}
+                        </span>
+                      )}
+                    </Link>
+                  </li>
+                );
+              })}
+
+              {isAdmin && (
+                <li>
                   <Link
-                    to={link.path}
-                    className={`nav-link ${isActive(link.path) ? 'active' : ''}`}
-                    style={{ position: 'relative' }}
+                    to="/admin/products"
+                    className="nav-link"
+                    style={{ 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '6px',
+                      padding: '8px 14px',
+                      borderRadius: 'var(--radius-md)',
+                      fontSize: '0.875rem',
+                      fontWeight: 600,
+                      color: 'var(--color-cyan)',
+                      textDecoration: 'none'
+                    }}
                   >
-                    {link.label}
-                    {link.badge && (
-                      <span style={{
-                        position: 'absolute',
-                        top: '-10px',
-                        right: '-16px',
-                        fontSize: '0.625rem',
-                        fontWeight: 700,
-                        background: 'linear-gradient(135deg, #4F46E5, #0EA5E9)',
-                        color: '#FFFFFF',
-                        padding: '1px 6px',
-                        borderRadius: '6px',
-                        textTransform: 'uppercase',
-                        boxShadow: '0 2px 6px rgba(79, 70, 229, 0.3)'
-                      }}>
-                        {link.badge}
-                      </span>
-                    )}
+                    <ShieldCheck size={16} />
+                    <span>Admin CMS</span>
                   </Link>
                 </li>
-              ))}
+              )}
             </ul>
           </nav>
 
           {/* Right Action Icons & Auth */}
-          <div className="nav-actions">
-            {/* Global Search Button */}
-            <button
-              className="btn-icon"
-              onClick={() => setIsSearchOpen(true)}
-              title="Search Problems, Topics & Notes"
-            >
-              <Search size={18} />
-            </button>
-
-            {/* Notifications Toggle */}
-            <div style={{ position: 'relative' }}>
-              <button
-                className="btn-icon"
-                onClick={() => setIsNotifOpen(prev => !prev)}
-                title="Notifications"
-              >
-                <Bell size={18} />
-                <span style={{
-                  position: 'absolute',
-                  top: '6px',
-                  right: '6px',
-                  width: '7px',
-                  height: '7px',
-                  background: 'var(--color-primary)',
-                  borderRadius: '50%'
-                }} />
-              </button>
-              {isNotifOpen && <NotificationDropdown onClose={() => setIsNotifOpen(false)} />}
-            </div>
-
+          <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {/* Dark / Light Theme Switcher */}
             <button
               className="btn-icon"
               onClick={toggleTheme}
               title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+              aria-label="Toggle theme"
             >
-              {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+              {theme === 'dark' ? <Sun size={18} color="#F59E0B" /> : <Moon size={18} color="var(--color-primary)" />}
             </button>
 
             {/* User Profile or Login */}
@@ -162,17 +176,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
                     alt={user.name}
                     style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--bg-card)' }}
                   />
-                  <span className="navbar-user-name desktop-only" style={{ fontSize: '0.875rem', fontWeight: 600 }}>{user.name.split(' ')[0]}</span>
-                  <span className="navbar-user-xp desktop-only" style={{
-                    fontSize: '0.75rem',
-                    fontWeight: 700,
-                    color: 'var(--color-primary)',
-                    background: '#EEF2FF',
-                    padding: '2px 8px',
-                    borderRadius: 'var(--radius-full)'
-                  }}>
-                    {user.xp} XP
+                  <span className="navbar-user-name desktop-only" style={{ fontSize: '0.875rem', fontWeight: 600 }}>
+                    {user.name.split(' ')[0]}
                   </span>
+                  {isAdmin && (
+                    <span className="badge badge-cyan desktop-only" style={{ fontSize: '0.65rem' }}>
+                      ADMIN
+                    </span>
+                  )}
                 </button>
 
                 {isUserMenuOpen && (
@@ -192,45 +203,26 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
                     }}
                   >
                     <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-subtle)' }}>
-                      <p style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{user.name}</p>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{user.email}</p>
+                      <p style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)', margin: 0 }}>{user.name}</p>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '2px 0 0' }}>{user.email}</p>
                       <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
                         <span className="badge badge-cyan" style={{ fontSize: '0.65rem' }}>{user.role}</span>
-                        <span className="badge badge-purple" style={{ fontSize: '0.65rem' }}>🔥 {user.streak}d Streak</span>
                       </div>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', padding: '6px 0' }}>
-                      <Link
-                        to="/dashboard"
-                        onClick={() => setIsUserMenuOpen(false)}
-                        className="btn-secondary"
-                        style={{ justifyContent: 'flex-start', border: 'none', padding: '8px 12px', fontSize: '0.85rem' }}
-                      >
-                        <User size={16} /> My Dashboard & Stats
-                      </Link>
-
                       <Link
                         to="/my-purchases"
                         onClick={() => setIsUserMenuOpen(false)}
                         className="btn-secondary"
                         style={{ justifyContent: 'flex-start', border: 'none', padding: '8px 12px', fontSize: '0.85rem' }}
                       >
-                        <ShoppingBag size={16} /> My Purchased Library
-                      </Link>
-
-                      <Link
-                        to="/bookmarks"
-                        onClick={() => setIsUserMenuOpen(false)}
-                        className="btn-secondary"
-                        style={{ justifyContent: 'flex-start', border: 'none', padding: '8px 12px', fontSize: '0.85rem' }}
-                      >
-                        <BookOpen size={16} /> Bookmarks
+                        <ShoppingBag size={16} /> My Purchased Notes
                       </Link>
 
                       {isAdmin && (
                         <Link
-                          to="/admin"
+                          to="/admin/products"
                           onClick={() => setIsUserMenuOpen(false)}
                           className="btn-secondary"
                           style={{
@@ -241,7 +233,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
                             color: 'var(--color-cyan)'
                           }}
                         >
-                          <ShieldCheck size={16} /> Admin CMS Portal
+                          <ShieldCheck size={16} /> Admin Products CMS
                         </Link>
                       )}
 
@@ -258,7 +250,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
                           padding: '8px 12px',
                           fontSize: '0.85rem',
                           color: 'var(--color-rose)',
-                          width: '100%'
+                          width: '100%',
+                          cursor: 'pointer'
                         }}
                       >
                         <LogOut size={16} /> Logout
@@ -330,8 +323,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div className="brand-logo-icon" style={{ width: '28px', height: '28px' }}>
-                    <PlaySquare size={16} />
+                  <div className="brand-logo-icon" style={{ width: '28px', height: '28px', background: 'var(--gradient-brand)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF' }}>
+                    <ShoppingBag size={16} />
                   </div>
                   <strong style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>CONCEPTIFYYY</strong>
                 </div>
@@ -344,29 +337,63 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {navLinks.map(link => (
+                <Link
+                  to="/"
+                  onClick={() => setIsMobileDrawerOpen(false)}
+                  className="nav-link"
+                  style={{
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    background: isActive('/') ? 'var(--gradient-brand-subtle)' : 'transparent',
+                    color: isActive('/') ? 'var(--color-primary)' : 'var(--text-secondary)',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
+                  }}
+                >
+                  <ShoppingBag size={18} />
+                  <span>Store Catalog</span>
+                </Link>
+
+                <Link
+                  to="/my-purchases"
+                  onClick={() => setIsMobileDrawerOpen(false)}
+                  className="nav-link"
+                  style={{
+                    padding: '10px 14px',
+                    borderRadius: '8px',
+                    background: isActive('/my-purchases') ? 'var(--gradient-brand-subtle)' : 'transparent',
+                    color: isActive('/my-purchases') ? 'var(--color-primary)' : 'var(--text-secondary)',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px'
+                  }}
+                >
+                  <Download size={18} />
+                  <span>My Purchases</span>
+                </Link>
+
+                {isAdmin && (
                   <Link
-                    key={link.path}
-                    to={link.path}
+                    to="/admin/products"
                     onClick={() => setIsMobileDrawerOpen(false)}
                     className="nav-link"
                     style={{
-                      padding: '8px 12px',
+                      padding: '10px 14px',
                       borderRadius: '8px',
-                      background: isActive(link.path) ? '#EEF2FF' : 'transparent',
-                      color: isActive(link.path) ? 'var(--color-primary)' : 'var(--text-secondary)',
+                      color: 'var(--color-cyan)',
                       fontWeight: 700,
                       display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center'
+                      alignItems: 'center',
+                      gap: '10px'
                     }}
                   >
-                    <span>{link.label}</span>
-                    {link.badge && (
-                      <span className="badge badge-primary" style={{ fontSize: '0.65rem' }}>{link.badge}</span>
-                    )}
+                    <ShieldCheck size={18} />
+                    <span>Admin Products CMS</span>
                   </Link>
-                ))}
+                )}
               </div>
             </div>
 
@@ -382,12 +409,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
                     />
                     <div>
                       <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>{user.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--color-primary)' }}>{user.xp} XP</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{user.email}</div>
                     </div>
                   </div>
-                  <Link to="/dashboard" onClick={() => setIsMobileDrawerOpen(false)} className="btn btn-secondary btn-sm" style={{ width: '100%' }}>
-                    Dashboard
-                  </Link>
+                  <button
+                    onClick={() => {
+                      setIsMobileDrawerOpen(false);
+                      logout();
+                      navigate('/');
+                    }}
+                    className="btn btn-secondary btn-sm"
+                    style={{ width: '100%', color: 'var(--color-rose)' }}
+                  >
+                    <LogOut size={15} /> Logout
+                  </button>
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -417,9 +452,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
           </div>
         </div>
       )}
-
-      {/* Global Search Modal */}
-      {isSearchOpen && <GlobalSearchModal onClose={() => setIsSearchOpen(false)} />}
     </>
   );
 };

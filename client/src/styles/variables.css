@@ -1,6 +1,6 @@
 /* ==========================================================================
-   CONCEPTIFYYY — MODERN LIGHT & VIBRANT DESIGN SYSTEM
-   Luminous surfaces, Electric Indigo & Sky accents, Crisp Typography
+   CONCEPTIFYYY DIGITAL STORE — ELECTRIC VIOLET & NEO-CYAN DESIGN SYSTEM
+   Luminous glassmorphism, Electric Violet (#6366F1) & Vivid Neo-Cyan (#06B6D4)
    ========================================================================== */
 
 :root {
@@ -9,48 +9,55 @@
   --font-display: 'Space Grotesk', 'Plus Jakarta Sans', -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
 
-  /* Brand Accents — Fresh, Vibrant & Modern */
-  --color-primary: #4F46E5;        /* Electric Indigo */
-  --color-primary-hover: #4338CA;
-  --color-primary-glow: rgba(79, 70, 229, 0.22);
+  /* Brand Accents — Electric Violet & Neo-Cyan */
+  --color-primary: #6366F1;             /* Electric Violet */
+  --color-primary-hover: #4F46E5;       /* Deep Indigo */
+  --color-primary-light: #818CF8;
+  --color-primary-glow: rgba(99, 102, 241, 0.28);
   
-  --color-cyan: #0284C7;           /* Vivid Sky Blue */
-  --color-cyan-glow: rgba(2, 132, 199, 0.20);
+  --color-cyan: #06B6D4;                /* Vivid Neo-Cyan */
+  --color-cyan-hover: #0891B2;
+  --color-cyan-light: #22D3EE;
+  --color-cyan-glow: rgba(6, 182, 212, 0.25);
 
-  --color-blue: #2563EB;
-  --color-blue-glow: rgba(37, 99, 235, 0.20);
+  --color-purple: #8B5CF6;
+  --color-purple-glow: rgba(139, 92, 246, 0.22);
 
-  --color-purple: #7C3AED;
-  --color-purple-glow: rgba(124, 58, 237, 0.20);
+  --color-emerald: #10B981;             /* Success Emerald */
+  --color-emerald-glow: rgba(16, 185, 129, 0.20);
 
-  --color-emerald: #059669;        /* Fresh Mint/Emerald */
-  --color-emerald-glow: rgba(5, 150, 105, 0.18);
+  --color-amber: #F59E0B;               /* Rating Star Amber */
+  --color-amber-glow: rgba(245, 158, 11, 0.20);
 
-  --color-amber: #D97706;          /* Warm Sun Amber */
-  --color-amber-glow: rgba(217, 119, 6, 0.18);
+  --color-rose: #F43F5E;                /* Discount & Alert Rose */
+  --color-rose-glow: rgba(244, 63, 94, 0.20);
 
-  --color-rose: #E11D48;           /* Coral Rose */
-  --color-rose-glow: rgba(225, 29, 72, 0.18);
+  /* Gradients */
+  --gradient-brand: linear-gradient(135deg, #6366F1 0%, #06B6D4 100%);
+  --gradient-brand-subtle: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(6, 182, 212, 0.08) 100%);
+  --gradient-card: linear-gradient(180deg, rgba(99, 102, 241, 0.04) 0%, rgba(6, 182, 212, 0.02) 100%);
+  --gradient-text: linear-gradient(135deg, #6366F1 0%, #06B6D4 50%, #3B82F6 100%);
 
-  /* Light Theme (Default & Primary Vibe) */
-  --bg-primary: #F8FAFC;           /* Crisp porcelain snow */
-  --bg-secondary: #FFFFFF;         /* Pure brilliant white */
-  --bg-tertiary: #F1F5F9;          /* Soft cool slate */
-  --bg-card: #FFFFFF;              /* Pure white card */
+  /* Light Theme (Default) */
+  --bg-primary: #F8FAFC;                /* Porcelain canvas */
+  --bg-secondary: #FFFFFF;              /* Pure brilliant white */
+  --bg-tertiary: #F1F5F9;               /* Slate tint */
+  --bg-card: #FFFFFF;                   /* Crisp white card */
   --bg-card-hover: #F8FAFC;
-  --bg-glass: rgba(255, 255, 255, 0.88);
-  --bg-glass-card: rgba(255, 255, 255, 0.94);
+  --bg-glass: rgba(255, 255, 255, 0.85);
+  --bg-glass-card: rgba(255, 255, 255, 0.92);
   
-  --border-subtle: #E2E8F0;        /* Clean slate outline */
+  --border-subtle: #E2E8F0;             /* Clean hairline border */
   --border-medium: #CBD5E1;
-  --border-highlight: #A5B4FC;     /* Soft indigo highlight */
+  --border-highlight: #A5B4FC;          /* Soft violet highlight */
+  --border-cyan-highlight: #67E8F9;
 
-  --text-primary: #0F172A;         /* Deep obsidian text - high contrast */
-  --text-secondary: #475569;       /* Slate text */
-  --text-muted: #64748B;          /* Soft muted hints */
+  --text-primary: #0F172A;              /* Deep obsidian high contrast */
+  --text-secondary: #475569;            /* Slate text */
+  --text-muted: #64748B;               /* Muted text */
   --text-inverse: #FFFFFF;
 
-  --code-bg: #0F172A;              /* Elegant deep editor for high contrast */
+  --code-bg: #0F172A;
   --code-text: #E2E8F0;
 
   /* Diffused Modern Shadows */
@@ -58,20 +65,20 @@
   --shadow-sm: 0 2px 8px -2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
   --shadow-md: 0 10px 25px -4px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
   --shadow-lg: 0 20px 40px -8px rgba(15, 23, 42, 0.10), 0 4px 12px -2px rgba(15, 23, 42, 0.05);
-  --shadow-glow: 0 0 30px rgba(79, 70, 229, 0.16);
-  --shadow-focus: 0 0 0 3px rgba(79, 70, 229, 0.25);
+  --shadow-glow: 0 0 35px rgba(99, 102, 241, 0.20);
+  --shadow-focus: 0 0 0 3px rgba(99, 102, 241, 0.25);
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-xl: 22px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
   --radius-full: 9999px;
 
-  --header-height: 70px;
+  --header-height: 72px;
   --mobile-nav-height: 68px;
 
-  --transition-fast: 0.15s ease;
-  --transition-normal: 0.25s ease;
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -82,12 +89,13 @@
   --bg-tertiary: #F1F5F9;
   --bg-card: #FFFFFF;
   --bg-card-hover: #F8FAFC;
-  --bg-glass: rgba(255, 255, 255, 0.88);
-  --bg-glass-card: rgba(255, 255, 255, 0.94);
+  --bg-glass: rgba(255, 255, 255, 0.85);
+  --bg-glass-card: rgba(255, 255, 255, 0.92);
   
   --border-subtle: #E2E8F0;
   --border-medium: #CBD5E1;
   --border-highlight: #A5B4FC;
+  --border-cyan-highlight: #67E8F9;
 
   --text-primary: #0F172A;
   --text-secondary: #475569;
@@ -95,31 +103,32 @@
   --text-inverse: #FFFFFF;
 }
 
-/* Dark Theme Support (Preserved with Modern Sleek Deep Indigo/Navy) */
+/* Dark Theme (Electric Violet & Neo-Cyan Deep Space) */
 [data-theme="dark"] {
-  --bg-primary: #0B0F19;
-  --bg-secondary: #111827;
-  --bg-tertiary: #1F2937;
-  --bg-card: #131D31;
-  --bg-card-hover: #1E293B;
-  --bg-glass: rgba(17, 24, 39, 0.88);
-  --bg-glass-card: rgba(19, 29, 49, 0.92);
+  --bg-primary: #080C14;               /* Deep cosmic background */
+  --bg-secondary: #0F172A;             /* Midnight slate */
+  --bg-tertiary: #1E293B;
+  --bg-card: #0D1527;                  /* Subtle blue-tinted dark card */
+  --bg-card-hover: #142038;
+  --bg-glass: rgba(15, 23, 42, 0.85);
+  --bg-glass-card: rgba(13, 21, 39, 0.92);
 
   --border-subtle: rgba(255, 255, 255, 0.08);
   --border-medium: rgba(255, 255, 255, 0.15);
-  --border-highlight: rgba(99, 102, 241, 0.40);
+  --border-highlight: rgba(99, 102, 241, 0.45);
+  --border-cyan-highlight: rgba(6, 182, 212, 0.45);
 
-  --text-primary: #F8FAFC;
-  --text-secondary: #94A3B8;
+  --text-primary: #F8FAFC;             /* Bright crisp white */
+  --text-secondary: #94A3B8;           /* Muted silvery slate */
   --text-muted: #64748B;
-  --text-inverse: #0F172A;
+  --text-inverse: #080C14;
 
-  --code-bg: #090D16;
+  --code-bg: #05080E;
   --code-text: #F1F5F9;
 
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 10px 26px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 20px 45px rgba(0, 0, 0, 0.5);
-  --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.25);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 10px 28px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.65);
+  --shadow-glow: 0 0 35px rgba(99, 102, 241, 0.28);
 }

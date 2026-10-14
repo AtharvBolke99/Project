@@ -150,7 +150,7 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
           productTitle: product.title
         },
         theme: {
-          color: '#00E5FF'
+          color: '#6366F1'
         },
         modal: {
           ondismiss: function () {

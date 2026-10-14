@@ -269,11 +269,14 @@ export const AdminProducts: React.FC = () => {
   return (
     <div className="admin-layout animate-fade-in">
       <aside className="admin-sidebar">
-        <Link to="/admin" className="btn btn-secondary btn-sm" style={{ marginBottom: '1rem' }}>
-          <ChevronLeft size={16} /> Back to Overview
+        <Link to="/" className="btn btn-secondary btn-sm" style={{ marginBottom: '1rem' }}>
+          <ChevronLeft size={16} /> Back to Store
         </Link>
         <Link to="/admin/products" className="admin-sidebar-link active">
           <ShoppingBag size={18} /> Products & Notes
+        </Link>
+        <Link to="/admin/orders" className="admin-sidebar-link">
+          <Database size={18} /> Orders & Revenue
         </Link>
       </aside>
 
