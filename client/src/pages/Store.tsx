@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { 
   ShoppingBag, 
@@ -6,23 +6,20 @@ import {
   Star, 
   FileText, 
   FolderGit2, 
-  ShieldCheck, 
   Zap, 
   CheckCircle2, 
   ArrowRight,
   RefreshCw,
-  AlertCircle,
   Sparkles,
   Code2,
   Database,
   Brain,
   X,
-  Lock,
-  Download
+  Download,
+  SlidersHorizontal,
+  ArrowUpDown
 } from 'lucide-react';
 import { api } from '../services/api';
-import { SkeletonLoader } from '../components/SkeletonLoader';
-import { EmptyState } from '../components/EmptyState';
 import { getAssetUrl, handleImageError } from '../utils/imageUrl';
 
 export const Store: React.FC = () => {
@@ -32,6 +29,8 @@ export const Store: React.FC = () => {
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [category, setCategory] = useState<string>(initialCat);
   const [search, setSearch] = useState<string>('');
+  const [sortBy, setSortBy] = useState<string>('popular');
+  const [priceFilter, setPriceFilter] = useState<string>('all');
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,18 +40,19 @@ export const Store: React.FC = () => {
     try {
       const res = await api.get('/store/products');
       if (res.success && Array.isArray(res.data)) {
-        const realProducts = res.data.filter((p: any) => 
+        // Filter out internal test products
+        const storeProducts = res.data.filter((p: any) => 
           p.category !== 'Test Mode' && 
           p.slug !== 'conceptifyyy-test-product' && 
           p.id !== 'prod_test_mode_item'
         );
-        setAllProducts(realProducts);
+        setAllProducts(storeProducts);
       } else {
         setError(res.message || 'Unable to load notes. Please try again.');
       }
     } catch (e: any) {
-      console.warn('[NOTES] Failed to fetch store products:', e);
-      setError('Unable to load notes. Please try again.');
+      console.warn('[STORE] Failed to fetch store products:', e);
+      setError('Unable to connect to the backend server. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -67,15 +67,20 @@ export const Store: React.FC = () => {
     if (cat) {
       setCategory(cat);
     }
+    const q = searchParams.get('search');
+    if (q) {
+      setSearch(q);
+    }
   }, [searchParams]);
 
   const categories = [
-    { id: 'All', label: 'All Resources', icon: Sparkles },
-    { id: 'Python', label: 'Python Course', icon: Code2 },
-    { id: 'MySQL / DBMS', label: 'MySQL & DBMS', icon: Database },
-    { id: 'Aptitude Notes', label: 'Aptitude Speed Pack', icon: Brain },
-    { id: 'Placement Bundles', label: 'Resume & Bundles', icon: FileText },
-    { id: 'Projects', label: 'Full-Stack Projects', icon: FolderGit2 }
+    { id: 'All', label: 'All Resources', color: '#FFFFFF', tagBg: '#FFFFFF' },
+    { id: 'Python', label: 'Python Course', color: '#FFC933', tagBg: '#FFE9A8' },
+    { id: 'MySQL / DBMS', label: 'MySQL & DBMS', color: '#FF8A6B', tagBg: '#FFD4C8' },
+    { id: 'DSA Notes', label: 'DSA Placement Prep', color: '#5B3DF5', tagBg: '#E3DDFF' },
+    { id: 'Aptitude Notes', label: 'Aptitude & Reasoning', color: '#19C8A0', tagBg: '#C9F7E8' },
+    { id: 'Placement Bundles', label: 'Resume & Bundles', color: '#FFC933', tagBg: '#FFE9A8' },
+    { id: 'Projects', label: 'Full-Stack Projects', color: '#19C8A0', tagBg: '#C9F7E8' }
   ];
 
   const handleCategorySelect = (catId: string) => {
@@ -88,322 +93,428 @@ export const Store: React.FC = () => {
     }
   };
 
-  // Real-time filtering across categories, title, tags, and descriptions
-  const filteredProducts = allProducts.filter(p => {
-    if (category !== 'All') {
-      if (category === 'Python') {
-        const isPython = p.title?.toLowerCase().includes('python') || 
-                         (p.tags && p.tags.some((t: string) => t.toLowerCase().includes('python')));
-        if (!isPython) return false;
-      } else if (category === 'MySQL / DBMS' || category === 'MySQL') {
-        const isSql = p.title?.toLowerCase().includes('mysql') || 
-                      p.title?.toLowerCase().includes('dbms') || 
-                      (p.tags && p.tags.some((t: string) => t.toLowerCase().includes('mysql') || t.toLowerCase().includes('dbms') || t.toLowerCase().includes('sql')));
-        if (!isSql) return false;
-      } else if (category === 'Aptitude' || category === 'Aptitude Notes') {
-        const isApt = p.category === 'Aptitude Notes' || p.title?.toLowerCase().includes('aptitude');
-        if (!isApt) return false;
-      } else if (p.category?.toLowerCase() !== category.toLowerCase()) {
-        return false;
+  const matchesCategory = (p: any, cat: string): boolean => {
+    if (cat === 'All') return true;
+    const catLower = cat.toLowerCase();
+    const titleLower = (p.title || '').toLowerCase();
+    const tagsLower = (p.tags || []).map((t: string) => t.toLowerCase());
+
+    if (cat === 'Python') {
+      return titleLower.includes('python') || tagsLower.some((t: string) => t.includes('python'));
+    }
+    if (cat === 'MySQL / DBMS') {
+      return titleLower.includes('mysql') || titleLower.includes('dbms') || titleLower.includes('sql') || tagsLower.some((t: string) => t.includes('mysql') || t.includes('sql') || t.includes('dbms'));
+    }
+    if (cat === 'DSA Notes') {
+      return p.category === 'DSA Notes' || titleLower.includes('dsa') || tagsLower.some((t: string) => t.includes('dsa'));
+    }
+    if (cat === 'Aptitude Notes') {
+      return p.category === 'Aptitude Notes' || titleLower.includes('aptitude') || tagsLower.some((t: string) => t.includes('aptitude'));
+    }
+    if (cat === 'Placement Bundles') {
+      return p.category === 'Placement Bundles' || titleLower.includes('resume') || tagsLower.some((t: string) => t.includes('resume'));
+    }
+    if (cat === 'Projects') {
+      return p.category === 'Projects' || tagsLower.some((t: string) => t.includes('mern') || t.includes('project'));
+    }
+    return (p.category || '').toLowerCase() === catLower;
+  };
+
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { All: allProducts.length };
+    categories.forEach(c => {
+      if (c.id !== 'All') {
+        counts[c.id] = allProducts.filter(p => matchesCategory(p, c.id)).length;
       }
+    });
+    return counts;
+  }, [allProducts]);
+
+  const filteredProducts = useMemo(() => {
+    let result = allProducts.filter(p => matchesCategory(p, category));
+
+    if (priceFilter === 'free') {
+      result = result.filter(p => p.price === 0);
+    } else if (priceFilter === 'under20') {
+      result = result.filter(p => p.price > 0 && p.price <= 20);
+    } else if (priceFilter === 'under50') {
+      result = result.filter(p => p.price > 0 && p.price <= 50);
     }
 
     if (search.trim()) {
-      const q = search.toLowerCase();
-      const matches = p.title?.toLowerCase().includes(q) ||
-                      (p.cardDescription && p.cardDescription.toLowerCase().includes(q)) ||
-                      (p.description && p.description.toLowerCase().includes(q)) ||
-                      (p.tags && p.tags.some((t: string) => t.toLowerCase().includes(q))) ||
-                      (p.techStack && p.techStack.some((t: string) => t.toLowerCase().includes(q)));
-      if (!matches) return false;
+      const q = search.trim().toLowerCase();
+      result = result.filter(p =>
+        (p.title && p.title.toLowerCase().includes(q)) ||
+        (p.description && p.description.toLowerCase().includes(q)) ||
+        (p.cardDescription && p.cardDescription.toLowerCase().includes(q)) ||
+        (p.tags && p.tags.some((t: string) => t.toLowerCase().includes(q))) ||
+        (p.techStack && p.techStack.some((t: string) => t.toLowerCase().includes(q)))
+      );
     }
 
-    return true;
-  });
+    if (sortBy === 'price_asc') {
+      result.sort((a, b) => a.price - b.price);
+    } else if (sortBy === 'price_desc') {
+      result.sort((a, b) => b.price - a.price);
+    } else if (sortBy === 'newest') {
+      result.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+    } else {
+      result.sort((a, b) => (b.reviewsCount || 0) - (a.reviewsCount || 0));
+    }
+
+    return result;
+  }, [allProducts, category, priceFilter, search, sortBy]);
 
   return (
-    <div className="page-wrapper store-page animate-fade-in" style={{ minHeight: '85vh', paddingBottom: '4rem' }}>
-      {/* High-Converting Modern Storefront Hero */}
-      <div 
-        style={{
-          background: 'linear-gradient(180deg, rgba(99, 102, 241, 0.08) 0%, rgba(6, 182, 212, 0.04) 50%, transparent 100%)',
-          borderBottom: '1px solid var(--border-subtle)',
-          padding: '3rem 0 2.5rem'
-        }}
-      >
-        <div className="container" style={{ textAlign: 'center', maxWidth: '860px' }}>
-          {/* Badge */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 16px', borderRadius: 'var(--radius-full)', background: 'var(--gradient-brand-subtle)', border: '1px solid var(--border-highlight)', marginBottom: '1.25rem' }}>
-            <Sparkles size={14} color="var(--color-primary)" />
-            <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--color-primary)', letterSpacing: '0.04em' }}>
-              OFFICIAL CONCEPTIFYYY STORE
-            </span>
-          </div>
+    <div className="store-page animate-fade-in" style={{ paddingBottom: '96px' }}>
+      
+      {/* ================= 1. STORE HEADER BANNER ================= */}
+      <section className="wrap" style={{ paddingTop: '40px', paddingBottom: '32px' }}>
+        <div style={{ maxWidth: '820px' }}>
+          
+          <span className="tag" style={{ background: '#C9F7E8', marginBottom: '14px' }}>
+            Instant Digital Download Store
+          </span>
 
-          {/* Main Title */}
-          <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 800, lineHeight: 1.15, letterSpacing: '-0.03em', color: 'var(--text-primary)', marginBottom: '1rem' }}>
-            Handwritten Notes, Cheat Sheets & <span style={{ background: 'var(--gradient-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Full-Stack Projects</span>
+          <h1 className="d" style={{ fontSize: 'clamp(36px, 5.2vw, 64px)', lineHeight: 1.05, fontWeight: 800, marginBottom: '14px' }}>
+            Find your next <span className="chip" style={{ background: '#FFC933' }}>placement ace.</span>
           </h1>
 
-          {/* Subtitle */}
-          <p style={{ fontSize: 'clamp(0.95rem, 2vw, 1.1rem)', color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: '680px', margin: '0 auto 1.75rem' }}>
-            Instant digital access verified for campus placements, technical interviews, and final year semester submissions.
+          <p className="mu" style={{ fontSize: '18px', lineHeight: 1.6, maxWidth: '640px' }}>
+            Comprehensive handwritten study notes, campus company question packs, and production-ready MERN project source code.
           </p>
 
-          {/* Trust Metrics Pill Strip */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', flexWrap: 'wrap', padding: '10px 20px', borderRadius: 'var(--radius-lg)', background: 'var(--bg-glass-card)', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-sm)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.825rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              <Zap size={15} color="var(--color-cyan)" />
-              <span>Instant PDF & ZIP Delivery</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.825rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              <Star size={15} color="#F59E0B" fill="#F59E0B" />
-              <span>4.9/5 Rating (5,000+ Students)</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.825rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
-              <ShieldCheck size={15} color="var(--color-emerald)" />
-              <span>Razorpay 256-Bit SSL Checkout</span>
-            </div>
-          </div>
         </div>
-      </div>
+      </section>
 
-      <div className="container" style={{ paddingTop: '2.5rem' }}>
-        {/* Category Pills & Live Search Toolbar */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
-          {/* Search Box on Top */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-            <div style={{ position: 'relative', width: '380px', maxWidth: '100%' }}>
-              <Search size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '14px', top: '14px' }} />
-              <input
-                type="text"
-                placeholder="Search Python, MySQL, Aptitude, Projects..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="input"
-                style={{ paddingLeft: '40px', paddingRight: search ? '36px' : '14px', height: '44px', fontSize: '0.9rem', borderRadius: 'var(--radius-md)' }}
-              />
-              {search && (
-                <button
-                  onClick={() => setSearch('')}
-                  style={{ position: 'absolute', right: '12px', top: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
-                >
-                  <X size={16} />
-                </button>
-              )}
-            </div>
-
-            <div style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-              Showing <strong style={{ color: 'var(--color-primary)' }}>{filteredProducts.length}</strong> resources
-            </div>
-          </div>
-
-          {/* Interactive Category Filter Pills */}
-          <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '4px' }}>
-            <div style={{ display: 'inline-flex', gap: '8px', flexWrap: 'nowrap' }}>
-              {categories.map(cat => {
-                const IconComponent = cat.icon;
-                const isSelected = category === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    onClick={() => handleCategorySelect(cat.id)}
-                    className={`tab-btn ${isSelected ? 'active' : ''}`}
-                    style={{
-                      padding: '8px 16px',
-                      fontSize: '0.85rem',
-                      borderRadius: 'var(--radius-full)',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      border: isSelected ? '1px solid transparent' : '1px solid var(--border-subtle)',
-                      background: isSelected ? 'var(--gradient-brand)' : 'var(--bg-card)',
-                      color: isSelected ? '#FFFFFF' : 'var(--text-secondary)',
-                      boxShadow: isSelected ? '0 4px 14px rgba(99, 102, 241, 0.35)' : 'var(--shadow-xs)',
-                      cursor: 'pointer',
-                      fontWeight: 700
-                    }}
-                  >
-                    <IconComponent size={15} />
-                    <span>{cat.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Products Grid */}
-        {loading ? (
-          <div>
-            <div style={{ textAlign: 'center', marginBottom: '1.5rem', color: 'var(--text-secondary)' }}>
-              <p style={{ fontWeight: 600 }}>Loading notes...</p>
-            </div>
-            <div className="grid-3">
-              <SkeletonLoader rows={3} height="320px" />
-            </div>
-          </div>
-        ) : error ? (
-          <div className="card" style={{ textAlign: 'center', padding: '3rem 1.5rem', maxWidth: '500px', margin: '2rem auto' }}>
-            <AlertCircle size={40} color="var(--color-rose)" style={{ margin: '0 auto 1rem' }} />
-            <h3 style={{ marginBottom: '0.5rem' }}>Unable to load notes</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>{error}</p>
-            <button onClick={fetchProducts} className="btn btn-primary" style={{ margin: '0 auto', gap: '8px' }}>
-              <RefreshCw size={16} /> Retry
+      {/* ================= 2. SEARCH & CONTROLS ================= */}
+      <section className="wrap" style={{ paddingBottom: '24px' }}>
+        
+        {/* Search & Sort Controls Bar */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '20px' }}>
+          
+          {/* Pop Search Input */}
+          <div className="pop" style={{ display: 'flex', background: '#FFFFFF', borderRadius: '18px', padding: '6px', flex: '1 1 340px', maxWidth: '520px', gap: '6px', alignItems: 'center' }}>
+            <Search size={18} color="var(--muted)" style={{ marginLeft: '10px' }} />
+            <input
+              type="text"
+              placeholder="Search Python, MySQL, Aptitude, Projects, Resume..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{ flex: 1, minWidth: 0, border: 0, outline: 0, fontSize: '15px', padding: '0 8px', fontFamily: 'inherit', background: 'transparent', color: '#1B1740' }}
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', color: 'var(--muted)' }}
+                title="Clear search"
+              >
+                <X size={16} />
+              </button>
+            )}
+            <button className="btn v" style={{ minHeight: '38px', padding: '0 18px', borderRadius: '12px', boxShadow: 'none' }}>
+              Filter
             </button>
           </div>
-        ) : allProducts.length === 0 ? (
-          <EmptyState
-            title="No notes are available at the moment."
-            description="The store currently has no published notes or projects. Please check back soon."
-          />
-        ) : filteredProducts.length === 0 ? (
-          <EmptyState
-            title="No notes match your filter criteria."
-            description="Try selecting another category or clearing your search keywords."
-            actionText="Clear Filters"
-            onAction={() => { handleCategorySelect('All'); setSearch(''); }}
-          />
-        ) : (
-          <div className="grid-3" style={{ gap: '1.75rem' }}>
-            {filteredProducts.map(prod => (
-              <div 
-                key={prod.id} 
-                className="card card-hover" 
-                style={{ 
-                  display: 'flex', 
-                  flexDirection: 'column',
-                  padding: '1.25rem',
-                  borderRadius: 'var(--radius-lg)',
-                  background: 'var(--bg-card)',
-                  border: '1px solid var(--border-subtle)',
-                  boxShadow: 'var(--shadow-sm)',
-                  transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
+
+          {/* Sort & Price Filter Dropdowns */}
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+            
+            {/* Price Filter */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <select
+                value={priceFilter}
+                onChange={e => setPriceFilter(e.target.value)}
+                className="select"
+                style={{ minHeight: '44px', padding: '0 14px', borderRadius: '14px', fontSize: '14px', fontWeight: 700 }}
+              >
+                <option value="all">All Prices</option>
+                <option value="free">Free Only (₹0)</option>
+                <option value="under20">Under ₹20</option>
+                <option value="under50">Under ₹50</option>
+              </select>
+            </div>
+
+            {/* Sorting */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <select
+                value={sortBy}
+                onChange={e => setSortBy(e.target.value)}
+                className="select"
+                style={{ minHeight: '44px', padding: '0 14px', borderRadius: '14px', fontSize: '14px', fontWeight: 700 }}
+              >
+                <option value="popular">Most Popular</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+                <option value="newest">Newest First</option>
+              </select>
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* Category Pills Strip */}
+        <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '12px', marginBottom: '24px', scrollbarWidth: 'none' }}>
+          {categories.map(cat => {
+            const isSelected = category === cat.id;
+            const count = categoryCounts[cat.id] ?? 0;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => handleCategorySelect(cat.id)}
+                className={`btn ${isSelected ? 'v' : ''}`}
+                style={{
+                  minHeight: '40px',
+                  padding: '0 16px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  background: isSelected ? 'var(--purple)' : '#FFFFFF',
+                  color: isSelected ? '#FFFFFF' : 'var(--ink)'
                 }}
               >
-                {/* Thumbnail Image Box */}
-                <div style={{
-                  height: '180px',
-                  borderRadius: 'var(--radius-md)',
+                <span>{cat.label}</span>
+                <span 
+                  style={{ 
+                    fontSize: '11px', 
+                    padding: '2px 8px', 
+                    borderRadius: '99px', 
+                    border: '1.5px solid var(--ink)', 
+                    background: isSelected ? '#FFC933' : 'var(--lavender-accent)',
+                    color: '#1B1740'
+                  }}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Active Filters Summary */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <span style={{ fontSize: '15px', color: 'var(--ink)', fontWeight: 700 }}>
+            Showing {filteredProducts.length} verified {filteredProducts.length === 1 ? 'material' : 'materials'}
+          </span>
+
+          {(category !== 'All' || search || priceFilter !== 'all') && (
+            <button
+              onClick={() => {
+                setCategory('All');
+                setSearch('');
+                setPriceFilter('all');
+                searchParams.delete('category');
+                searchParams.delete('search');
+                setSearchParams(searchParams);
+              }}
+              className="btn y btn-sm"
+              style={{ gap: '4px' }}
+            >
+              <X size={14} /> Clear All Filters
+            </button>
+          )}
+        </div>
+
+      </section>
+
+      {/* ================= 3. PRODUCT CARDS GRID (POPPING NEOBRUTALISM) ================= */}
+      <section className="wrap">
+        
+        {loading ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="pop skeleton-pop" style={{ height: '360px', borderRadius: '26px' }}></div>
+            ))}
+          </div>
+        ) : error ? (
+          <div className="pop" style={{ background: '#FFFFFF', borderRadius: '26px', padding: '3.5rem', textAlign: 'center' }}>
+            <p style={{ color: 'var(--coral)', fontWeight: 800, fontSize: '17px', marginBottom: '1rem' }}>{error}</p>
+            <button onClick={fetchProducts} className="btn v btn-sm">
+              <RefreshCw size={14} /> Refresh Catalog
+            </button>
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="pop" style={{ background: '#FFFFFF', borderRadius: '26px', padding: '4rem 2rem', textAlign: 'center', maxWidth: '580px', margin: '2rem auto' }}>
+            <ShoppingBag size={48} color="var(--ink)" style={{ margin: '0 auto 1.25rem' }} />
+            <h3 className="d" style={{ fontSize: '26px', fontWeight: 800, marginBottom: '0.5rem' }}>
+              No notes match your selection
+            </h3>
+            <p className="mu" style={{ fontSize: '15px', marginBottom: '1.5rem' }}>
+              {search ? `No materials found matching "${search}".` : 'No materials available in this category yet.'}
+            </p>
+            <button
+              onClick={() => {
+                setCategory('All');
+                setSearch('');
+                setPriceFilter('all');
+                searchParams.delete('category');
+                searchParams.delete('search');
+                setSearchParams(searchParams);
+              }}
+              className="btn y"
+            >
+              View All Resources
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '26px' }}>
+            {filteredProducts.map(prod => (
+              <div
+                key={prod.id}
+                className="pop card-hover"
+                style={{
+                  background: '#FFFFFF',
+                  borderRadius: '26px',
                   overflow: 'hidden',
-                  position: 'relative',
-                  marginBottom: '1.25rem',
-                  background: 'var(--bg-tertiary)'
-                }}>
+                  display: 'flex',
+                  flexDirection: 'column',
+                  padding: 0
+                }}
+              >
+                {/* Image Cover Container */}
+                <div style={{ position: 'relative', width: '100%', height: '190px', background: 'var(--lavender-accent)', borderBottom: '2px solid var(--ink)', overflow: 'hidden' }}>
                   <img
                     src={getAssetUrl(prod.thumbnail)}
                     alt={prod.title}
                     onError={handleImageError}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s ease' }}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
-                  
-                  {/* Floating Badges */}
-                  <div style={{
-                    position: 'absolute',
-                    top: '10px',
-                    left: '10px',
-                    display: 'flex',
-                    gap: '6px'
-                  }}>
-                    <span 
-                      style={{ 
-                        fontSize: '0.65rem', 
-                        fontWeight: 700, 
-                        background: 'rgba(15, 23, 42, 0.75)', 
-                        backdropFilter: 'blur(8px)',
-                        color: '#FFFFFF',
-                        padding: '3px 8px',
-                        borderRadius: '6px'
-                      }}
-                    >
+
+                  {/* Badges on Top */}
+                  <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    <span className="tag" style={{ background: '#E3DDFF' }}>
                       {prod.category}
                     </span>
-                    {prod.isPurchased && (
-                      <span className="badge badge-emerald" style={{ fontSize: '0.65rem' }}>
-                        ✓ UNLOCKED
+                    {prod.discountPercent > 0 && prod.price > 0 && (
+                      <span className="tag" style={{ background: '#FF8A6B' }}>
+                        {prod.discountPercent}% OFF
                       </span>
                     )}
                   </div>
 
-                  {prod.discountPercent > 0 && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '10px',
-                      right: '10px',
-                      background: 'var(--color-rose)',
-                      color: '#FFFFFF',
-                      fontSize: '0.68rem',
-                      fontWeight: 800,
-                      padding: '2px 7px',
-                      borderRadius: '6px',
-                      boxShadow: '0 2px 6px rgba(244, 63, 94, 0.4)'
-                    }}>
-                      {prod.discountPercent}% OFF
-                    </div>
+                  {prod.fileFormat && (
+                    <span 
+                      className="tag" 
+                      style={{ 
+                        position: 'absolute', 
+                        bottom: '10px', 
+                        right: '12px', 
+                        background: '#FFFFFF' 
+                      }}
+                    >
+                      {prod.fileFormat}
+                    </span>
                   )}
                 </div>
 
-                {/* Card Content Body */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  {/* Rating & Reviews */}
+                {/* Card Body */}
+                <div style={{ padding: '22px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                  
+                  {/* Reviews & Star Rating */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                      <Star size={14} color="#F59E0B" fill="#F59E0B" />
-                      <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)' }}>{prod.rating || 4.9}</span>
+                    <div style={{ display: 'flex', gap: '2px' }}>
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star key={i} size={14} color="#FFC933" fill="#FFC933" />
+                      ))}
                     </div>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({prod.reviewsCount || 140} reviews)</span>
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--ink)' }}>
+                      {prod.rating || 4.9}
+                    </span>
+                    <span style={{ fontSize: '12px', color: 'var(--muted)' }}>
+                      ({prod.reviewsCount || 120} reviews)
+                    </span>
                   </div>
 
-                  {/* Title */}
-                  <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.5rem', lineHeight: '1.4' }}>
+                  {/* Product Title */}
+                  <h3 
+                    className="d" 
+                    style={{ 
+                      fontSize: '20px', 
+                      fontWeight: 800, 
+                      lineHeight: 1.25, 
+                      marginBottom: '8px',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
+                    }}
+                  >
                     {prod.title}
                   </h3>
 
                   {/* Short Description */}
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '1.25rem', flex: 1, lineHeight: '1.5' }}>
+                  <p 
+                    className="mu" 
+                    style={{ 
+                      fontSize: '14px', 
+                      lineHeight: 1.5, 
+                      marginBottom: '14px',
+                      flex: 1,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
+                    }}
+                  >
                     {prod.cardDescription || prod.shortDescription || prod.description}
                   </p>
 
-                  {/* Price & Action Row */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', marginTop: 'auto' }}>
+                  {/* Highlights Bullets */}
+                  {prod.whatIncluded && Array.isArray(prod.whatIncluded) && prod.whatIncluded.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '16px' }}>
+                      {prod.whatIncluded.slice(0, 2).map((item: string, idx: number) => (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--ink)', fontWeight: 600 }}>
+                          <CheckCircle2 size={14} color="#19C8A0" style={{ flexShrink: 0 }} />
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Price & CTA Action Bar */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '14px', borderTop: '2px solid var(--lavender-accent)', marginTop: 'auto' }}>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                        <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--color-cyan)', fontFamily: 'var(--font-mono)' }}>
-                          ₹{prod.price}
+                        <span className="d" style={{ fontSize: '26px', fontWeight: 800, color: 'var(--ink)' }}>
+                          {prod.price === 0 ? 'FREE' : `₹${prod.price}`}
                         </span>
                         {prod.originalPrice > prod.price && (
-                          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', textDecoration: 'line-through' }}>
+                          <span style={{ fontSize: '13px', color: 'var(--muted)', textDecoration: 'line-through' }}>
                             ₹{prod.originalPrice}
                           </span>
                         )}
                       </div>
-                      <span style={{ fontSize: '0.7rem', color: 'var(--color-emerald)', fontWeight: 700 }}>
-                        Instant Digital Download
+                      <span style={{ fontSize: '11px', color: '#19C8A0', fontWeight: 800, textTransform: 'uppercase' }}>
+                        {prod.price === 0 ? 'Free Placement PDF' : 'Instant Download'}
                       </span>
                     </div>
 
-                    <Link 
-                      to={`/store/${prod.slug}`} 
-                      className="btn btn-primary btn-sm"
-                      style={{ gap: '6px', padding: '8px 14px', borderRadius: 'var(--radius-md)' }}
+                    <Link
+                      to={`/store/${prod.slug}`}
+                      className="btn v btn-sm"
+                      style={{ gap: '6px' }}
                     >
-                      {prod.isPurchased ? (
+                      {prod.price === 0 || prod.isPurchased ? (
                         <>
                           <Download size={14} /> Download
                         </>
                       ) : (
                         <>
-                          Buy Now <ArrowRight size={14} />
+                          <span>Get access</span>
+                          <ArrowRight size={14} />
                         </>
                       )}
                     </Link>
                   </div>
+
                 </div>
               </div>
             ))}
           </div>
         )}
-      </div>
+
+      </section>
+
     </div>
   );
 };

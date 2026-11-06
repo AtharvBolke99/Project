@@ -3,16 +3,11 @@ import { Link } from 'react-router-dom';
 import { 
   ShoppingBag, 
   Download, 
-  ShieldCheck, 
-  FileText, 
   ExternalLink, 
   Calendar, 
-  Key,
-  FolderGit2
+  Key
 } from 'lucide-react';
 import { api, getApiUrl } from '../services/api';
-import { SkeletonLoader } from '../components/SkeletonLoader';
-import { EmptyState } from '../components/EmptyState';
 import { getAssetUrl, handleImageError } from '../utils/imageUrl';
 
 export const MyPurchases: React.FC = () => {
@@ -53,96 +48,126 @@ export const MyPurchases: React.FC = () => {
   };
 
   return (
-    <div className="page-wrapper animate-fade-in">
-      <div className="container" style={{ paddingTop: '2rem', maxWidth: '960px' }}>
+    <div className="my-purchases-page animate-fade-in" style={{ paddingBottom: '96px' }}>
+      <div className="wrap" style={{ paddingTop: '36px' }}>
+        
         {/* Header */}
-        <div style={{ marginBottom: '2.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-            <ShoppingBag size={22} color="var(--color-cyan)" />
-            <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>
-              My Purchases & Digital Library
-            </h1>
-          </div>
-          <p style={{ color: 'var(--text-secondary)' }}>
-            All your verified notes, cheat sheets, and source code projects with perpetual re-download access.
+        <div style={{ marginBottom: '32px' }}>
+          <span className="tag" style={{ background: '#C9F7E8', marginBottom: '10px' }}>
+            Perpetual Student Access
+          </span>
+          <h1 className="d" style={{ fontSize: 'clamp(32px, 5vw, 54px)', fontWeight: 800, lineHeight: 1.1, marginBottom: '8px' }}>
+            My Download <span className="chip" style={{ background: '#FFC933' }}>Vault</span>
+          </h1>
+          <p className="mu" style={{ fontSize: '16px', maxWidth: '620px' }}>
+            All your unlocked notes, interview formula cheat sheets, and source code projects with lifetime re-download access.
           </p>
         </div>
 
         {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <SkeletonLoader rows={3} height="100px" />
+          <div style={{ display: 'grid', gap: '16px' }}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="pop skeleton-pop" style={{ height: '100px', borderRadius: '24px' }}></div>
+            ))}
           </div>
         ) : purchases.length === 0 ? (
-          <EmptyState
-            icon={<ShoppingBag size={28} />}
-            title="No Purchases Found"
-            description="You have not unlocked any digital notes or project bundles yet."
-            actionText="Explore Notes Store"
-            onAction={() => window.location.href = '/store'}
-          />
+          <div 
+            className="pop" 
+            style={{ 
+              background: '#FFFFFF', 
+              borderRadius: '26px', 
+              padding: '4rem 2rem', 
+              textAlign: 'center', 
+              maxWidth: '560px', 
+              margin: '2rem auto' 
+            }}
+          >
+            <ShoppingBag size={48} color="var(--ink)" style={{ margin: '0 auto 1.25rem' }} />
+            <h3 className="d" style={{ fontSize: '24px', fontWeight: 800, marginBottom: '0.5rem' }}>
+              No purchases unlocked yet
+            </h3>
+            <p className="mu" style={{ fontSize: '15px', marginBottom: '1.5rem' }}>
+              Your digital library is currently empty. Explore our verified placement notes and source code packs to get started.
+            </p>
+            <Link to="/store" className="btn v">
+              Explore Resources Store
+            </Link>
+          </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'grid', gap: '18px' }}>
             {purchases.map(item => (
-              <div key={item.purchaseId} className="card glass-card card-hover" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.25rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                    <div style={{
-                      width: '64px',
-                      height: '64px',
-                      borderRadius: '12px',
-                      overflow: 'hidden',
-                      background: 'var(--bg-tertiary)',
-                      flexShrink: 0
-                    }}>
-                      <img
-                        src={getAssetUrl(item.thumbnail)}
-                        alt={item.productTitle}
-                        onError={handleImageError}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                    </div>
+              <div 
+                key={item.purchaseId} 
+                className="pop card-hover" 
+                style={{ 
+                  background: '#FFFFFF', 
+                  borderRadius: '24px', 
+                  padding: '24px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '20px'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '18px', flex: '1 1 300px' }}>
+                  <div style={{
+                    width: '72px',
+                    height: '72px',
+                    borderRadius: '16px',
+                    overflow: 'hidden',
+                    border: '2px solid var(--ink)',
+                    background: 'var(--lavender-accent)',
+                    flexShrink: 0
+                  }}>
+                    <img
+                      src={getAssetUrl(item.thumbnail)}
+                      alt={item.productTitle}
+                      onError={handleImageError}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  </div>
 
-                    <div>
-                      <div style={{ display: 'flex', gap: '6px', marginBottom: '4px' }}>
-                        <span className="badge badge-purple" style={{ fontSize: '0.65rem' }}>{item.category}</span>
-                        <span className="badge badge-cyan" style={{ fontSize: '0.65rem' }}>{item.fileFormat}</span>
-                      </div>
-                      <h3 style={{ fontSize: '1.15rem', color: 'var(--text-primary)', marginBottom: '4px' }}>
-                        {item.productTitle}
-                      </h3>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                        <span>Order: {item.orderNumber}</span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <Key size={12} /> {item.licenseKey}
+                  <div>
+                    <h3 className="d" style={{ fontSize: '20px', fontWeight: 800, marginBottom: '6px' }}>
+                      {item.productTitle}
+                    </h3>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', fontSize: '12px', color: 'var(--muted)', fontWeight: 600 }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <Calendar size={13} />
+                        {new Date(item.accessGrantedAt).toLocaleDateString()}
+                      </span>
+                      {item.licenseKey && (
+                        <span className="tag" style={{ background: '#FFE9A8', fontSize: '11px', padding: '2px 8px' }}>
+                          <Key size={11} /> {item.licenseKey}
                         </span>
-                      </div>
+                      )}
                     </div>
                   </div>
+                </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                    <button
-                      onClick={() => handleView(item.productId)}
-                      className="btn btn-primary btn-sm"
-                    >
-                      <ExternalLink size={15} /> View Resource
-                    </button>
-                    <button
-                      onClick={() => handleDownload(item.productId)}
-                      className="btn btn-secondary btn-sm"
-                    >
-                      <Download size={15} /> Download
-                    </button>
-                    {item.productSlug && (
-                      <Link to={`/store/${item.productSlug}`} className="btn btn-outline btn-sm">
-                        Product Details
-                      </Link>
-                    )}
-                  </div>
+                {/* Actions */}
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => handleView(item.productId)}
+                    className="btn y btn-sm"
+                    style={{ gap: '6px' }}
+                  >
+                    <ExternalLink size={15} /> Open Online
+                  </button>
+                  <button
+                    onClick={() => handleDownload(item.productId)}
+                    className="btn v btn-sm"
+                    style={{ gap: '6px' }}
+                  >
+                    <Download size={15} /> Download PDF
+                  </button>
                 </div>
               </div>
             ))}
           </div>
         )}
+
       </div>
     </div>
   );

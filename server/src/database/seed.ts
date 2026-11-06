@@ -107,14 +107,10 @@ export async function seedDatabaseIfEmpty() {
     }
   }
 
-  // 4. Normalize Catalog Products (Ensures all existing products have valid review counts without injecting unwanted sample products)
-  for (const prod of db.find('products')) {
-    if (!prod.reviewsCount || prod.reviewsCount < 50 || prod.reviewsCount > 200) {
-      db.update('products', p => p.id === prod.id, () => ({
-        reviewsCount: Math.floor(Math.random() * (200 - 50 + 1)) + 50
-      }));
-    }
-  }
+  // 4. Products: NEVER automatically delete, purge, or overwrite products in the database.
+  // The database is the single source of truth for products created and managed by the Admin.
+  // We only ensure the database retains existing materials without destructive resets.
+
 
   // 5. Seed Learning Paths if empty
   const existingPaths = db.find('learningPaths');

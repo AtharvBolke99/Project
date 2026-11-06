@@ -57,12 +57,21 @@ export const getAdminOverview = async (req: AuthRequest, res: Response) => {
       });
     }
 
+    const activeProducts = products.filter(p => !p.isDeleted);
+    const publishedProducts = activeProducts.filter(p => p.isPublished !== false);
+    const draftProducts = activeProducts.filter(p => p.isPublished === false);
+    const categoriesCount = new Set(activeProducts.map(p => p.category)).size;
+
     return res.json({
       success: true,
       data: {
         stats: {
           totalUsers: users.length,
           activeUsers: users.filter(u => u.status === 'ACTIVE').length,
+          totalProducts: activeProducts.length,
+          publishedProducts: publishedProducts.length,
+          draftProducts: draftProducts.length,
+          categoriesCount,
           totalProblems: problems.length,
           totalSubmissions: submissions.length,
           acceptedSubmissions: submissions.filter(s => s.status === 'Accepted').length,
@@ -255,6 +264,19 @@ export const deleteAptitudeQuestion = async (req: AuthRequest, res: Response) =>
 };
 
 // ================= PRODUCT & NOTES CMS =================
+export const getAdminProducts = async (req: AuthRequest, res: Response) => {
+  try {
+    const products = db.find('products');
+    return res.json({
+      success: true,
+      data: products,
+      total: products.length
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export const createProduct = async (req: AuthRequest, res: Response) => {
   try {
     const data = req.body;
@@ -384,12 +406,30 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
 export const deleteProduct = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const deleted = db.delete('products', p => p.id === id);
-    if (!deleted) {
+    const { permanent } = req.query;
+
+    if (permanent === 'true') {
+      const deleted = db.delete('products', p => p.id === id);
+      if (!deleted) {
+        return res.status(404).json({ success: false, message: 'Product not found.' });
+      }
+      console.log(`[NOTES] Admin permanently deleted product ID: ${id}`);
+      return res.json({ success: true, message: 'Product permanently deleted from database.' });
+    }
+
+    // Soft deletion by default to prevent accidental data loss
+    const updated = db.update(
+      'products',
+      p => p.id === id,
+      p => ({ ...p, isDeleted: true, updatedAt: new Date().toISOString() })
+    );
+
+    if (!updated) {
       return res.status(404).json({ success: false, message: 'Product not found.' });
     }
-    console.log(`[NOTES] Admin deleted product ID: ${id}`);
-    return res.json({ success: true, message: 'Product deleted.' });
+
+    console.log(`[NOTES] Admin soft-deleted product ID: ${id} ("${updated.title}")`);
+    return res.json({ success: true, message: 'Product archived and removed from store.' });
   } catch (error: any) {
     console.error('[NOTES] Error deleting product:', error);
     return res.status(500).json({ success: false, message: error.message });

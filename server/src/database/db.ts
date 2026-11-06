@@ -149,7 +149,7 @@ export interface Product {
   id: string;
   title: string;
   slug: string;
-  category: 'DSA Notes' | 'Aptitude Notes' | 'Cheat Sheets' | 'Interview Prep' | 'Placement Bundles' | 'Projects' | 'Test Mode';
+  category: 'DSA Notes' | 'Aptitude Notes' | 'Cheat Sheets' | 'Interview Prep' | 'Placement Bundles' | 'Projects' | 'Test Mode' | string;
   subcategory?: string;
   shortDescription?: string;
   cardDescription?: string;
@@ -181,6 +181,8 @@ export interface Product {
   seoDescription?: string;
   isFeatured: boolean;
   isPublished: boolean;
+  isDeleted?: boolean;
+  status?: 'PUBLISHED' | 'DRAFT' | 'ARCHIVED';
   createdAt: string;
   updatedAt: string;
 }
@@ -349,6 +351,22 @@ class Database {
       const tempPath = `${DB_FILE}.tmp`;
       fs.writeFileSync(tempPath, JSON.stringify(this.data, null, 2), 'utf-8');
       fs.renameSync(tempPath, DB_FILE);
+
+      // Automated local snapshot backup to protect against data loss
+      try {
+        const backupsDir = path.join(DB_DIR, 'backups');
+        if (!fs.existsSync(backupsDir)) {
+          fs.mkdirSync(backupsDir, { recursive: true });
+        }
+        const now = new Date();
+        const dateStr = now.toISOString().slice(0, 10);
+        fs.copyFileSync(DB_FILE, path.join(backupsDir, `conceptifyyy.db.backup.${dateStr}.json`));
+        fs.copyFileSync(DB_FILE, path.join(DB_DIR, 'conceptifyyy.db.backup.json'));
+      } catch (backupErr) {
+        // Non-blocking backup warning
+        console.warn('Backup creation warning:', backupErr);
+      }
+
       // Trigger cloud persistence if configured
       triggerCloudPersistence().catch(() => {});
     } catch (err) {

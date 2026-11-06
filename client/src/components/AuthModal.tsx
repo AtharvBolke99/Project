@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Lock, Mail, User, ShieldCheck, Sparkles, KeyRound, ArrowLeft } from 'lucide-react';
+import { X, Lock, Mail, User, KeyRound, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../services/api';
@@ -44,7 +44,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
           return;
         }
         await register(name, email, password);
-        showToast('Account created! 50 Welcome XP awarded.', 'success');
+        showToast('Account created! Welcome to Conceptifyyy.', 'success');
         onClose();
       } else if (mode === 'forgot') {
         const res = await api.post('/auth/forgot-password', { email });
@@ -77,31 +77,38 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content glass-card glowing-border" onClick={e => e.stopPropagation()}>
+      <div 
+        className="modal-content pop" 
+        style={{ 
+          background: '#FFFFFF', 
+          borderRadius: '26px', 
+          border: '2px solid var(--ink)', 
+          boxShadow: '8px 8px 0 var(--ink)', 
+          padding: '2rem' 
+        }}
+        onClick={e => e.stopPropagation()}
+      >
         {/* Modal Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
           <div>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }}>
-              {mode === 'login' && 'Welcome Back'}
-              {mode === 'register' && 'Create Account'}
+            <span className="tag" style={{ background: '#E3DDFF', marginBottom: '8px' }}>
+              Student Portal
+            </span>
+            <h3 className="d" style={{ fontSize: '26px', fontWeight: 800 }}>
+              {mode === 'login' && 'Welcome back'}
+              {mode === 'register' && 'Create your account'}
               {mode === 'forgot' && 'Reset Password'}
               {mode === 'reset' && 'Set New Password'}
             </h3>
-            <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-              {mode === 'login' && 'Continue your visual learning journey'}
-              {mode === 'register' && 'Join thousands of engineers mastering DSA'}
-              {mode === 'forgot' && 'Enter your registered email to receive reset instructions'}
-              {mode === 'reset' && 'Create a strong, secure new password'}
-            </p>
           </div>
-          <button onClick={onClose} className="btn-icon">
+          <button onClick={onClose} className="btn-icon" style={{ minWidth: '38px', minHeight: '38px', padding: '6px' }}>
             <X size={18} />
           </button>
         </div>
 
-        {/* Tab Switcher (Visible on login / register) */}
+        {/* Tab Switcher */}
         {(mode === 'login' || mode === 'register') && (
-          <div style={{ display: 'flex', background: 'var(--bg-secondary)', borderRadius: 'var(--radius-md)', padding: '4px', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', gap: '8px', background: 'var(--lavender-accent)', border: '2px solid var(--ink)', borderRadius: '999px', padding: '4px', marginBottom: '1.5rem' }}>
             <button
               type="button"
               onClick={() => { setMode('login'); setError(''); setSuccessMsg(''); }}
@@ -109,13 +116,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
                 flex: 1,
                 padding: '8px',
                 border: 'none',
-                background: mode === 'login' ? 'var(--bg-card)' : 'transparent',
-                color: mode === 'login' ? 'var(--color-cyan)' : 'var(--text-secondary)',
-                fontWeight: 700,
-                fontSize: '0.875rem',
-                borderRadius: '6px',
+                background: mode === 'login' ? 'var(--purple)' : 'transparent',
+                color: mode === 'login' ? '#FFFFFF' : 'var(--ink)',
+                fontWeight: 800,
+                fontSize: '14px',
+                borderRadius: '999px',
                 cursor: 'pointer',
-                boxShadow: mode === 'login' ? 'var(--shadow-sm)' : 'none'
+                transition: 'all 0.15s ease'
               }}
             >
               Log In
@@ -127,13 +134,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
                 flex: 1,
                 padding: '8px',
                 border: 'none',
-                background: mode === 'register' ? 'var(--bg-card)' : 'transparent',
-                color: mode === 'register' ? 'var(--color-cyan)' : 'var(--text-secondary)',
-                fontWeight: 700,
-                fontSize: '0.875rem',
-                borderRadius: '6px',
+                background: mode === 'register' ? 'var(--purple)' : 'transparent',
+                color: mode === 'register' ? '#FFFFFF' : 'var(--ink)',
+                fontWeight: 800,
+                fontSize: '14px',
+                borderRadius: '999px',
                 cursor: 'pointer',
-                boxShadow: mode === 'register' ? 'var(--shadow-sm)' : 'none'
+                transition: 'all 0.15s ease'
               }}
             >
               Register
@@ -144,13 +151,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
         {/* Alerts */}
         {error && (
           <div style={{
-            background: 'rgba(244, 63, 94, 0.12)',
-            border: '1px solid var(--color-rose)',
-            color: 'var(--color-rose)',
+            background: 'var(--coral-light)',
+            border: '2px solid var(--ink)',
+            color: 'var(--ink)',
             padding: '10px 14px',
-            borderRadius: '8px',
-            fontSize: '0.85rem',
-            marginBottom: '1rem'
+            borderRadius: '14px',
+            fontSize: '13px',
+            fontWeight: 700,
+            marginBottom: '1rem',
+            boxShadow: '3px 3px 0 var(--ink)'
           }}>
             {error}
           </div>
@@ -158,13 +167,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
 
         {successMsg && (
           <div style={{
-            background: 'rgba(16, 185, 129, 0.12)',
-            border: '1px solid var(--color-emerald)',
-            color: 'var(--color-emerald)',
+            background: 'var(--soft-mint)',
+            border: '2px solid var(--ink)',
+            color: 'var(--ink)',
             padding: '10px 14px',
-            borderRadius: '8px',
-            fontSize: '0.85rem',
-            marginBottom: '1rem'
+            borderRadius: '14px',
+            fontSize: '13px',
+            fontWeight: 700,
+            marginBottom: '1rem',
+            boxShadow: '3px 3px 0 var(--ink)'
           }}>
             {successMsg}
           </div>
@@ -175,14 +186,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
             <div className="form-group">
               <label className="form-label">Full Name</label>
               <div style={{ position: 'relative' }}>
-                <User size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '12px' }} />
+                <User size={16} color="var(--muted)" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="text"
                   className="input"
                   placeholder="e.g. Alex Sharma"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  style={{ paddingLeft: '38px' }}
+                  style={{ paddingLeft: '40px' }}
                   required
                 />
               </div>
@@ -193,14 +204,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
             <div className="form-group">
               <label className="form-label">Email Address</label>
               <div style={{ position: 'relative' }}>
-                <Mail size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '12px' }} />
+                <Mail size={16} color="var(--muted)" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="email"
                   className="input"
                   placeholder="name@example.com"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  style={{ paddingLeft: '38px' }}
+                  style={{ paddingLeft: '40px' }}
                   required
                 />
               </div>
@@ -215,21 +226,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
                   <button
                     type="button"
                     onClick={() => { setMode('forgot'); setError(''); setSuccessMsg(''); }}
-                    style={{ background: 'none', border: 'none', color: 'var(--color-cyan)', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 }}
+                    style={{ background: 'none', border: 'none', color: 'var(--purple)', fontSize: '12px', cursor: 'pointer', fontWeight: 800 }}
                   >
                     Forgot Password?
                   </button>
                 )}
               </div>
               <div style={{ position: 'relative' }}>
-                <Lock size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '12px' }} />
+                <Lock size={16} color="var(--muted)" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="password"
                   className="input"
                   placeholder="••••••••"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  style={{ paddingLeft: '38px' }}
+                  style={{ paddingLeft: '40px' }}
                   required
                 />
               </div>
@@ -241,14 +252,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
               <div className="form-group">
                 <label className="form-label">Reset Token</label>
                 <div style={{ position: 'relative' }}>
-                  <KeyRound size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '12px' }} />
+                  <KeyRound size={16} color="var(--muted)" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
                   <input
                     type="text"
                     className="input"
                     placeholder="Enter reset token"
                     value={resetToken}
                     onChange={e => setResetToken(e.target.value)}
-                    style={{ paddingLeft: '38px' }}
+                    style={{ paddingLeft: '40px' }}
                     required
                   />
                 </div>
@@ -256,14 +267,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
               <div className="form-group">
                 <label className="form-label">New Password</label>
                 <div style={{ position: 'relative' }}>
-                  <Lock size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '12px' }} />
+                  <Lock size={16} color="var(--muted)" style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
                   <input
                     type="password"
                     className="input"
                     placeholder="Minimum 6 characters"
                     value={newPassword}
                     onChange={e => setNewPassword(e.target.value)}
-                    style={{ paddingLeft: '38px' }}
+                    style={{ paddingLeft: '40px' }}
                     required
                     minLength={6}
                   />
@@ -274,14 +285,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
 
           <button
             type="submit"
-            className="btn btn-primary"
-            style={{ width: '100%', marginTop: '0.5rem' }}
+            className="btn v btn-lg"
+            style={{ width: '100%', marginTop: '0.75rem' }}
             disabled={loading}
           >
             {loading ? 'Processing...' : (
               mode === 'login' ? 'Sign In' :
               mode === 'register' ? 'Create Account' :
-              mode === 'forgot' ? 'Send Reset Instructions' :
+              mode === 'forgot' ? 'Send Reset Token' :
               'Set New Password'
             )}
           </button>
@@ -290,8 +301,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, initialMode = 'log
             <button
               type="button"
               onClick={() => { setMode('login'); setError(''); setSuccessMsg(''); }}
-              className="btn btn-secondary btn-sm"
-              style={{ width: '100%', marginTop: '8px', gap: '6px' }}
+              className="btn btn-sm"
+              style={{ width: '100%', marginTop: '10px', gap: '6px' }}
             >
               <ArrowLeft size={14} /> Back to Sign In
             </button>

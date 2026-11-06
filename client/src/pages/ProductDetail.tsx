@@ -6,13 +6,8 @@ import {
   Download, 
   CheckCircle2, 
   Star, 
-  FileText, 
-  Lock, 
   ChevronLeft, 
-  Sparkles, 
-  Layers, 
-  HelpCircle,
-  Clock,
+  Zap,
   ExternalLink,
   AlertTriangle,
   Copy,
@@ -64,7 +59,6 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
     if (slug) fetchProduct();
   }, [slug]);
 
-  // Load Razorpay checkout script if not present
   const loadRazorpayScript = (): Promise<boolean> => {
     return new Promise((resolve) => {
       if (typeof window.Razorpay !== 'undefined') {
@@ -78,7 +72,6 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
     });
   };
 
-  // REAL RAZORPAY STANDARD WEB CHECKOUT HANDLER
   const handleBuyNow = async () => {
     if (!isAuthenticated) {
       showToast('Please log in to purchase resources.', 'info');
@@ -89,55 +82,49 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
     setCheckoutLoading(true);
 
     try {
-      // 1. Ensure official Razorpay Checkout SDK is loaded
       const isLoaded = await loadRazorpayScript();
       if (!isLoaded) {
         throw new Error('Failed to load Razorpay Checkout SDK. Please check your internet connection.');
       }
 
-      // 2. Create Internal & Razorpay Order on Backend (Price verified server-side in paise)
       const orderRes = await api.post('/payments/create-order', {
         productId: product.id
       });
 
       if (!orderRes.success || !orderRes.data) {
-        throw new Error(orderRes.message || 'Failed to initialize payment order on server.');
+        throw new Error(orderRes.message || 'Failed to initialize Razorpay checkout order.');
       }
 
-      const { orderId, razorpayOrderId, amountPaise, currency, keyId } = orderRes.data;
+      const { razorpayOrderId, amountPaise, currency, razorpayKeyId } = orderRes.data;
 
-      // 3. Initialize Official Razorpay Standard Web Checkout
       const options = {
-        key: keyId,
+        key: razorpayKeyId,
         amount: amountPaise,
         currency: currency || 'INR',
-        name: 'CONCEPTIFYYY',
-        description: product.title,
-        image: '/favicon.svg',
+        name: 'Conceptifyyy',
+        description: product.title.substring(0, 255),
+        image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=120&auto=format&fit=crop&q=80',
         order_id: razorpayOrderId,
-        handler: async function (response: {
-          razorpay_payment_id: string;
-          razorpay_order_id: string;
-          razorpay_signature: string;
-        }) {
+        handler: async function (response: any) {
           try {
-            // Send payment response to backend for server-side HMAC-SHA256 signature verification
+            showToast('Verifying payment...', 'info');
             const verifyRes = await api.post('/payments/verify', {
-              orderId,
               razorpayOrderId: response.razorpay_order_id,
               razorpayPaymentId: response.razorpay_payment_id,
-              razorpaySignature: response.razorpay_signature
+              razorpaySignature: response.razorpay_signature,
+              productId: product.id
             });
 
             if (verifyRes.success) {
-              await refreshUser();
-              showToast('🎉 Payment Successful! Product unlocked in your library.', 'success');
-              navigate(`/payment/success?orderId=${orderId}`);
+              showToast('Payment successful! Notes unlocked in your vault.', 'success');
+              if (refreshUser) refreshUser();
+              fetchProduct();
+              navigate('/my-purchases');
             } else {
-              navigate(`/payment/failed?reason=${encodeURIComponent(verifyRes.message || 'Signature verification failed')}`);
+              showToast(verifyRes.message || 'Payment verification failed.', 'error');
             }
-          } catch (vErr: any) {
-            navigate(`/payment/failed?reason=${encodeURIComponent(vErr.message || 'Payment verification failed')}`);
+          } catch (err: any) {
+            showToast(err.message || 'Failed to verify payment.', 'error');
           }
         },
         prefill: {
@@ -150,7 +137,7 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
           productTitle: product.title
         },
         theme: {
-          color: '#6366F1'
+          color: '#5B3DF5'
         },
         modal: {
           ondismiss: function () {
@@ -206,17 +193,17 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
 
   if (loading) {
     return (
-      <div className="container" style={{ padding: '3rem 1.5rem' }}>
-        <SkeletonLoader rows={6} height="60px" />
+      <div className="wrap" style={{ padding: '4rem 1.5rem' }}>
+        <div className="pop skeleton-pop" style={{ height: '400px', borderRadius: '26px' }}></div>
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="container" style={{ textAlign: 'center', padding: '4rem 1.5rem' }}>
-        <h2>Resource not found.</h2>
-        <Link to="/store" className="btn btn-primary" style={{ marginTop: '1rem' }}>
+      <div className="wrap" style={{ textAlign: 'center', padding: '5rem 1.5rem' }}>
+        <h2 className="d" style={{ fontSize: '32px', marginBottom: '1rem' }}>Resource not found.</h2>
+        <Link to="/store" className="btn v">
           Back to Store
         </Link>
       </div>
@@ -226,19 +213,30 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
   const canAccess = product.price === 0 || product.isPurchased;
 
   return (
-    <div className="page-wrapper animate-fade-in">
-      <div className="container" style={{ paddingTop: '2rem', maxWidth: '1080px' }}>
-        {/* Back Link */}
-        <Link to="/store" className="btn btn-secondary btn-sm" style={{ marginBottom: '1.5rem' }}>
+    <div className="product-detail-page animate-fade-in" style={{ paddingBottom: '96px' }}>
+      <div className="wrap" style={{ paddingTop: '32px' }}>
+        
+        {/* Back Button */}
+        <Link to="/store" className="btn btn-sm" style={{ marginBottom: '24px', gap: '6px' }}>
           <ChevronLeft size={16} /> Back to Store
         </Link>
 
-        {/* Product Details Layout */}
-        <div className="product-detail-grid" style={{ marginBottom: '3rem' }}>
-          {/* Left Column: Image Card */}
-          <div>
-            <div className="card glass-card glowing-border product-detail-sticky-card" style={{ padding: '1rem' }}>
-              <div className="product-detail-img-box">
+        {/* Two-Column Detail Layout */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px', alignItems: 'flex-start' }}>
+          
+          {/* Left Column: Media & Checkout Box */}
+          <div style={{ position: 'sticky', top: '100px' }}>
+            <div 
+              className="pop" 
+              style={{ 
+                background: '#FFFFFF', 
+                borderRadius: '26px', 
+                overflow: 'hidden', 
+                padding: '20px' 
+              }}
+            >
+              {/* Product Thumbnail */}
+              <div style={{ width: '100%', height: '260px', borderRadius: '18px', border: '2px solid var(--ink)', overflow: 'hidden', marginBottom: '20px', background: 'var(--lavender-accent)' }}>
                 <img
                   src={getAssetUrl(product.thumbnail)}
                   alt={product.title}
@@ -247,123 +245,146 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
                 />
               </div>
 
-              {/* Price & Checkout Action */}
-              <div style={{ padding: '0.5rem' }}>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '0.5rem' }}>
-                  <span style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--color-cyan)', fontFamily: 'var(--font-mono)' }}>
-                    {product.price === 0 ? 'Free' : `₹${product.price}`}
+              {/* Price & Action Strip */}
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '12px' }}>
+                <span className="d" style={{ fontSize: '38px', fontWeight: 800, color: 'var(--ink)' }}>
+                  {product.price === 0 ? 'FREE' : `₹${product.price}`}
+                </span>
+                {product.originalPrice && product.originalPrice > product.price && (
+                  <span style={{ fontSize: '18px', color: 'var(--muted)', textDecoration: 'line-through' }}>
+                    ₹{product.originalPrice}
                   </span>
-                  {product.originalPrice && product.originalPrice > product.price && (
-                    <span style={{ fontSize: '1.1rem', color: 'var(--text-muted)', textDecoration: 'line-through' }}>
-                      ₹{product.originalPrice}
-                    </span>
-                  )}
-                  {product.discountPercent && (
-                    <span className="badge badge-emerald">
-                      {product.discountPercent}% OFF
-                    </span>
-                  )}
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1.25rem' }}>
-                  <ShieldCheck size={16} color="var(--color-cyan)" />
-                  <span>Official Razorpay 256-Bit SSL Encrypted Checkout</span>
-                </div>
-
-                {canAccess ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <button
-                      onClick={handleView}
-                      className="btn btn-primary btn-lg"
-                      style={{ width: '100%', gap: '8px', fontWeight: 800 }}
-                    >
-                      <ExternalLink size={20} /> Visit / View Resource
-                    </button>
-                    <button
-                      onClick={handleDownload}
-                      className="btn btn-secondary btn-md"
-                      style={{ width: '100%', gap: '8px', fontWeight: 700 }}
-                    >
-                      <Download size={18} /> Download Resource
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={handleBuyNow}
-                    disabled={checkoutLoading}
-                    className="btn btn-primary btn-lg"
-                    style={{ width: '100%', gap: '8px', fontWeight: 800 }}
-                  >
-                    <ShoppingBag size={20} />
-                    <span>{checkoutLoading ? 'Opening Razorpay Checkout...' : `Buy Now — ₹${product.price}`}</span>
-                  </button>
                 )}
-
-                <div style={{ textAlign: 'center', marginTop: '10px' }}>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    Instant Digital Delivery • Lifetime Access
+                {product.discountPercent && (
+                  <span className="tag" style={{ background: '#FF8A6B' }}>
+                    {product.discountPercent}% OFF
                   </span>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--muted)', marginBottom: '20px' }}>
+                <ShieldCheck size={18} color="#19C8A0" />
+                <span>Official Razorpay 256-Bit SSL Encrypted Checkout</span>
+              </div>
+
+              {/* CTA Buttons */}
+              {canAccess ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <button
+                    onClick={handleView}
+                    className="btn v btn-lg"
+                    style={{ width: '100%', gap: '8px' }}
+                  >
+                    <ExternalLink size={20} /> Open / View PDF
+                  </button>
+                  <button
+                    onClick={handleDownload}
+                    className="btn y btn-lg"
+                    style={{ width: '100%', gap: '8px' }}
+                  >
+                    <Download size={20} /> Download Resource
+                  </button>
                 </div>
+              ) : (
+                <button
+                  onClick={handleBuyNow}
+                  disabled={checkoutLoading}
+                  className="btn v btn-lg"
+                  style={{ width: '100%', gap: '10px' }}
+                >
+                  <ShoppingBag size={20} />
+                  <span>{checkoutLoading ? 'Opening Razorpay Checkout...' : `Buy Now — ₹${product.price}`}</span>
+                </button>
+              )}
+
+              <div style={{ textAlign: 'center', marginTop: '14px', fontSize: '12px', color: 'var(--muted)', fontWeight: 600 }}>
+                ✓ Instant Digital Delivery • ✓ Lifetime Vault Access
               </div>
             </div>
           </div>
 
-          {/* Right Column: Information & Specs */}
+          {/* Right Column: Information, Syllabus & Specs */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <span className="badge badge-purple">{product.category}</span>
-              <span className="badge badge-cyan">{product.fileFormat || 'PDF Document'}</span>
-              {product.pageCount && <span className="badge">{product.pageCount} Pages</span>}
+            
+            {/* Category & Tags Strip */}
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px' }}>
+              <span className="tag" style={{ background: '#E3DDFF' }}>{product.category}</span>
+              <span className="tag" style={{ background: '#C9F7E8' }}>{product.fileFormat || 'PDF Document'}</span>
+              {product.pageCount && <span className="tag" style={{ background: '#FFE9A8' }}>{product.pageCount} Pages</span>}
             </div>
 
-            <h1 style={{ fontSize: 'clamp(1.35rem, 4.5vw, 2rem)', fontWeight: 800, marginBottom: '1rem', color: 'var(--text-primary)', lineHeight: 1.25 }}>
+            {/* Title */}
+            <h1 className="d" style={{ fontSize: 'clamp(28px, 4vw, 42px)', lineHeight: 1.15, fontWeight: 800, marginBottom: '14px' }}>
               {product.title}
             </h1>
 
-            {/* Rating */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', color: 'var(--color-amber)' }}>
+            {/* Reviews */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', gap: '2px' }}>
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={16} fill="var(--color-amber)" />
+                  <Star key={i} size={16} color="#FFC933" fill="#FFC933" />
                 ))}
               </div>
-              <span style={{ fontSize: '0.875rem', fontWeight: 700 }}>{product.rating}</span>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+              <span style={{ fontSize: '14px', fontWeight: 800 }}>{product.rating || 4.9}</span>
+              <span style={{ fontSize: '13px', color: 'var(--muted)' }}>
                 ({product.reviewsCount || 120} verified student ratings)
               </span>
             </div>
 
-            {/* Quick Summary / Card Overview (if provided and different) */}
-            {(product.cardDescription || product.shortDescription) && 
-             (product.cardDescription || product.shortDescription) !== (product.stepDescription || product.detailedDescription || product.description) && (
-              <div className="card" style={{ marginBottom: '1.5rem', background: 'rgba(56, 189, 248, 0.06)', borderLeft: '4px solid var(--color-cyan)', padding: '1rem 1.25rem' }}>
-                <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-cyan)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
-                  Quick Overview
+            {/* Overview Box */}
+            {(product.cardDescription || product.shortDescription) && (
+              <div 
+                className="pop" 
+                style={{ 
+                  background: '#E3DDFF', 
+                  borderRadius: '20px', 
+                  padding: '20px', 
+                  marginBottom: '24px' 
+                }}
+              >
+                <div style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--ink)' }}>
+                  QUICK OVERVIEW
                 </div>
-                <p style={{ fontSize: '0.925rem', color: 'var(--text-primary)', lineHeight: '1.6', margin: 0 }}>
+                <p style={{ fontSize: '15px', color: 'var(--ink)', lineHeight: 1.6, fontWeight: 600 }}>
                   {product.cardDescription || product.shortDescription}
                 </p>
               </div>
             )}
 
-            {/* Complete Step Description */}
-            <div className="card" style={{ marginBottom: '1.5rem', background: 'var(--bg-secondary)' }}>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '0.85rem' }}>
-                {product.stepDescription || product.detailedDescription ? 'Complete Step-by-Step Description' : 'About this resource'}
+            {/* Complete Syllabus & Description */}
+            <div 
+              className="pop" 
+              style={{ 
+                background: '#FFFFFF', 
+                borderRadius: '24px', 
+                padding: '26px', 
+                marginBottom: '24px' 
+              }}
+            >
+              <h3 className="d" style={{ fontSize: '22px', marginBottom: '14px' }}>
+                {product.stepDescription || product.detailedDescription ? 'Detailed Content & Step Breakdown' : 'About this resource'}
               </h3>
-              <div style={{ fontSize: '0.925rem', color: 'var(--text-secondary)', lineHeight: '1.75', whiteSpace: 'pre-line' }}>
+              <div style={{ fontSize: '15px', color: 'var(--muted)', lineHeight: 1.75, whiteSpace: 'pre-line' }}>
                 {product.stepDescription || product.detailedDescription || product.description}
               </div>
             </div>
 
             {/* What's Included */}
-            {product.whatIncluded?.length > 0 && (
-              <div className="card" style={{ marginBottom: '1.5rem', background: 'var(--bg-secondary)' }}>
-                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>What's Included:</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {product.whatIncluded && product.whatIncluded.length > 0 && (
+              <div 
+                className="pop" 
+                style={{ 
+                  background: '#FFFFFF', 
+                  borderRadius: '24px', 
+                  padding: '26px', 
+                  marginBottom: '24px' 
+                }}
+              >
+                <h3 className="d" style={{ fontSize: '20px', marginBottom: '14px' }}>What's Included:</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {product.whatIncluded.map((item: string, idx: number) => (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: 'var(--text-primary)' }}>
-                      <CheckCircle2 size={16} color="var(--color-emerald)" />
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '15px', color: 'var(--ink)', fontWeight: 600 }}>
+                      <CheckCircle2 size={18} color="#19C8A0" />
                       <span>{item}</span>
                     </div>
                   ))}
@@ -372,12 +393,20 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
             )}
 
             {/* Tech Stack for Projects */}
-            {product.techStack?.length > 0 && (
-              <div className="card" style={{ marginBottom: '1.5rem', background: 'var(--bg-secondary)' }}>
-                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem' }}>Technology Stack & Frameworks:</h3>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {product.techStack && product.techStack.length > 0 && (
+              <div 
+                className="pop" 
+                style={{ 
+                  background: '#FFFFFF', 
+                  borderRadius: '24px', 
+                  padding: '26px', 
+                  marginBottom: '24px' 
+                }}
+              >
+                <h3 className="d" style={{ fontSize: '20px', marginBottom: '14px' }}>Technology Stack & Tools:</h3>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                   {product.techStack.map((tech: string) => (
-                    <span key={tech} className="badge badge-purple" style={{ fontSize: '0.8rem', padding: '4px 10px' }}>
+                    <span key={tech} className="tag tag-yellow" style={{ fontSize: '13px' }}>
                       {tech}
                     </span>
                   ))}
@@ -385,191 +414,72 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
               </div>
             )}
 
-            {/* Tags */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '2rem' }}>
-              {product.tags?.map((tag: string) => (
-                <span key={tag} style={{ fontSize: '0.75rem', color: 'var(--text-muted)', background: 'var(--bg-tertiary)', padding: '4px 8px', borderRadius: '4px' }}>
-                  #{tag}
-                </span>
-              ))}
-            </div>
-
-            {/* FAQ Accordion */}
-            <div className="card" style={{ background: 'var(--bg-secondary)' }}>
-              <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1rem' }}>Frequently Asked Questions:</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.85rem' }}>
+            {/* FAQ Card */}
+            <div 
+              className="pop" 
+              style={{ 
+                background: '#FFFFFF', 
+                borderRadius: '24px', 
+                padding: '26px' 
+              }}
+            >
+              <h4 className="d" style={{ fontSize: '20px', marginBottom: '16px' }}>Frequently Asked Questions</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '14px' }}>
                 <div>
-                  <strong style={{ color: 'var(--text-primary)' }}>Q: How do I access my files after purchasing?</strong>
-                  <p style={{ color: 'var(--text-secondary)', marginTop: '2px' }}>Your files unlock immediately upon verified payment and remain accessible forever under your "My Purchases" library.</p>
+                  <strong style={{ color: 'var(--ink)', display: 'block', marginBottom: '4px' }}>
+                    Q: How do I access my files after purchasing?
+                  </strong>
+                  <p className="mu">
+                    Your digital files unlock immediately upon verified payment and remain permanently accessible under your "My Purchases" library.
+                  </p>
                 </div>
                 <div>
-                  <strong style={{ color: 'var(--text-primary)' }}>Q: Are future updates to these notes included?</strong>
-                  <p style={{ color: 'var(--text-secondary)', marginTop: '2px' }}>Yes! Any new interview questions or updated diagrams added by the instructors are automatically available for re-download.</p>
+                  <strong style={{ color: 'var(--ink)', display: 'block', marginBottom: '4px' }}>
+                    Q: Are future updates to these notes included?
+                  </strong>
+                  <p className="mu">
+                    Yes! Any new interview questions or updated diagrams added by instructors are automatically available for re-download.
+                  </p>
                 </div>
               </div>
             </div>
+
           </div>
+
         </div>
+
       </div>
 
       {/* Razorpay Authentication Diagnostics Modal */}
       {authErrorModalData && (
         <div 
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(15, 23, 42, 0.65)',
-            backdropFilter: 'blur(5px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 9999,
-            padding: '1.25rem'
-          }}
+          className="modal-overlay"
           onClick={() => setAuthErrorModalData(null)}
         >
           <div 
-            className="card" 
-            style={{
-              maxWidth: '560px',
-              width: '100%',
-              background: '#FFFFFF',
-              borderRadius: '16px',
-              padding: '2rem',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-              position: 'relative',
-              animation: 'fadeIn 0.2s ease-out'
-            }}
+            className="modal-content"
             onClick={e => e.stopPropagation()}
           >
-            <button
-              onClick={() => setAuthErrorModalData(null)}
-              style={{
-                position: 'absolute',
-                top: '16px',
-                right: '16px',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: 'var(--text-muted)',
-                padding: '6px',
-                borderRadius: '8px'
-              }}
-              aria-label="Close"
-            >
-              <X size={20} />
-            </button>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1.25rem' }}>
-              <div style={{
-                width: '44px',
-                height: '44px',
-                borderRadius: '12px',
-                background: '#FEF3C7',
-                color: '#D97706',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0
-              }}>
-                <AlertTriangle size={24} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'var(--coral)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--ink)' }}>
+                <AlertTriangle size={22} color="#FFFFFF" />
               </div>
               <div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                  Razorpay Payment Notice
-                </h3>
-                <span className="badge badge-warning" style={{ fontSize: '0.7rem', marginTop: '4px' }}>
-                  401 Authentication Failed on Razorpay API
-                </span>
+                <h3 className="d" style={{ fontSize: '20px', margin: 0 }}>Razorpay Key Configuration Needed</h3>
               </div>
             </div>
 
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
-              Razorpay's API server (<code style={{ color: 'var(--color-primary)', background: '#F1F5F9', padding: '2px 6px', borderRadius: '4px' }}>api.razorpay.com</code>) rejected the credentials configured in <code style={{ color: 'var(--color-primary)', background: '#F1F5F9', padding: '2px 6px', borderRadius: '4px' }}>server/.env</code>. This happens when the Razorpay API keys were rotated, regenerated, or expired on the Razorpay Dashboard.
+            <p style={{ fontSize: '14px', color: 'var(--muted)', lineHeight: 1.5, marginBottom: '16px' }}>
+              The backend received an authentication error when contacting Razorpay. Please verify your Razorpay API Key ID and Key Secret in Render environment variables.
             </p>
 
-            <div style={{
-              background: '#F8FAFC',
-              border: '1px solid #E2E8F0',
-              borderRadius: '10px',
-              padding: '1rem',
-              marginBottom: '1.25rem',
-              fontSize: '0.85rem'
-            }}>
-              <strong style={{ display: 'block', marginBottom: '6px', color: 'var(--text-primary)' }}>
-                How to resolve this in 3 quick steps:
-              </strong>
-              <ol style={{ paddingLeft: '1.25rem', margin: 0, display: 'flex', flexDirection: 'column', gap: '6px', color: 'var(--text-secondary)' }}>
-                <li>
-                  Open your <a href="https://dashboard.razorpay.com/app/keys" target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'underline' }}>Razorpay Dashboard &gt; API Keys</a> in <strong>Live Mode</strong>.
-                </li>
-                <li>
-                  Click <strong>Generate New Key</strong> (or copy your active Live Key pair).
-                </li>
-                <li>
-                  Update both <code style={{ fontWeight: 600 }}>RAZORPAY_KEY_ID</code> and <code style={{ fontWeight: 600 }}>RAZORPAY_KEY_SECRET</code> in <code style={{ fontWeight: 600 }}>server/.env</code> or your Render environment variables and restart.
-                </li>
-              </ol>
-            </div>
-
-            <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
-              <pre style={{
-                background: '#0F172A',
-                color: '#38BDF8',
-                padding: '12px 14px',
-                borderRadius: '8px',
-                fontSize: '0.75rem',
-                fontFamily: 'monospace',
-                overflowX: 'auto',
-                margin: 0
-              }}>
-{`# Update in server/.env or Render Dashboard:
-RAZORPAY_KEY_ID=rzp_live_TdWOOe8pJsTv4a
-RAZORPAY_KEY_SECRET=AMX36S7ivlSsiQgzn2JZOEXj`}
-              </pre>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText('RAZORPAY_KEY_ID=rzp_live_TdWOOe8pJsTv4a\nRAZORPAY_KEY_SECRET=AMX36S7ivlSsiQgzn2JZOEXj');
-                  setCopiedEnv(true);
-                  setTimeout(() => setCopiedEnv(false), 2000);
-                }}
-                className="btn btn-secondary btn-sm"
-                style={{ position: 'absolute', top: '8px', right: '8px', padding: '4px 8px', fontSize: '0.7rem' }}
-              >
-                {copiedEnv ? '✓ Copied' : <><Copy size={12} /> Copy</>}
-              </button>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-              {user?.role === 'ADMIN' && (
-                <button 
-                  onClick={() => {
-                    setAuthErrorModalData(null);
-                    handleView();
-                  }} 
-                  className="btn btn-secondary"
-                  style={{ fontSize: '0.85rem' }}
-                >
-                  <ExternalLink size={14} /> Open Admin Preview
-                </button>
-              )}
-              <a
-                href="https://dashboard.razorpay.com/app/keys"
-                target="_blank"
-                rel="noreferrer"
-                className="btn btn-primary"
-                style={{ fontSize: '0.85rem' }}
-              >
-                Open Razorpay Dashboard
-              </a>
-              <button
-                onClick={() => setAuthErrorModalData(null)}
-                className="btn btn-secondary"
-                style={{ fontSize: '0.85rem' }}
-              >
-                Close
-              </button>
-            </div>
+            <button
+              onClick={() => setAuthErrorModalData(null)}
+              className="btn v"
+              style={{ width: '100%' }}
+            >
+              Understood
+            </button>
           </div>
         </div>
       )}

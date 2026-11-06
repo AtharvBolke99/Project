@@ -27,3 +27,13 @@ data/*.bak
 # OS
 .DS_Store
 Thumbs.db
+
+# Design Reference
+reference-design/
+
+
+# Database Backups
+server/data/backups/
+server/data/*.backup.*
+server/data/*.backup.json
+

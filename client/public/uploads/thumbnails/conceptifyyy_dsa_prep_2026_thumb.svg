@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="40%" stop-color="#1E1B4B"/>
+      <stop offset="80%" stop-color="#312E81"/>
+      <stop offset="100%" stop-color="#4338CA"/>
+    </linearGradient>
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366F1"/>
+      <stop offset="50%" stop-color="#818CF8"/>
+      <stop offset="100%" stop-color="#38BDF8"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255, 255, 255, 0.12)"/>
+      <stop offset="100%" stop-color="rgba(255, 255, 255, 0.04)"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="500" fill="url(#bgGrad)"/>
+
+  <!-- Decorative grid lines -->
+  <g stroke="rgba(255, 255, 255, 0.04)" stroke-width="1">
+    <line x1="0" y1="100" x2="800" y2="100"/>
+    <line x1="0" y1="200" x2="800" y2="200"/>
+    <line x1="0" y1="300" x2="800" y2="300"/>
+    <line x1="0" y1="400" x2="800" y2="400"/>
+    <line x1="160" y1="0" x2="160" y2="500"/>
+    <line x1="320" y1="0" x2="320" y2="500"/>
+    <line x1="480" y1="0" x2="480" y2="500"/>
+    <line x1="640" y1="0" x2="640" y2="500"/>
+  </g>
+
+  <!-- Glowing Accent Orbs -->
+  <circle cx="700" cy="80" r="120" fill="#4F46E5" opacity="0.25" filter="url(#glow)"/>
+  <circle cx="100" cy="420" r="140" fill="#0284C7" opacity="0.2" filter="url(#glow)"/>
+
+  <!-- Inner Glass Container -->
+  <rect x="40" y="35" width="720" height="430" rx="16" fill="url(#cardGrad)" stroke="rgba(255, 255, 255, 0.15)" stroke-width="1.5"/>
+
+  <!-- Brand Pill -->
+  <g transform="translate(65, 60)">
+    <rect width="180" height="32" rx="8" fill="rgba(99, 102, 241, 0.25)" stroke="#6366F1" stroke-width="1"/>
+    <text x="90" y="21" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="800" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">CONCEPTIFYYY</text>
+  </g>
+
+  <!-- Edition Badge -->
+  <g transform="translate(535, 60)">
+    <rect width="200" height="32" rx="16" fill="#F59E0B" fill-opacity="0.2" stroke="#F59E0B" stroke-width="1"/>
+    <text x="100" y="21" font-family="system-ui, -apple-system, sans-serif" font-size="11" font-weight="700" fill="#FCD34D" text-anchor="middle" letter-spacing="0.5">★ 2026 PLACEMENT EDITION</text>
+  </g>
+
+  <!-- Main Title -->
+  <text x="65" y="145" font-family="system-ui, -apple-system, sans-serif" font-size="34" font-weight="900" fill="#FFFFFF" letter-spacing="-0.5">
+    Company-Wise DSA
+  </text>
+  <text x="65" y="190" font-family="system-ui, -apple-system, sans-serif" font-size="34" font-weight="900" fill="url(#brandGrad)" letter-spacing="-0.5">
+    Placement Preparation
+  </text>
+
+  <!-- Subtitle -->
+  <text x="65" y="232" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="600" fill="#CBD5E1">
+    Most Important Coding Questions with Complete Java 21 Solutions
+  </text>
+
+  <!-- Company Logos / Tags Strip -->
+  <g transform="translate(65, 265)">
+    <!-- Pill 1 -->
+    <rect x="0" y="0" width="85" height="28" rx="6" fill="#1E293B" stroke="#334155"/>
+    <text x="42" y="18" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#38BDF8" text-anchor="middle">TCS NQT</text>
+    <!-- Pill 2 -->
+    <rect x="95" y="0" width="85" height="28" rx="6" fill="#1E293B" stroke="#334155"/>
+    <text x="137" y="18" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#A5B4FC" text-anchor="middle">Cognizant</text>
+    <!-- Pill 3 -->
+    <rect x="190" y="0" width="85" height="28" rx="6" fill="#1E293B" stroke="#334155"/>
+    <text x="232" y="18" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#34D399" text-anchor="middle">Infosys</text>
+    <!-- Pill 4 -->
+    <rect x="285" y="0" width="85" height="28" rx="6" fill="#1E293B" stroke="#334155"/>
+    <text x="327" y="18" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#F472B6" text-anchor="middle">Wipro</text>
+    <!-- Pill 5 -->
+    <rect x="380" y="0" width="85" height="28" rx="6" fill="#1E293B" stroke="#334155"/>
+    <text x="422" y="18" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#FBBF24" text-anchor="middle">Accenture</text>
+    <!-- Pill 6 -->
+    <rect x="475" y="0" width="85" height="28" rx="6" fill="#1E293B" stroke="#334155"/>
+    <text x="517" y="18" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#818CF8" text-anchor="middle">Capgemini</text>
+    <!-- Pill 7 -->
+    <rect x="570" y="0" width="85" height="28" rx="6" fill="#1E293B" stroke="#334155"/>
+    <text x="612" y="18" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#2DD4BF" text-anchor="middle">Deloitte</text>
+  </g>
+
+  <!-- Secondary Company Strip -->
+  <g transform="translate(65, 305)">
+    <rect x="0" y="0" width="95" height="28" rx="6" fill="#1E293B" stroke="#334155"/>
+    <text x="47" y="18" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#CBD5E1" text-anchor="middle">HCLTech</text>
+    <rect x="105" y="0" width="115" height="28" rx="6" fill="#1E293B" stroke="#334155"/>
+    <text x="162" y="18" font-family="system-ui, sans-serif" font-size="11" font-weight="700" fill="#CBD5E1" text-anchor="middle">Tech Mahindra</text>
+    <rect x="230" y="0" width="180" height="28" rx="6" fill="rgba(16, 185, 129, 0.2)" stroke="#10B981"/>
+    <text x="320" y="18" font-family="system-ui, sans-serif" font-size="11" font-weight="800" fill="#6EE7B7" text-anchor="middle">✓ 40 Master Revision List</text>
+  </g>
+
+  <!-- Bottom Metric Highlights Bar -->
+  <rect x="65" y="360" width="670" height="75" rx="10" fill="rgba(15, 23, 42, 0.75)" stroke="rgba(255, 255, 255, 0.1)"/>
+
+  <g transform="translate(95, 378)">
+    <text x="0" y="16" font-family="system-ui, sans-serif" font-size="18" font-weight="900" fill="#38BDF8">216</text>
+    <text x="0" y="36" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#94A3B8">Solved Problems</text>
+  </g>
+
+  <line x1="225" y1="375" x2="225" y2="420" stroke="#334155" stroke-width="1"/>
+
+  <g transform="translate(250, 378)">
+    <text x="0" y="16" font-family="system-ui, sans-serif" font-size="18" font-weight="900" fill="#34D399">Java 21</text>
+    <text x="0" y="36" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#94A3B8">Compilable Code</text>
+  </g>
+
+  <line x1="380" y1="375" x2="380" y2="420" stroke="#334155" stroke-width="1"/>
+
+  <g transform="translate(405, 378)">
+    <text x="0" y="16" font-family="system-ui, sans-serif" font-size="18" font-weight="900" fill="#FBBF24">192 Pages</text>
+    <text x="0" y="36" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#94A3B8">Comprehensive Book</text>
+  </g>
+
+  <line x1="535" y1="375" x2="535" y2="420" stroke="#334155" stroke-width="1"/>
+
+  <g transform="translate(560, 378)">
+    <text x="0" y="16" font-family="system-ui, sans-serif" font-size="18" font-weight="900" fill="#A5B4FC">60-Day Plan</text>
+    <text x="0" y="36" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#94A3B8">Placement Roadmap</text>
+  </g>
+</svg>

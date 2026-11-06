@@ -6,18 +6,16 @@ import {
   ChevronDown, 
   ChevronUp, 
   Sparkles, 
-  Code2, 
-  BrainCircuit, 
-  ShoppingBag, 
-  ShieldCheck,
-  Zap,
-  ArrowRight
+  BookOpen, 
+  ShieldCheck, 
+  ArrowRight,
+  Download
 } from 'lucide-react';
 
 interface FAQItem {
   question: string;
   answer: string;
-  category: 'DSA' | 'Aptitude' | 'Payments' | 'General';
+  category: 'Notes' | 'Payments' | 'Downloads' | 'General';
 }
 
 export const FAQ: React.FC = () => {
@@ -27,169 +25,176 @@ export const FAQ: React.FC = () => {
 
   const faqs: FAQItem[] = [
     {
-      category: 'DSA',
-      question: 'How does the Conceptifyyy Algorithm Visualizer work?',
-      answer: 'Our signature visualizer translates raw code execution into cognitive step-by-step animations. When you click "VISUALIZE", you can inspect array indices, pointer movements (left, right, mid), HashMap state additions in O(1) time, and tree branches with full control over playback (Play, Pause, Step Next/Prev, Speed Multiplier, Scrubber Timeline).',
+      category: 'Notes',
+      question: 'What formats are the study notes and resources provided in?',
+      answer: 'All notes are provided as crystal-clear, high-resolution searchable PDF files. They are optimized for viewing on laptops, tablets, iPads (e.g. GoodNotes/Notability), and mobile devices, and are also fully printable.',
     },
     {
-      category: 'DSA',
-      question: 'Why is the complete solution hidden initially on DSA problems?',
-      answer: 'Active recall and try-first practice lead to 4x higher cognitive retention compared to passive reading. On Conceptifyyy, you are encouraged to write and run your code first. Only after you click "Show Solution" does the platform unlock the full optimal approach, code in 4 languages (JavaScript, Python, C++, Java), and detailed Big-O analysis.',
+      category: 'Notes',
+      question: 'Who writes and verifies the study notes on Conceptifyyy?',
+      answer: 'Our notes are created by top university rankers, campus drive qualifiers, and tech engineers. Every document undergoes peer review to ensure 100% accuracy in formulas, algorithms, memory layouts, and interview tips.',
     },
     {
-      category: 'DSA',
-      question: 'Which programming languages are supported in the code editor?',
-      answer: 'Our code editor supports JavaScript (Node.js VM), Python 3, C++ (GCC), and Java 17. Every run executes in an isolated sandbox with public test cases, hidden edge cases, and runtime/memory profiling.',
+      category: 'Downloads',
+      question: 'How do I access my purchased notes or projects after payment?',
+      answer: 'Access is instantaneous! As soon as your payment is verified via Razorpay, you are redirected to the "My Purchases" vault where you can immediately download or preview your files. You also receive an email confirmation with lifetime direct download access.',
     },
     {
-      category: 'Aptitude',
-      question: 'What types of Aptitude topics are covered for placement exams?',
-      answer: 'We provide full coverage for Quantitative Aptitude (Time & Work, Percentages, Profit & Loss, Ratio & Proportion, Probability, Numbers, Time-Speed-Distance), Logical Reasoning (Number Series, Blood Relations, Syllogisms, Directions), and Verbal Ability (Sentence Correction, Vocabulary, Reading Comprehension), tailored for TCS NQT, Infosys, Accenture, Wipro, and product-based hiring rounds.',
-    },
-    {
-      category: 'Aptitude',
-      question: 'How does the visual aptitude solver help me solve faster?',
-      answer: 'Instead of memorizing multi-step algebra, our visual explanations introduce cognitive shortcuts such as the Work-Units LCM method for Time & Work and Percentage Balance bars. Each question includes a 10-second shortcut formula.',
+      category: 'Downloads',
+      question: 'Can I re-download my purchases in the future if I switch devices?',
+      answer: 'Yes! Your purchases remain permanently linked to your Conceptifyyy user account. Simply log in at any time and head over to the "My Purchases" tab to re-download your files whenever you need them.',
     },
     {
       category: 'Payments',
-      question: 'How do digital downloads and Razorpay payments work?',
-      answer: 'When you click "Buy Now" on any digital note or project, a secure Razorpay checkout order is generated using server-side pricing in paise. Once payment is completed, the cryptographic HMAC-SHA256 signature is verified on the backend, unlocking instant access. Your files remain permanently downloadable in your "My Purchases" library.',
+      question: 'Which payment methods are accepted on Conceptifyyy?',
+      answer: 'We support all major Indian and international payment methods via Razorpay: UPI (Google Pay, PhonePe, Paytm, CRED), Net Banking across 50+ banks, Credit & Debit Cards (Visa, MasterCard, RuPay, Amex), and leading wallets.',
     },
     {
       category: 'Payments',
-      question: 'What payment methods are supported on Conceptifyyy?',
-      answer: 'We support all major Indian and international payment methods via Razorpay 256-bit encrypted checkout, including UPI (Google Pay, PhonePe, Paytm, BHIM), Credit & Debit Cards (Visa, Mastercard, RuPay), NetBanking across 50+ banks, and digital wallets.',
+      question: 'Is online payment secure on Conceptifyyy?',
+      answer: 'Completely secure. All payments are encrypted via 256-bit SSL and processed directly through Razorpay Software Private Limited, an RBI-authorized PCI-DSS Level 1 compliant payment aggregator. Conceptifyyy never stores your card or banking credentials.',
+    },
+    {
+      category: 'Payments',
+      question: 'What is your refund policy if I am not satisfied with a purchase?',
+      answer: 'We provide a 7-day learner satisfaction guarantee. If the content does not match the curriculum or description, reach out to us at conceptifyyy@gmail.com with your payment details for a full refund.',
     },
     {
       category: 'General',
-      question: 'How do XP points, Streaks, and Achievement Badges work?',
-      answer: 'You earn Experience Points (XP) each time you solve a DSA problem, submit an aptitude answer, or complete daily challenges. Solving daily problems maintains your continuous streak and unlocks milestone achievement badges like Early Adopter, Problem Solver, and 7-Day Streak Warrior.',
-    },
-    {
-      category: 'General',
-      question: 'Can college placement cells partner with Conceptifyyy for campus batches?',
-      answer: 'Yes! We offer bulk institutional licensing and customized roadmaps for engineering colleges and training & placement cells. Please reach out through our Contact page with your college details.',
+      question: 'Are capstone projects provided with complete source code?',
+      answer: 'Yes. Full-stack projects come with the entire production source code (Frontend, Backend, Database schemas), detailed setup READMEs, environment variable examples, and project architecture explanations.',
     }
   ];
 
-  const filteredFaqs = faqs.filter(f => {
-    const matchesCategory = activeCategory === 'All' || f.category === activeCategory;
-    const matchesSearch = f.question.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          f.answer.toLowerCase().includes(searchTerm.toLowerCase());
+  const categories = ['All', 'Notes', 'Downloads', 'Payments', 'General'];
+
+  const filteredFaqs = faqs.filter(faq => {
+    const matchesCategory = activeCategory === 'All' || faq.category === activeCategory;
+    const matchesSearch = 
+      faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      faq.answer.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
-  const toggleAccordion = (index: number) => {
+  const toggleAccordion = (idx: number) => {
     setOpenIndexes(prev => ({
       ...prev,
-      [index]: !prev[index]
+      [idx]: !prev[idx]
     }));
   };
 
   return (
-    <div className="page-wrapper animate-fade-in">
-      <div className="container" style={{ paddingTop: '2.5rem', maxWidth: '880px' }}>
+    <div style={{ padding: '2rem 1.5rem 5rem' }}>
+      <div className="wrap" style={{ maxWidth: '920px' }}>
+        
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: 'rgba(0, 229, 255, 0.08)',
-            border: '1px solid rgba(0, 229, 255, 0.25)',
-            padding: '6px 16px',
-            borderRadius: 'var(--radius-full)',
-            marginBottom: '1rem'
-          }}>
-            <HelpCircle size={14} color="var(--color-cyan)" />
-            <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-cyan)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-              Frequently Asked Questions
+          <div style={{ display: 'inline-block', marginBottom: '0.75rem' }}>
+            <span className="chip" style={{ background: 'var(--yellow)', transform: 'rotate(-2deg)' }}>
+              ✦ FREQUENTLY ASKED QUESTIONS
             </span>
           </div>
 
-          <h1 style={{ fontSize: '2.25rem', fontWeight: 800, marginBottom: '0.75rem' }}>
-            Everything You Need to Know
+          <h1 className="d" style={{ fontSize: 'clamp(2.25rem, 5vw, 3.25rem)', lineHeight: 1.15, marginBottom: '0.75rem' }}>
+            Got questions? <span style={{ color: 'var(--purple)' }}>We've got answers.</span>
           </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem' }}>
-            Find clear answers regarding our visual cognitive engine, DSA arena, aptitude tests, and digital store.
+
+          <p style={{ fontSize: '1.1rem', color: 'var(--muted)', maxWidth: '620px', margin: '0 auto', lineHeight: 1.6 }}>
+            Everything you need to know about purchasing, accessing, and downloading notes and digital projects.
           </p>
         </div>
 
-        {/* Search Bar */}
-        <div className="card" style={{ marginBottom: '2rem', padding: '1rem' }}>
-          <div style={{ position: 'relative' }}>
-            <Search size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '12px' }} />
+        {/* Search & Categories */}
+        <div style={{ marginBottom: '2.5rem' }}>
+          <div className="pop" style={{ background: '#FFFFFF', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', borderRadius: '999px' }}>
+            <Search size={20} color="var(--ink)" />
             <input
               type="text"
-              placeholder="Search frequently asked questions (e.g. Visualizer, Razorpay, Python)..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="input"
-              style={{ paddingLeft: '38px' }}
+              placeholder="Search questions by keyword (e.g. PDF, download, Razorpay, refund)..."
+              style={{
+                border: 'none',
+                outline: 'none',
+                width: '100%',
+                fontSize: '1rem',
+                fontFamily: 'inherit',
+                background: 'transparent'
+              }}
             />
+          </div>
+
+          {/* Filter Pills */}
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+            {categories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`tag ${activeCategory === cat ? 'active' : ''}`}
+                style={{
+                  cursor: 'pointer',
+                  background: activeCategory === cat ? 'var(--purple)' : '#FFFFFF',
+                  color: activeCategory === cat ? '#FFFFFF' : 'var(--ink)',
+                  border: '2px solid var(--ink)',
+                  boxShadow: activeCategory === cat ? '2px 2px 0 var(--ink)' : 'none',
+                  fontSize: '0.875rem',
+                  padding: '6px 16px',
+                  fontWeight: 700
+                }}
+              >
+                {cat}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Category Filter Chips */}
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '2rem', flexWrap: 'wrap' }}>
-          {['All', 'DSA', 'Aptitude', 'Payments', 'General'].map(cat => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`tab-btn ${activeCategory === cat ? 'active' : ''}`}
-              style={{ padding: '6px 14px', fontSize: '0.85rem' }}
-            >
-              {cat === 'All' ? 'All Questions' : cat}
-            </button>
-          ))}
-        </div>
-
-        {/* Accordion FAQ List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '3.5rem' }}>
+        {/* FAQ Accordion List */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '3.5rem' }}>
           {filteredFaqs.length === 0 ? (
-            <div className="card" style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-muted)' }}>
-              <p>No questions matched your search query. Try searching with different keywords.</p>
+            <div className="pop" style={{ background: '#FFFFFF', padding: '3rem', textAlign: 'center' }}>
+              <HelpCircle size={40} color="var(--purple)" style={{ margin: '0 auto 1rem' }} />
+              <h3 className="d" style={{ fontSize: '1.3rem', margin: '0 0 0.5rem' }}>No matching questions found</h3>
+              <p style={{ color: 'var(--muted)', margin: 0 }}>Try adjusting your search terms or clearing filters.</p>
             </div>
           ) : (
             filteredFaqs.map((faq, idx) => {
-              const isOpen = openIndexes[idx];
+              const isOpen = !!openIndexes[idx];
               return (
                 <div
                   key={idx}
-                  className="card glass-card"
-                  style={{ padding: '0', overflow: 'hidden', border: isOpen ? '1px solid var(--border-highlight)' : '1px solid var(--border-subtle)' }}
+                  className="pop"
+                  style={{
+                    background: '#FFFFFF',
+                    transition: 'all 0.15s ease',
+                    overflow: 'hidden'
+                  }}
                 >
                   <button
                     onClick={() => toggleAccordion(idx)}
                     style={{
                       width: '100%',
                       padding: '1.25rem 1.5rem',
-                      background: 'transparent',
-                      border: 'none',
                       display: 'flex',
-                      justifyContent: 'space-between',
                       alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: '1rem',
+                      background: 'none',
+                      border: 'none',
                       cursor: 'pointer',
                       textAlign: 'left'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span className={`badge ${faq.category === 'DSA' ? 'badge-cyan' : faq.category === 'Aptitude' ? 'badge-purple' : 'badge-emerald'}`} style={{ fontSize: '0.7rem' }}>
-                        {faq.category}
-                      </span>
-                      <strong style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>
-                        {faq.question}
-                      </strong>
+                    <span className="d" style={{ fontSize: '1.1rem', color: 'var(--ink)' }}>
+                      {faq.question}
+                    </span>
+                    <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: isOpen ? 'var(--yellow)' : 'var(--lavender)', border: '2px solid var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {isOpen ? <ChevronUp size={16} color="var(--ink)" /> : <ChevronDown size={16} color="var(--ink)" />}
                     </div>
-                    {isOpen ? <ChevronUp size={18} color="var(--color-cyan)" /> : <ChevronDown size={18} color="var(--text-muted)" />}
                   </button>
 
                   {isOpen && (
-                    <div style={{ padding: '0 1.5rem 1.25rem 1.5rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem' }}>
-                      <p style={{ color: 'var(--text-secondary)', fontSize: '0.925rem', lineHeight: '1.7' }}>
-                        {faq.answer}
-                      </p>
+                    <div style={{ padding: '0 1.5rem 1.25rem 1.5rem', color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.6, borderTop: '1px solid var(--lavender-accent)' }}>
+                      <p style={{ margin: '0.75rem 0 0' }}>{faq.answer}</p>
                     </div>
                   )}
                 </div>
@@ -198,18 +203,17 @@ export const FAQ: React.FC = () => {
           )}
         </div>
 
-        {/* Still Have Questions Box */}
-        <div className="card glass-card glowing-border" style={{ textAlign: 'center', padding: '2.5rem 1.5rem', marginBottom: '3rem' }}>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.5rem' }}>
-            Still have questions?
-          </h3>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.25rem' }}>
-            Can't find what you're looking for? Reach out to our technical learning support team.
-          </p>
-          <Link to="/contact" className="btn btn-primary btn-sm">
-            Contact Support Team <ArrowRight size={14} />
+        {/* Still have questions */}
+        <div className="pop" style={{ background: 'var(--yellow)', padding: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem', flexWrap: 'wrap' }}>
+          <div>
+            <h3 className="d" style={{ fontSize: '1.5rem', margin: '0 0 0.5rem' }}>Still have questions?</h3>
+            <p style={{ margin: 0, color: 'var(--ink)', fontSize: '0.95rem' }}>Our team is ready to assist you anytime.</p>
+          </div>
+          <Link to="/contact" className="btn v" style={{ textDecoration: 'none' }}>
+            Contact Support <ArrowRight size={16} />
           </Link>
         </div>
+
       </div>
     </div>
   );

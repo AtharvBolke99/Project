@@ -153,6 +153,40 @@ class ApiClient {
   public delete<T = any>(endpoint: string) {
     return this.request<T>(endpoint, { method: 'DELETE' });
   }
+
+  public async postFormData<T = any>(endpoint: string, formData: FormData): Promise<ApiResponse<T>> {
+    const token = this.getToken();
+    const headers: Record<string, string> = {};
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    try {
+      const response = await fetch(`${getApiBase()}${endpoint}`, {
+        method: 'POST',
+        headers, // Browser automatically sets Content-Type multipart/form-data with boundary
+        body: formData
+      });
+
+      const rawText = await response.text();
+      let data: any = null;
+
+      if (rawText && rawText.trim().length > 0) {
+        data = JSON.parse(rawText);
+      }
+
+      if (!response.ok) {
+        const errorMsg = data?.message || `Upload failed with status ${response.status}`;
+        throw new Error(errorMsg);
+      }
+
+      return data || { success: true };
+    } catch (error: any) {
+      console.error(`Upload error on [POST ${endpoint}]:`, error);
+      throw error;
+    }
+  }
 }
 
 export const api = new ApiClient();

@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { 
   Mail, 
-  MessageSquare, 
   Send, 
   Sparkles, 
   ShieldCheck, 
-  MapPin, 
   Clock, 
   CheckCircle2, 
   HelpCircle,
-  Phone
+  Phone,
+  MessageCircle
 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 
@@ -34,171 +33,185 @@ export const Contact: React.FC = () => {
       setName('');
       setEmail('');
       setMessage('');
-    }, 800);
+    }, 600);
   };
 
   return (
-    <div className="page-wrapper animate-fade-in">
-      <div className="container" style={{ paddingTop: '2.5rem', maxWidth: '980px' }}>
+    <div style={{ padding: '2rem 1.5rem 5rem' }}>
+      <div className="wrap" style={{ maxWidth: '960px' }}>
+        
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: 'rgba(0, 229, 255, 0.08)',
-            border: '1px solid rgba(0, 229, 255, 0.25)',
-            padding: '6px 16px',
-            borderRadius: 'var(--radius-full)',
-            marginBottom: '1rem'
-          }}>
-            <Sparkles size={14} color="var(--color-cyan)" />
-            <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-cyan)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-              Get In Touch
+          <div style={{ display: 'inline-block', marginBottom: '0.75rem' }}>
+            <span className="chip" style={{ background: 'var(--yellow)', transform: 'rotate(-2deg)' }}>
+              ✦ 24/7 LEARNER SUPPORT
             </span>
           </div>
 
-          <h1 style={{ fontSize: '2.25rem', fontWeight: 800, marginBottom: '0.75rem' }}>
-            We're Here to Help Your Journey
+          <h1 className="d" style={{ fontSize: 'clamp(2.25rem, 5vw, 3.25rem)', lineHeight: 1.15, marginBottom: '0.75rem' }}>
+            Get in touch with <span style={{ color: 'var(--purple)' }}>Conceptifyyy</span>
           </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', maxWidth: '600px', margin: '0 auto' }}>
-            Have a question about our DSA visualizers, placement notes, college bundle orders, or need technical support? Drop us a note!
+
+          <p style={{ fontSize: '1.1rem', color: 'var(--muted)', maxWidth: '620px', margin: '0 auto', lineHeight: 1.6 }}>
+            Have a question about your order, notes access, or need help with a payment? We are here to help you 7 days a week.
           </p>
         </div>
 
-        {/* Contact Layout Grid */}
-        <div className="contact-layout-grid" style={{ marginBottom: '3.5rem' }}>
-          {/* Left: Contact Info Cards */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div className="card glass-card">
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(0, 229, 255, 0.12)', color: 'var(--color-cyan)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Mail size={20} />
-                </div>
-                <div>
-                  <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '2px' }}>Email Support</h4>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--color-cyan)', fontFamily: 'var(--font-mono)' }}>support@conceptifyyy.com</p>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>Average response time: &lt; 4 hours</p>
-                </div>
-              </div>
-            </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
+          
+          {/* Left Column: Form */}
+          <div className="pop" style={{ background: '#FFFFFF', padding: '2rem' }}>
+            <h2 className="d" style={{ fontSize: '1.4rem', marginBottom: '1.25rem' }}>Send Us a Message</h2>
 
-            <div className="card glass-card">
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(139, 92, 246, 0.12)', color: 'var(--color-purple)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Clock size={20} />
-                </div>
-                <div>
-                  <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '2px' }}>Support Hours</h4>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Monday – Saturday</p>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>9:00 AM – 8:00 PM IST</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="card glass-card">
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.12)', color: 'var(--color-emerald)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <ShieldCheck size={20} />
-                </div>
-                <div>
-                  <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '2px' }}>Payment & Purchase Inquiries</h4>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Razorpay 100% Secure Checkout</p>
-                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>Instant digital license fulfillment</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right: Contact Form */}
-          <div className="card glass-card glowing-border" style={{ padding: '2rem' }}>
             {submitted ? (
-              <div style={{ textAlign: 'center', padding: '2.5rem 1rem' }}>
-                <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', color: 'var(--color-emerald)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem auto' }}>
-                  <CheckCircle2 size={32} />
-                </div>
-                <h3 style={{ fontSize: '1.35rem', fontWeight: 800, marginBottom: '0.5rem' }}>
-                  Message Sent Successfully!
-                </h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-                  Our academic support team has received your message and will reach out to your email shortly.
+              <div style={{ background: 'var(--mint-soft)', border: '2px solid var(--ink)', borderRadius: '16px', padding: '2rem', textAlign: 'center' }}>
+                <CheckCircle2 size={40} color="var(--mint)" style={{ margin: '0 auto 0.75rem' }} />
+                <h3 className="d" style={{ fontSize: '1.2rem', margin: '0 0 0.5rem' }}>Message Received!</h3>
+                <p style={{ fontSize: '0.9rem', color: 'var(--muted)', margin: '0 0 1.25rem' }}>
+                  Our academic support team has received your inquiry and will respond within 24 hours.
                 </p>
-                <button onClick={() => setSubmitted(false)} className="btn btn-secondary btn-sm">
+                <button onClick={() => setSubmitted(false)} className="btn v btn-sm">
                   Send Another Message
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.25rem' }}>
-                  Send a Message
-                </h3>
-
-                <div className="grid-2" style={{ marginBottom: '1rem' }}>
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label" style={{ fontSize: '0.8rem' }}>Your Name</label>
-                    <input
-                      type="text"
-                      className="input"
-                      placeholder="e.g. Priyanshu Roy"
-                      value={name}
-                      onChange={e => setName(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group" style={{ marginBottom: 0 }}>
-                    <label className="form-label" style={{ fontSize: '0.8rem' }}>Email Address</label>
-                    <input
-                      type="email"
-                      className="input"
-                      placeholder="name@example.com"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      required
-                    />
-                  </div>
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '0.4rem' }}>
+                    Your Full Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    placeholder="e.g. John Doe"
+                    className="inp"
+                    style={{ width: '100%' }}
+                  />
                 </div>
 
-                <div className="form-group" style={{ marginBottom: '1rem' }}>
-                  <label className="form-label" style={{ fontSize: '0.8rem' }}>Inquiry Category</label>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '0.4rem' }}>
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="you@college.edu"
+                    className="inp"
+                    style={{ width: '100%' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '0.4rem' }}>
+                    Subject
+                  </label>
                   <select
                     value={subject}
                     onChange={e => setSubject(e.target.value)}
-                    className="select"
+                    className="inp"
+                    style={{ width: '100%', cursor: 'pointer' }}
                   >
-                    <option>General Inquiry</option>
-                    <option>DSA Problem & Visualizer Feedback</option>
-                    <option>Aptitude Arena Question Inquiry</option>
-                    <option>Order, Download & Razorpay Support</option>
-                    <option>College / Campus Placement Partnership</option>
+                    <option value="General Inquiry">General Inquiry</option>
+                    <option value="Order & Download Help">Order & Download Vault Help</option>
+                    <option value="Payment Verification">Payment / Razorpay Transaction Help</option>
+                    <option value="Content Feedback">Notes or Content Feedback</option>
+                    <option value="Creator Collaboration">Creator / College Representative</option>
                   </select>
                 </div>
 
-                <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                  <label className="form-label" style={{ fontSize: '0.8rem' }}>Message</label>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '0.4rem' }}>
+                    Message Details
+                  </label>
                   <textarea
-                    rows={5}
-                    className="textarea"
-                    placeholder="How can our team assist you today?"
+                    required
+                    rows={4}
                     value={message}
                     onChange={e => setMessage(e.target.value)}
-                    required
+                    placeholder="Provide details about your query or order ID..."
+                    className="inp"
+                    style={{ width: '100%', resize: 'vertical' }}
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="btn btn-primary btn-lg"
-                  style={{ width: '100%', gap: '8px' }}
+                  className="btn v"
+                  style={{ width: '100%', justifyContent: 'center' }}
                 >
-                  <Send size={18} />
-                  <span>{submitting ? 'Sending Message...' : 'Submit Inquiry'}</span>
+                  {submitting ? 'Sending...' : (
+                    <>
+                      <Send size={16} /> Send Message
+                    </>
+                  )}
                 </button>
               </form>
             )}
           </div>
+
+          {/* Right Column: Support Cards */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            
+            <div className="pop" style={{ background: '#FFFFFF', padding: '1.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--yellow)', border: '2px solid var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Mail size={20} color="var(--ink)" />
+                </div>
+                <div>
+                  <h3 className="d" style={{ fontSize: '1.15rem', margin: 0 }}>Direct Email Support</h3>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--muted)', margin: 0 }}>Guaranteed response under 24 hrs</p>
+                </div>
+              </div>
+              <a
+                href="mailto:conceptifyyy@gmail.com"
+                style={{
+                  display: 'inline-block',
+                  color: 'var(--purple)',
+                  fontWeight: 700,
+                  fontSize: '1.05rem',
+                  textDecoration: 'underline'
+                }}
+              >
+                conceptifyyy@gmail.com
+              </a>
+            </div>
+
+            <div className="pop" style={{ background: '#FFFFFF', padding: '1.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--mint-soft)', border: '2px solid var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ShieldCheck size={20} color="var(--ink)" />
+                </div>
+                <div>
+                  <h3 className="d" style={{ fontSize: '1.15rem', margin: 0 }}>Razorpay Order Inquiries</h3>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--muted)', margin: 0 }}>Payment dispute & refund assistance</p>
+                </div>
+              </div>
+              <p style={{ fontSize: '0.875rem', color: 'var(--muted)', margin: 0, lineHeight: 1.5 }}>
+                For instant resolution regarding Razorpay transactions, please include your <strong>Payment ID</strong> (starts with <code>pay_...</code>) or Order ID.
+              </p>
+            </div>
+
+            <div className="pop" style={{ background: 'var(--lavender-accent)', padding: '1.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+                <Clock size={20} color="var(--ink)" />
+                <h3 className="d" style={{ fontSize: '1.15rem', margin: 0 }}>Support Hours</h3>
+              </div>
+              <p style={{ fontSize: '0.875rem', color: 'var(--ink)', margin: 0, lineHeight: 1.6 }}>
+                <strong>Monday – Sunday:</strong> 9:00 AM – 9:00 PM IST <br />
+                Queries sent during nighttime are prioritized first thing next morning.
+              </p>
+            </div>
+
+          </div>
+
         </div>
+
       </div>
     </div>
   );

@@ -4,153 +4,133 @@ import {
   Sparkles, 
   BrainCircuit, 
   Code2, 
-  Zap, 
-  ShieldCheck, 
   Target, 
-  Users, 
+  ArrowRight,
+  BookOpen,
   Award,
-  Layers,
-  CheckCircle2,
-  ArrowRight
+  CheckCircle2
 } from 'lucide-react';
 
 export const About: React.FC = () => {
   return (
-    <div className="page-wrapper animate-fade-in">
-      {/* Header Banner */}
-      <section style={{ padding: '4rem 0 3rem 0', textAlign: 'center', position: 'relative' }}>
-        <div className="container" style={{ maxWidth: '800px' }}>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: 'rgba(0, 229, 255, 0.08)',
-            border: '1px solid rgba(0, 229, 255, 0.25)',
-            padding: '6px 16px',
-            borderRadius: 'var(--radius-full)',
-            marginBottom: '1.25rem'
-          }}>
-            <Sparkles size={14} color="var(--color-cyan)" />
-            <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-cyan)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-              Our Story & Mission
+    <div style={{ padding: '2rem 1.5rem 5rem' }}>
+      <div className="wrap" style={{ maxWidth: '1000px' }}>
+        
+        {/* Hero Section */}
+        <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+          <div style={{ display: 'inline-block', marginBottom: '1rem' }}>
+            <span className="chip" style={{ background: 'var(--yellow)', transform: 'rotate(-2deg)' }}>
+              ✦ OUR PEDAGOGY & MISSION
             </span>
           </div>
 
-          <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '1rem' }}>
-            Don't just learn it. <br />
-            <span className="text-gradient">Understand it.</span>
+          <h1 className="d" style={{ fontSize: 'clamp(2.5rem, 5vw, 3.75rem)', lineHeight: 1.1, marginBottom: '1.25rem' }}>
+            Don't just memorize. <br />
+            <span style={{ color: 'var(--purple)' }}>Get the concept right.</span>
           </h1>
 
-          <p style={{ fontSize: '1.15rem', color: 'var(--text-secondary)', lineHeight: '1.7' }}>
-            CONCEPTIFYYY was born from a simple realization: engineering students spend countless hours memorizing solutions on competitive coding websites without truly developing the mental intuition required to solve new, unseen problems in high-stakes interviews.
+          <p style={{ fontSize: '1.2rem', color: 'var(--muted)', maxWidth: '720px', margin: '0 auto', lineHeight: 1.6 }}>
+            Conceptifyyy was founded with a singular conviction: engineering students spend countless hours memorizing code snippets without developing the genuine intuition required to ace campus drives and high-stakes technical interviews.
           </p>
         </div>
-      </section>
 
-      {/* 3 Core Pillars */}
-      <section style={{ padding: '3rem 0', background: 'var(--bg-secondary)', borderTop: '1px solid var(--border-subtle)', borderBottom: '1px solid var(--border-subtle)' }}>
-        <div className="container">
-          <div style={{ textAlign: 'center', maxWidth: '600px', margin: '0 auto 2.5rem auto' }}>
-            <h2>The 3 Pillars of Conceptifyyy</h2>
-            <p>Our curriculum is built around cognitive retention principles rather than rote memorization.</p>
+        {/* 3 Core Pillars */}
+        <div style={{ marginBottom: '4rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+            <h2 className="d" style={{ fontSize: '2rem' }}>The 3 Pillars of Conceptifyyy</h2>
+            <p style={{ color: 'var(--muted)' }}>Built around deep cognitive retention rather than rote memorization.</p>
           </div>
 
-          <div className="grid-3">
-            <div className="card glass-card">
-              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(0, 229, 255, 0.12)', color: 'var(--color-cyan)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
-                <BrainCircuit size={24} />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
+            <div className="pop" style={{ background: '#FFFFFF', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'var(--lavender-accent)', border: '2px solid var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <BrainCircuit size={24} color="var(--purple)" />
               </div>
-              <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>1. Visual Cognitive Modeling</h3>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-                Every data structure and algorithm is accompanied by step-by-step interactive animations that show pointer shifts, memory allocations, and tree balances in real-time.
+              <h3 className="d" style={{ fontSize: '1.3rem', margin: 0 }}>Visual Cognitive Modeling</h3>
+              <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>
+                Complex data structures, pointer shifts, memory allocations, and tree balances are visualized with crystal clarity so intuition replaces guesswork.
               </p>
             </div>
 
-            <div className="card glass-card">
-              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(139, 92, 246, 0.12)', color: 'var(--color-purple)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
-                <Code2 size={24} />
+            <div className="pop" style={{ background: '#FFFFFF', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'var(--yellow)', border: '2px solid var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <BookOpen size={24} color="var(--ink)" />
               </div>
-              <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>2. Active Try-First Practice</h3>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-                Solutions are locked until students actively engage with the problem. Sandboxed multi-language compilation provides instant telemetry on runtime, memory, and hidden edge cases.
+              <h3 className="d" style={{ fontSize: '1.3rem', margin: 0 }}>Verified Field-Tested Notes</h3>
+              <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>
+                Every handwritten note and algorithmic cheat sheet is battle-tested by top campus placement scorers and university toppers before publishing.
               </p>
             </div>
 
-            <div className="card glass-card">
-              <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.12)', color: 'var(--color-emerald)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.25rem' }}>
-                <Target size={24} />
+            <div className="pop" style={{ background: '#FFFFFF', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'var(--mint-soft)', border: '2px solid var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Target size={24} color="var(--ink)" />
               </div>
-              <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>3. Placement Readiness</h3>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>
-                From quantitative aptitude shortcuts to verified handwritten notes and full-stack MERN major projects, we provide the complete toolkit needed to clear campus placement drives.
+              <h3 className="d" style={{ fontSize: '1.3rem', margin: 0 }}>Placement-Driven Quality</h3>
+              <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>
+                From quantitative aptitude shortcuts to production-grade full-stack project source code, we supply the complete arsenal needed to secure day-1 offers.
               </p>
             </div>
           </div>
         </div>
-      </section>
 
-      {/* Learning Methodology Breakdown */}
-      <section style={{ padding: '4rem 0' }}>
-        <div className="container" style={{ maxWidth: '920px' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <span className="badge badge-purple" style={{ marginBottom: '0.5rem' }}>Pedagogy</span>
-            <h2>How Our Cognitive Engine Works</h2>
+        {/* 4 Steps Section */}
+        <div className="pop" style={{ background: '#FFFFFF', padding: '2.5rem', marginBottom: '3.5rem' }}>
+          <div style={{ marginBottom: '2rem' }}>
+            <span className="tag" style={{ background: 'var(--lavender-accent)', marginBottom: '0.75rem' }}>PEDAGOGY BREAKDOWN</span>
+            <h2 className="d" style={{ fontSize: '2rem', margin: '0.5rem 0 0' }}>How Our Study Systems Work</h2>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
             {[
               {
-                step: '01',
-                title: 'Problem Framing & Intuition',
-                desc: 'We break down complex problem descriptions into core algorithmic patterns (Two Pointers, Sliding Window, Monotonic Stack, DP Memoization) rather than presenting raw code.'
+                num: '01',
+                title: 'Pattern Recognition',
+                desc: 'Break problems down into core algorithmic paradigms (Sliding Window, Two Pointers, Monotonic Stack, Dynamic Programming) instead of memorizing code lines.'
               },
               {
-                step: '02',
-                title: 'Interactive Visual Execution',
-                desc: 'Our visual player renders memory diagrams, hash lookups, and pointer movements with playback controls (play, pause, speed control, scrubber timeline) so you see how state changes across iterations.'
+                num: '02',
+                title: 'Intuitive Hand-Drawn Diagrams',
+                desc: 'Flowcharts and step-by-step memory layouts that illuminate what the CPU and memory do on every line of execution.'
               },
               {
-                step: '03',
-                title: 'Isolated Multi-Language Sandbox',
-                desc: 'Write solutions in JavaScript, Python, C++, or Java. The code executes in an isolated environment with public test cases, hidden edge cases, and runtime profiling.'
+                num: '03',
+                title: 'Multi-Language Mastery',
+                desc: 'Solutions explained with Python, Java, C++, and JavaScript paradigms alongside edge-case checklists.'
               },
               {
-                step: '04',
-                title: 'Deep Complexity Analysis',
-                desc: 'Every solution explains time and space complexities, common pitfalls to avoid during technical interviews, and trade-offs between space and time optimization.'
+                num: '04',
+                title: 'Instant Perpetual Access',
+                desc: 'Purchased materials land directly in your My Purchases download vault with lifetime download access and license tracking.'
               }
-            ].map(item => (
-              <div key={item.step} className="card" style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', background: 'var(--bg-secondary)' }}>
-                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--color-cyan)', fontFamily: 'var(--font-mono)', minWidth: '40px' }}>
-                  {item.step}
+            ].map(s => (
+              <div key={s.num} style={{ background: 'var(--lavender)', border: '2px solid var(--ink)', borderRadius: '18px', padding: '1.25rem' }}>
+                <div className="d" style={{ fontSize: '2rem', color: 'var(--purple)', lineHeight: 1, marginBottom: '0.5rem' }}>
+                  {s.num}
                 </div>
-                <div>
-                  <h3 style={{ fontSize: '1.15rem', color: 'var(--text-primary)', marginBottom: '0.25rem' }}>{item.title}</h3>
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.6' }}>{item.desc}</p>
-                </div>
+                <h4 className="d" style={{ fontSize: '1.05rem', margin: '0 0 0.4rem' }}>{s.title}</h4>
+                <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.5, margin: 0 }}>{s.desc}</p>
               </div>
             ))}
           </div>
         </div>
-      </section>
 
-      {/* CTA Box */}
-      <section style={{ padding: '3.5rem 0', background: 'var(--bg-secondary)', borderTop: '1px solid var(--border-subtle)', textAlign: 'center' }}>
-        <div className="container" style={{ maxWidth: '640px' }}>
-          <h2 style={{ marginBottom: '1rem' }}>Ready to understand concepts deeply?</h2>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>
-            Start with our signature interactive visualizers or solve today's daily DSA challenge.
+        {/* Call to action */}
+        <div className="pop" style={{ background: 'var(--purple)', color: '#FFFFFF', padding: '3rem 2rem', textAlign: 'center' }}>
+          <h2 className="d" style={{ fontSize: '2.25rem', color: '#FFFFFF', marginBottom: '0.75rem' }}>
+            Ready to master your subjects?
+          </h2>
+          <p style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.85)', maxWidth: '550px', margin: '0 auto 1.75rem' }}>
+            Browse verified handwritten notes, exam cheat sheets, and full-stack projects on the Conceptifyyy Store.
           </p>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-            <Link to="/dsa" className="btn btn-primary btn-lg">
-              <Code2 size={18} /> Start Learning
-            </Link>
-            <Link to="/store" className="btn btn-secondary btn-lg">
-              <ArrowRight size={18} /> Explore Resources
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to="/store" className="btn y" style={{ textDecoration: 'none' }}>
+              Explore The Store <ArrowRight size={16} />
             </Link>
           </div>
         </div>
-      </section>
+
+      </div>
     </div>
   );
 };

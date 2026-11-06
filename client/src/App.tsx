@@ -9,6 +9,7 @@ import { Footer } from './components/Footer';
 import { AuthModal } from './components/AuthModal';
 
 // Dedicated Digital Store Pages
+import { Home } from './pages/Home';
 import { Store } from './pages/Store';
 import { ProductDetail } from './pages/ProductDetail';
 import { MyPurchases } from './pages/MyPurchases';
@@ -25,6 +26,7 @@ import { TermsConditions } from './pages/TermsConditions';
 import { ShippingPolicy } from './pages/ShippingPolicy';
 
 // Admin Store Management
+import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminProducts } from './pages/admin/AdminProducts';
 import { AdminOrders } from './pages/admin/AdminOrders';
 
@@ -67,8 +69,8 @@ export const AppContent: React.FC = () => {
     <>
       <Navbar onOpenAuth={handleOpenAuth} />
       <Routes>
-        {/* Core Digital Store Routes */}
-        <Route path="/" element={<Store />} />
+        {/* Core Digital Store & Educational Platform Routes */}
+        <Route path="/" element={<Home onOpenAuth={() => handleOpenAuth('login')} />} />
         <Route path="/store" element={<Store />} />
         <Route path="/store/:slug" element={<ProductDetail onOpenAuth={handleOpenAuth} />} />
         <Route path="/projects" element={<Store />} />
@@ -106,7 +108,7 @@ export const AppContent: React.FC = () => {
           path="/admin"
           element={
             <ProtectedRoute requireAdmin={true}>
-              <AdminProducts />
+              <AdminDashboard />
             </ProtectedRoute>
           }
         />

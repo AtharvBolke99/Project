@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Receipt, ChevronLeft, CheckCircle2, Clock, XCircle, ShieldCheck } from 'lucide-react';
+import { Receipt, ChevronLeft, ShoppingBag, Database } from 'lucide-react';
 import { api } from '../../services/api';
-import { SkeletonLoader } from '../../components/SkeletonLoader';
 
 export const AdminOrders: React.FC = () => {
   const [orders, setOrders] = useState<any[]>([]);
@@ -30,11 +29,14 @@ export const AdminOrders: React.FC = () => {
   return (
     <div className="admin-layout animate-fade-in">
       <aside className="admin-sidebar">
-        <Link to="/" className="btn btn-secondary btn-sm" style={{ marginBottom: '1rem' }}>
-          <ChevronLeft size={16} /> Back to Store
+        <Link to="/" className="btn y btn-sm" style={{ marginBottom: '1.25rem', justifyContent: 'flex-start' }}>
+          <ChevronLeft size={16} /> Back to Website
+        </Link>
+        <Link to="/admin" className="admin-sidebar-link">
+          <Database size={18} /> Overview
         </Link>
         <Link to="/admin/products" className="admin-sidebar-link">
-          <Receipt size={18} /> Products & Notes
+          <ShoppingBag size={18} /> Products & Notes
         </Link>
         <Link to="/admin/orders" className="admin-sidebar-link active">
           <Receipt size={18} /> Orders & Revenue
@@ -42,19 +44,23 @@ export const AdminOrders: React.FC = () => {
       </aside>
 
       <main className="admin-content">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <h1 style={{ fontSize: '1.75rem', fontWeight: 800 }}>Order Management & Payments</h1>
-            <p style={{ color: 'var(--text-secondary)' }}>Live real Razorpay transactions and license unlock records.</p>
+            <span className="tag" style={{ background: '#C9F7E8', marginBottom: '8px' }}>Sales Telemetry</span>
+            <h1 className="d" style={{ fontSize: 'clamp(28px, 4vw, 36px)', fontWeight: 800 }}>Order Management & Payments</h1>
+            <p className="mu" style={{ fontSize: '15px' }}>Live real Razorpay transactions and license unlock records.</p>
           </div>
 
-          <div style={{ display: 'flex', gap: '6px' }}>
+          <div style={{ display: 'flex', gap: '8px' }}>
             {['All', 'PAID', 'PENDING', 'FAILED'].map(st => (
               <button
                 key={st}
                 onClick={() => setStatusFilter(st)}
-                className={`tab-btn ${statusFilter === st ? 'active' : ''}`}
-                style={{ fontSize: '0.8125rem' }}
+                className={`btn btn-sm ${statusFilter === st ? 'v' : ''}`}
+                style={{
+                  background: statusFilter === st ? 'var(--purple)' : '#FFFFFF',
+                  color: statusFilter === st ? '#FFFFFF' : 'var(--ink)'
+                }}
               >
                 {st}
               </button>
@@ -62,13 +68,15 @@ export const AdminOrders: React.FC = () => {
           </div>
         </div>
 
-        <div className="data-table-wrapper">
+        <div className="data-table-wrapper pop">
           {loading ? (
             <div style={{ padding: '2rem' }}>
-              <SkeletonLoader rows={4} height="44px" />
+              <div className="skeleton-pop" style={{ height: '44px', marginBottom: '12px' }}></div>
+              <div className="skeleton-pop" style={{ height: '44px', marginBottom: '12px' }}></div>
+              <div className="skeleton-pop" style={{ height: '44px' }}></div>
             </div>
           ) : orders.length === 0 ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+            <div style={{ padding: '3.5rem', textAlign: 'center', color: 'var(--muted)', fontWeight: 600 }}>
               No orders recorded under "{statusFilter}".
             </div>
           ) : (
@@ -88,28 +96,35 @@ export const AdminOrders: React.FC = () => {
                 {orders.map(o => (
                   <tr key={o.id}>
                     <td>
-                      <strong style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-primary)' }}>
+                      <strong style={{ fontFamily: 'var(--font-mono)', color: 'var(--ink)' }}>
                         {o.orderNumber}
                       </strong>
                     </td>
                     <td>
-                      <div>{o.userName}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{o.userEmail}</div>
+                      <div style={{ fontWeight: 700 }}>{o.userName}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--muted)' }}>{o.userEmail}</div>
                     </td>
-                    <td>{o.productTitle}</td>
-                    <td style={{ fontWeight: 800, color: 'var(--color-cyan)', fontFamily: 'var(--font-mono)' }}>
-                      ₹{o.amount}
+                    <td style={{ fontWeight: 600 }}>{o.productTitle}</td>
+                    <td>
+                      <span className="d" style={{ fontSize: '18px', fontWeight: 800, color: 'var(--ink)' }}>
+                        ₹{o.amount}
+                      </span>
                     </td>
                     <td>
-                      <span className={`badge ${o.status === 'PAID' ? 'badge-easy' : o.status === 'FAILED' ? 'badge-hard' : 'badge-medium'}`}>
+                      <span 
+                        className="tag" 
+                        style={{ 
+                          background: o.status === 'PAID' ? '#C9F7E8' : o.status === 'FAILED' ? '#FFD4C8' : '#FFE9A8' 
+                        }}
+                      >
                         {o.status}
                       </span>
                     </td>
-                    <td style={{ fontSize: '0.75rem', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>
+                    <td style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--muted)' }}>
                       <div>Order: {o.razorpayOrderId}</div>
                       {o.razorpayPaymentId && <div>Pay: {o.razorpayPaymentId}</div>}
                     </td>
-                    <td style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                    <td style={{ fontSize: '13px', color: 'var(--muted)', fontWeight: 600 }}>
                       {new Date(o.createdAt).toLocaleDateString()}
                     </td>
                   </tr>

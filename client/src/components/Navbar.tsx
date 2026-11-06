@@ -2,21 +2,16 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   ShoppingBag, 
-  Search, 
-  Moon, 
-  Sun, 
-  User, 
-  LogOut, 
-  ShieldCheck, 
   Menu, 
   X,
-  Sparkles,
+  LogOut, 
+  ShieldCheck, 
   Download,
+  FileText,
   FolderGit2,
-  FileText
+  Sparkles
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
 
 interface NavbarProps {
   onOpenAuth: (mode?: 'login' | 'register') => void;
@@ -24,7 +19,6 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -32,208 +26,170 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   const isActive = (path: string) => {
-    if (path === '/' && (location.pathname === '/' || location.pathname === '/store')) return true;
+    if (path === '/' && location.pathname === '/') return true;
     if (path !== '/' && location.pathname.startsWith(path)) return true;
     return false;
   };
 
   const navLinks = [
-    { label: 'Store Catalog', path: '/', icon: ShoppingBag, badge: 'Live' },
-    { label: 'My Purchases', path: '/my-purchases', icon: Download },
+    { label: 'Home', path: '/' },
+    { label: 'Explore Notes', path: '/store' },
+    { label: 'Placement Prep', path: '/store?category=DSA+Notes' },
+    { label: 'Projects', path: '/store?category=Projects' },
+    { label: 'My Downloads', path: '/my-purchases' }
   ];
 
   return (
     <>
-      <header className="navbar">
-        <div className="container navbar-inner">
-          {/* Logo */}
-          <Link to="/" className="brand-logo" style={{ textDecoration: 'none' }}>
-            <div 
-              className="brand-logo-icon" 
+      <header style={{ position: 'sticky', top: 0, zIndex: 900, width: '100%' }}>
+        <div className="wrap" style={{ paddingTop: '16px', paddingBottom: '12px' }}>
+          <div 
+            className="pop" 
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'space-between', 
+              gap: '16px', 
+              background: '#FFFFFF', 
+              borderRadius: '999px', 
+              padding: '8px 12px 8px 20px',
+              border: '2px solid var(--ink)',
+              boxShadow: '5px 5px 0 var(--ink)'
+            }}
+          >
+            {/* Logo */}
+            <Link 
+              to="/" 
+              className="d" 
               style={{ 
-                background: 'var(--gradient-brand)', 
-                color: '#FFFFFF', 
-                borderRadius: '12px', 
-                boxShadow: '0 4px 14px rgba(99, 102, 241, 0.35)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '36px',
-                height: '36px'
+                fontSize: '24px', 
+                fontWeight: 800, 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '10px', 
+                color: 'var(--ink)', 
+                textDecoration: 'none' 
               }}
             >
-              <ShoppingBag size={20} strokeWidth={2.4} />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
-              <span style={{ fontWeight: 800, letterSpacing: '-0.02em', fontSize: '1.25rem', color: 'var(--text-primary)' }}>
-                CONCEPT<span style={{ background: 'var(--gradient-brand)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>IFYYY</span>
-              </span>
-              <span style={{ fontSize: '0.625rem', fontWeight: 700, letterSpacing: '0.08em', color: 'var(--color-cyan)', textTransform: 'uppercase', marginTop: '2px' }}>
-                Digital Notes & Projects
-              </span>
-            </div>
-          </Link>
+              <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
+                <rect x="1" y="1" width="32" height="32" rx="10" fill="#5B3DF5" stroke="#1B1740" strokeWidth="2"></rect>
+                <path d="M10 9h11a3 3 0 0 1 3 3v13H13a3 3 0 0 1-3-3V9z" fill="none" stroke="#fff" strokeWidth="2"></path>
+                <path d="M14 15h6M14 19h4" stroke="#FFC933" strokeWidth="2" strokeLinecap="round"></path>
+              </svg>
+              <span>Conceptifyyy</span>
+            </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="desktop-only">
-            <ul className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '4px', listStyle: 'none', margin: 0, padding: 0 }}>
-              {navLinks.map(link => {
-                const IconComponent = link.icon;
-                return (
-                  <li key={link.path}>
+            {/* Desktop Navigation Links */}
+            <nav className="desktop-only">
+              <ul style={{ display: 'flex', gap: '22px', fontSize: '15px', fontWeight: 700, listStyle: 'none', margin: 0, padding: 0 }}>
+                {navLinks.map(link => {
+                  const active = isActive(link.path);
+                  return (
+                    <li key={link.path}>
+                      <Link
+                        to={link.path}
+                        style={{
+                          color: active ? 'var(--purple)' : 'var(--ink)',
+                          textDecoration: active ? 'underline' : 'none',
+                          textUnderlineOffset: '6px',
+                          textDecorationThickness: '2px',
+                          transition: 'color 0.15s ease'
+                        }}
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  );
+                })}
+
+                {isAdmin && (
+                  <li>
                     <Link
-                      to={link.path}
-                      className={`nav-link ${isActive(link.path) ? 'active' : ''}`}
-                      style={{ 
-                        position: 'relative', 
-                        display: 'inline-flex', 
-                        alignItems: 'center', 
-                        gap: '6px',
-                        padding: '8px 14px',
-                        borderRadius: 'var(--radius-md)',
-                        fontSize: '0.875rem',
-                        fontWeight: 600,
-                        textDecoration: 'none'
+                      to="/admin"
+                      style={{
+                        color: 'var(--purple)',
+                        fontWeight: 800,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
                       }}
                     >
-                      <IconComponent size={16} />
-                      <span>{link.label}</span>
-                      {link.badge && (
-                        <span style={{
-                          fontSize: '0.625rem',
-                          fontWeight: 700,
-                          background: 'var(--gradient-brand)',
-                          color: '#FFFFFF',
-                          padding: '1px 6px',
-                          borderRadius: '6px',
-                          textTransform: 'uppercase',
-                          boxShadow: '0 2px 6px rgba(99, 102, 241, 0.3)'
-                        }}>
-                          {link.badge}
-                        </span>
-                      )}
+                      <ShieldCheck size={16} />
+                      <span>Admin</span>
                     </Link>
                   </li>
-                );
-              })}
+                )}
+              </ul>
+            </nav>
 
-              {isAdmin && (
-                <li>
-                  <Link
-                    to="/admin/products"
-                    className="nav-link"
-                    style={{ 
-                      display: 'inline-flex', 
-                      alignItems: 'center', 
-                      gap: '6px',
-                      padding: '8px 14px',
-                      borderRadius: 'var(--radius-md)',
-                      fontSize: '0.875rem',
-                      fontWeight: 600,
-                      color: 'var(--color-cyan)',
-                      textDecoration: 'none'
-                    }}
-                  >
-                    <ShieldCheck size={16} />
-                    <span>Admin CMS</span>
-                  </Link>
-                </li>
-              )}
-            </ul>
-          </nav>
-
-          {/* Right Action Icons & Auth */}
-          <div className="nav-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {/* Dark / Light Theme Switcher */}
-            <button
-              className="btn-icon"
-              onClick={toggleTheme}
-              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
-              aria-label="Toggle theme"
-            >
-              {theme === 'dark' ? <Sun size={18} color="#F59E0B" /> : <Moon size={18} color="var(--color-primary)" />}
-            </button>
-
-            {/* User Profile or Login */}
-            {isAuthenticated && user ? (
-              <div style={{ position: 'relative' }}>
-                <button
-                  onClick={() => setIsUserMenuOpen(prev => !prev)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    background: 'var(--bg-tertiary)',
-                    border: '1px solid var(--border-subtle)',
-                    padding: '4px 12px 4px 6px',
-                    borderRadius: 'var(--radius-full)',
-                    cursor: 'pointer',
-                    color: 'var(--text-primary)'
-                  }}
-                >
-                  <img
-                    src={user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.name}`}
-                    alt={user.name}
-                    style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--bg-card)' }}
-                  />
-                  <span className="navbar-user-name desktop-only" style={{ fontSize: '0.875rem', fontWeight: 600 }}>
-                    {user.name.split(' ')[0]}
-                  </span>
-                  {isAdmin && (
-                    <span className="badge badge-cyan desktop-only" style={{ fontSize: '0.65rem' }}>
-                      ADMIN
-                    </span>
-                  )}
-                </button>
-
-                {isUserMenuOpen && (
-                  <div
+            {/* Right Action Buttons */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              {isAuthenticated && user ? (
+                <div style={{ position: 'relative' }}>
+                  <button
+                    onClick={() => setIsUserMenuOpen(prev => !prev)}
+                    className="btn"
                     style={{
-                      position: 'absolute',
-                      right: 0,
-                      top: '44px',
-                      width: '240px',
-                      background: 'var(--bg-card)',
-                      border: '1px solid var(--border-medium)',
-                      borderRadius: 'var(--radius-lg)',
-                      boxShadow: 'var(--shadow-lg)',
-                      padding: '8px',
-                      zIndex: 100,
-                      animation: 'fadeIn 0.15s ease'
+                      minHeight: '40px',
+                      padding: '4px 14px 4px 6px',
+                      gap: '8px',
+                      fontSize: '14px',
+                      borderRadius: '999px',
+                      background: '#FFFFFF'
                     }}
                   >
-                    <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-subtle)' }}>
-                      <p style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)', margin: 0 }}>{user.name}</p>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '2px 0 0' }}>{user.email}</p>
-                      <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }}>
-                        <span className="badge badge-cyan" style={{ fontSize: '0.65rem' }}>{user.role}</span>
-                      </div>
-                    </div>
+                    <img
+                      src={user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.name}`}
+                      alt={user.name}
+                      style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1.5px solid var(--ink)' }}
+                    />
+                    <span className="desktop-only">{user.name.split(' ')[0]}</span>
+                    {isAdmin && (
+                      <span className="tag tag-yellow" style={{ fontSize: '10px', padding: '2px 8px' }}>
+                        ADMIN
+                      </span>
+                    )}
+                  </button>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', padding: '6px 0' }}>
+                  {isUserMenuOpen && (
+                    <div
+                      className="pop"
+                      style={{
+                        position: 'absolute',
+                        right: 0,
+                        top: '48px',
+                        width: '240px',
+                        background: '#FFFFFF',
+                        borderRadius: '20px',
+                        padding: '12px',
+                        zIndex: 100,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '8px'
+                      }}
+                    >
+                      <div style={{ padding: '6px 8px', borderBottom: '2px solid var(--lavender-accent)' }}>
+                        <div style={{ fontWeight: 800, color: 'var(--ink)' }}>{user.name}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--muted)' }}>{user.email}</div>
+                      </div>
+
                       <Link
                         to="/my-purchases"
                         onClick={() => setIsUserMenuOpen(false)}
-                        className="btn-secondary"
-                        style={{ justifyContent: 'flex-start', border: 'none', padding: '8px 12px', fontSize: '0.85rem' }}
+                        className="btn btn-secondary btn-sm"
+                        style={{ width: '100%', justifyContent: 'flex-start' }}
                       >
-                        <ShoppingBag size={16} /> My Purchased Notes
+                        <Download size={15} /> My Purchased Notes
                       </Link>
 
                       {isAdmin && (
                         <Link
                           to="/admin/products"
                           onClick={() => setIsUserMenuOpen(false)}
-                          className="btn-secondary"
-                          style={{
-                            justifyContent: 'flex-start',
-                            border: 'none',
-                            padding: '8px 12px',
-                            fontSize: '0.85rem',
-                            color: 'var(--color-cyan)'
-                          }}
+                          className="btn btn-secondary btn-sm"
+                          style={{ width: '100%', justifyContent: 'flex-start', color: 'var(--purple)' }}
                         >
-                          <ShieldCheck size={16} /> Admin Products CMS
+                          <ShieldCheck size={15} /> Admin CMS Portal
                         </Link>
                       )}
 
@@ -243,48 +199,53 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
                           logout();
                           navigate('/');
                         }}
-                        className="btn-secondary"
-                        style={{
-                          justifyContent: 'flex-start',
-                          border: 'none',
-                          padding: '8px 12px',
-                          fontSize: '0.85rem',
-                          color: 'var(--color-rose)',
-                          width: '100%',
-                          cursor: 'pointer'
-                        }}
+                        className="btn btn-sm"
+                        style={{ width: '100%', justifyContent: 'flex-start', color: 'var(--coral)', background: '#FFF' }}
                       >
-                        <LogOut size={16} /> Logout
+                        <LogOut size={15} /> Logout
                       </button>
                     </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="navbar-auth-buttons" style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  className="btn btn-secondary btn-sm"
-                  onClick={() => onOpenAuth('login')}
-                >
-                  Log In
-                </button>
-                <button
-                  className="btn btn-primary btn-sm"
-                  onClick={() => onOpenAuth('register')}
-                >
-                  Get Started
-                </button>
-              </div>
-            )}
+                  )}
+                </div>
+              ) : (
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <button
+                    onClick={() => onOpenAuth('login')}
+                    className="btn desktop-only"
+                    style={{
+                      boxShadow: 'none',
+                      borderColor: 'transparent',
+                      minHeight: '40px',
+                      padding: '0 14px',
+                      background: 'transparent',
+                      fontWeight: 700
+                    }}
+                  >
+                    Log in
+                  </button>
+                  <button
+                    onClick={() => onOpenAuth('register')}
+                    className="btn v"
+                    style={{
+                      minHeight: '40px',
+                      padding: '0 20px',
+                      fontSize: '14px'
+                    }}
+                  >
+                    Get started
+                  </button>
+                </div>
+              )}
 
-            {/* Mobile Drawer Hamburger Button */}
-            <button
-              className="btn-icon mobile-only"
-              onClick={() => setIsMobileDrawerOpen(true)}
-              aria-label="Open Navigation Menu"
-            >
-              <Menu size={20} />
-            </button>
+              {/* Mobile Drawer Hamburger */}
+              <button
+                className="btn-icon mobile-only"
+                onClick={() => setIsMobileDrawerOpen(true)}
+                aria-label="Open Navigation Menu"
+              >
+                <Menu size={20} />
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -296,120 +257,95 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(15, 23, 42, 0.45)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
+            background: 'rgba(27, 23, 64, 0.6)',
+            backdropFilter: 'blur(6px)',
             zIndex: 1000,
             display: 'flex',
             justifyContent: 'flex-end',
-            animation: 'fadeIn 0.2s ease'
+            animation: 'fadeIn 0.15s ease'
           }}
         >
           <div 
             onClick={e => e.stopPropagation()}
+            className="pop"
             style={{
-              width: '80%',
-              maxWidth: '320px',
+              width: '84%',
+              maxWidth: '340px',
               height: '100%',
-              background: 'var(--bg-secondary)',
-              borderLeft: '1px solid var(--border-subtle)',
-              padding: '1.5rem',
+              background: '#FFFFFF',
+              borderRadius: '0',
+              padding: '1.75rem',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
-              boxShadow: 'var(--shadow-lg)'
+              boxShadow: 'none',
+              borderLeft: '3px solid var(--ink)'
             }}
           >
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div className="brand-logo-icon" style={{ width: '28px', height: '28px', background: 'var(--gradient-brand)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF' }}>
-                    <ShoppingBag size={16} />
-                  </div>
-                  <strong style={{ fontSize: '1rem', color: 'var(--text-primary)' }}>CONCEPTIFYYY</strong>
-                </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', paddingBottom: '1rem', borderBottom: '2px solid var(--ink)' }}>
+                <Link to="/" onClick={() => setIsMobileDrawerOpen(false)} className="d" style={{ fontSize: '22px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <svg width="28" height="28" viewBox="0 0 34 34" aria-hidden="true">
+                    <rect x="1" y="1" width="32" height="32" rx="10" fill="#5B3DF5" stroke="#1B1740" strokeWidth="2"></rect>
+                    <path d="M10 9h11a3 3 0 0 1 3 3v13H13a3 3 0 0 1-3-3V9z" fill="none" stroke="#fff" strokeWidth="2"></path>
+                    <path d="M14 15h6M14 19h4" stroke="#FFC933" strokeWidth="2" strokeLinecap="round"></path>
+                  </svg>
+                  <span>Conceptifyyy</span>
+                </Link>
                 <button
                   className="btn-icon"
+                  style={{ minWidth: '36px', minHeight: '36px', padding: '6px' }}
                   onClick={() => setIsMobileDrawerOpen(false)}
                 >
                   <X size={18} />
                 </button>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <Link
-                  to="/"
-                  onClick={() => setIsMobileDrawerOpen(false)}
-                  className="nav-link"
-                  style={{
-                    padding: '10px 14px',
-                    borderRadius: '8px',
-                    background: isActive('/') ? 'var(--gradient-brand-subtle)' : 'transparent',
-                    color: isActive('/') ? 'var(--color-primary)' : 'var(--text-secondary)',
-                    fontWeight: 700,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px'
-                  }}
-                >
-                  <ShoppingBag size={18} />
-                  <span>Store Catalog</span>
-                </Link>
-
-                <Link
-                  to="/my-purchases"
-                  onClick={() => setIsMobileDrawerOpen(false)}
-                  className="nav-link"
-                  style={{
-                    padding: '10px 14px',
-                    borderRadius: '8px',
-                    background: isActive('/my-purchases') ? 'var(--gradient-brand-subtle)' : 'transparent',
-                    color: isActive('/my-purchases') ? 'var(--color-primary)' : 'var(--text-secondary)',
-                    fontWeight: 700,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px'
-                  }}
-                >
-                  <Download size={18} />
-                  <span>My Purchases</span>
-                </Link>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {navLinks.map(link => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    onClick={() => setIsMobileDrawerOpen(false)}
+                    className="btn"
+                    style={{
+                      justifyContent: 'flex-start',
+                      width: '100%',
+                      background: isActive(link.path) ? 'var(--lavender-accent)' : '#FFFFFF',
+                      color: 'var(--ink)'
+                    }}
+                  >
+                    <span>{link.label}</span>
+                  </Link>
+                ))}
 
                 {isAdmin && (
                   <Link
-                    to="/admin/products"
+                    to="/admin"
                     onClick={() => setIsMobileDrawerOpen(false)}
-                    className="nav-link"
-                    style={{
-                      padding: '10px 14px',
-                      borderRadius: '8px',
-                      color: 'var(--color-cyan)',
-                      fontWeight: 700,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px'
-                    }}
+                    className="btn y"
+                    style={{ width: '100%', justifyContent: 'flex-start' }}
                   >
                     <ShieldCheck size={18} />
-                    <span>Admin Products CMS</span>
+                    <span>Admin CMS Portal</span>
                   </Link>
                 )}
               </div>
             </div>
 
-            {/* Bottom of drawer */}
-            <div style={{ paddingTop: '1rem', borderTop: '1px solid var(--border-subtle)' }}>
+            {/* Bottom Auth Section */}
+            <div style={{ paddingTop: '1.25rem', borderTop: '2px solid var(--ink)' }}>
               {isAuthenticated && user ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <img
                       src={user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.name}`}
                       alt={user.name}
-                      style={{ width: '32px', height: '32px', borderRadius: '50%' }}
+                      style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid var(--ink)' }}
                     />
                     <div>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>{user.name}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{user.email}</div>
+                      <div style={{ fontWeight: 800, fontSize: '15px' }}>{user.name}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--muted)' }}>{user.email}</div>
                     </div>
                   </div>
                   <button
@@ -418,20 +354,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
                       logout();
                       navigate('/');
                     }}
-                    className="btn btn-secondary btn-sm"
-                    style={{ width: '100%', color: 'var(--color-rose)' }}
+                    className="btn c"
+                    style={{ width: '100%' }}
                   >
-                    <LogOut size={15} /> Logout
+                    <LogOut size={16} /> Logout
                   </button>
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <button
                     onClick={() => {
                       setIsMobileDrawerOpen(false);
                       onOpenAuth('login');
                     }}
-                    className="btn btn-secondary btn-sm"
+                    className="btn"
                     style={{ width: '100%' }}
                   >
                     Log In
@@ -441,7 +377,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
                       setIsMobileDrawerOpen(false);
                       onOpenAuth('register');
                     }}
-                    className="btn btn-primary btn-sm"
+                    className="btn v"
                     style={{ width: '100%' }}
                   >
                     Get Started

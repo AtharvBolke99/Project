@@ -1,134 +1,100 @@
 /* ==========================================================================
-   CONCEPTIFYYY DIGITAL STORE — ELECTRIC VIOLET & NEO-CYAN DESIGN SYSTEM
-   Luminous glassmorphism, Electric Violet (#6366F1) & Vivid Neo-Cyan (#06B6D4)
+   CONCEPTIFYYY GLOBAL DESIGN SYSTEM — DESIGN TOKENS
+   Visual Identity based on the Design Reference Artboard (Home page-html)
    ========================================================================== */
 
 :root {
-  /* Fonts */
-  --font-sans: 'Plus Jakarta Sans', 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Space Grotesk', 'Plus Jakarta Sans', -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  /* Reference Core Colors */
+  --ink: #1B1740;
+  --purple: #5B3DF5;
+  --purple-hover: #482AD4;
+  --purple-light: #EDE9FF;
+  --lavender: #F7F5FF;
+  --lavender-accent: #E3DDFF;
+  --lavender-dot: #D9D3FF;
+  --yellow: #FFC933;
+  --yellow-hover: #EBB624;
+  --yellow-light: #FFE9A8;
+  --coral: #FF8A6B;
+  --coral-light: #FFD4C8;
+  --mint: #19C8A0;
+  --soft-mint: #C9F7E8;
+  --muted: #4F4A7A;
+  --white: #FFFFFF;
 
-  /* Brand Accents — Electric Violet & Neo-Cyan */
-  --color-primary: #6366F1;             /* Electric Violet */
-  --color-primary-hover: #4F46E5;       /* Deep Indigo */
-  --color-primary-light: #818CF8;
-  --color-primary-glow: rgba(99, 102, 241, 0.28);
-  
-  --color-cyan: #06B6D4;                /* Vivid Neo-Cyan */
-  --color-cyan-hover: #0891B2;
-  --color-cyan-light: #22D3EE;
-  --color-cyan-glow: rgba(6, 182, 212, 0.25);
+  /* Typography */
+  --font-display: 'Bricolage Grotesque', system-ui, -apple-system, sans-serif;
+  --font-sans: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
 
-  --color-purple: #8B5CF6;
-  --color-purple-glow: rgba(139, 92, 246, 0.22);
+  /* Global Borders & Hard Offset Shadows */
+  --border: 2px solid var(--ink);
+  --border-thick: 2.5px solid var(--ink);
+  --border-subtle: var(--ink);
+  --border-medium: var(--ink);
+  --border-highlight: var(--purple);
 
-  --color-emerald: #10B981;             /* Success Emerald */
-  --color-emerald-glow: rgba(16, 185, 129, 0.20);
+  --shadow-xs: 2px 2px 0 var(--ink);
+  --shadow-sm: 3px 3px 0 var(--ink);
+  --shadow-md: 5px 5px 0 var(--ink);
+  --shadow-lg: 7px 7px 0 var(--ink);
+  --shadow-xl: 10px 10px 0 var(--ink);
+  --shadow-focus: 0 0 0 3px rgba(91, 61, 245, 0.35);
 
-  --color-amber: #F59E0B;               /* Rating Star Amber */
-  --color-amber-glow: rgba(245, 158, 11, 0.20);
-
-  --color-rose: #F43F5E;                /* Discount & Alert Rose */
-  --color-rose-glow: rgba(244, 63, 94, 0.20);
-
-  /* Gradients */
-  --gradient-brand: linear-gradient(135deg, #6366F1 0%, #06B6D4 100%);
-  --gradient-brand-subtle: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(6, 182, 212, 0.08) 100%);
-  --gradient-card: linear-gradient(180deg, rgba(99, 102, 241, 0.04) 0%, rgba(6, 182, 212, 0.02) 100%);
-  --gradient-text: linear-gradient(135deg, #6366F1 0%, #06B6D4 50%, #3B82F6 100%);
-
-  /* Light Theme (Default) */
-  --bg-primary: #F8FAFC;                /* Porcelain canvas */
-  --bg-secondary: #FFFFFF;              /* Pure brilliant white */
-  --bg-tertiary: #F1F5F9;               /* Slate tint */
-  --bg-card: #FFFFFF;                   /* Crisp white card */
-  --bg-card-hover: #F8FAFC;
-  --bg-glass: rgba(255, 255, 255, 0.85);
-  --bg-glass-card: rgba(255, 255, 255, 0.92);
-  
-  --border-subtle: #E2E8F0;             /* Clean hairline border */
-  --border-medium: #CBD5E1;
-  --border-highlight: #A5B4FC;          /* Soft violet highlight */
-  --border-cyan-highlight: #67E8F9;
-
-  --text-primary: #0F172A;              /* Deep obsidian high contrast */
-  --text-secondary: #475569;            /* Slate text */
-  --text-muted: #64748B;               /* Muted text */
-  --text-inverse: #FFFFFF;
-
-  --code-bg: #0F172A;
-  --code-text: #E2E8F0;
-
-  /* Diffused Modern Shadows */
-  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
-  --shadow-sm: 0 2px 8px -2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
-  --shadow-md: 0 10px 25px -4px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
-  --shadow-lg: 0 20px 40px -8px rgba(15, 23, 42, 0.10), 0 4px 12px -2px rgba(15, 23, 42, 0.05);
-  --shadow-glow: 0 0 35px rgba(99, 102, 241, 0.20);
-  --shadow-focus: 0 0 0 3px rgba(99, 102, 241, 0.25);
-
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
-  --radius-xl: 24px;
+  /* Border Radii */
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-card: 26px;
+  --radius-lg: 26px;
+  --radius-xl: 30px;
+  --radius-button: 999px;
   --radius-full: 9999px;
 
-  --header-height: 72px;
+  /* Layout */
+  --header-height: 80px;
   --mobile-nav-height: 68px;
 
-  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
+  /* Component Compatibility Aliases */
+  --color-primary: var(--purple);
+  --color-primary-hover: var(--purple-hover);
+  --color-primary-light: var(--purple-light);
+  --color-secondary: var(--yellow);
+  --color-cyan: var(--mint);
+  --color-emerald: var(--mint);
+  --color-amber: var(--yellow);
+  --color-rose: var(--coral);
+  --color-purple: var(--purple);
 
-/* Light Theme Attributes Explicit */
-[data-theme="light"] {
-  --bg-primary: #F8FAFC;
+  --bg-primary: var(--lavender);
   --bg-secondary: #FFFFFF;
-  --bg-tertiary: #F1F5F9;
+  --bg-tertiary: var(--lavender-accent);
   --bg-card: #FFFFFF;
-  --bg-card-hover: #F8FAFC;
-  --bg-glass: rgba(255, 255, 255, 0.85);
-  --bg-glass-card: rgba(255, 255, 255, 0.92);
-  
-  --border-subtle: #E2E8F0;
-  --border-medium: #CBD5E1;
-  --border-highlight: #A5B4FC;
-  --border-cyan-highlight: #67E8F9;
+  --bg-card-hover: var(--lavender-accent);
+  --bg-glass: rgba(255, 255, 255, 0.95);
+  --bg-glass-card: #FFFFFF;
 
-  --text-primary: #0F172A;
-  --text-secondary: #475569;
-  --text-muted: #64748B;
+  --text-primary: var(--ink);
+  --text-secondary: var(--muted);
+  --text-muted: var(--muted);
   --text-inverse: #FFFFFF;
+
+  --code-bg: var(--ink);
+  --code-text: #E3DDFF;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Dark Theme (Electric Violet & Neo-Cyan Deep Space) */
-[data-theme="dark"] {
-  --bg-primary: #080C14;               /* Deep cosmic background */
-  --bg-secondary: #0F172A;             /* Midnight slate */
-  --bg-tertiary: #1E293B;
-  --bg-card: #0D1527;                  /* Subtle blue-tinted dark card */
-  --bg-card-hover: #142038;
-  --bg-glass: rgba(15, 23, 42, 0.85);
-  --bg-glass-card: rgba(13, 21, 39, 0.92);
-
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-medium: rgba(255, 255, 255, 0.15);
-  --border-highlight: rgba(99, 102, 241, 0.45);
-  --border-cyan-highlight: rgba(6, 182, 212, 0.45);
-
-  --text-primary: #F8FAFC;             /* Bright crisp white */
-  --text-secondary: #94A3B8;           /* Muted silvery slate */
-  --text-muted: #64748B;
-  --text-inverse: #080C14;
-
-  --code-bg: #05080E;
-  --code-text: #F1F5F9;
-
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 10px 28px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.65);
-  --shadow-glow: 0 0 35px rgba(99, 102, 241, 0.28);
+/* Ensure clean contrast in both light/default theme */
+[data-theme="light"], :root {
+  --bg-primary: var(--lavender);
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: var(--lavender-accent);
+  --bg-card: #FFFFFF;
+  --text-primary: var(--ink);
+  --text-secondary: var(--muted);
+  --border-subtle: var(--ink);
+  --border-medium: var(--ink);
 }
