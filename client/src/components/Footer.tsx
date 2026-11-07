@@ -20,7 +20,7 @@ export const Footer: React.FC = () => {
             </div>
             
             <p style={{ color: 'var(--text-muted)', fontSize: '14px', lineHeight: 1.6, marginBottom: '18px' }}>
-              Conceptifyyy turns any chapter into a glowing universe of linked concepts. India's verified notes, cheat sheets, and full-stack project repository.
+              Conceptifyyy empowers students with verified engineering notes, placement cheat sheets, and full-stack project repositories. Master core concepts and ace technical interviews.
             </p>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
