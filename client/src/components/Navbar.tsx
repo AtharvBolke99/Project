@@ -34,7 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
   const navLinks = [
     { label: 'How it works', path: '/#how-it-works' },
     { label: 'Features', path: '/#features' },
-    { label: 'Store', path: '/store' },
+    { label: 'Subjects', path: '/store' },
     { label: 'My Vault', path: '/my-purchases' }
   ];
 

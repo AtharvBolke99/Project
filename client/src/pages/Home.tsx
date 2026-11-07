@@ -20,8 +20,8 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
   const [topProducts, setTopProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [emailInput, setEmailInput] = useState<string>('');
-  const [quizSelected, setQuizSelected] = useState<'linear' | 'constant'>('constant');
-  const [explainLevel, setExplainLevel] = useState<'quick' | 'deep' | 'exam'>('quick');
+  const [quizSelected, setQuizSelected] = useState<'co2' | 'o2'>('o2');
+  const [explainLevel, setExplainLevel] = useState<'simple' | 'standard' | 'exam'>('simple');
 
   const navigate = useNavigate();
 
@@ -64,10 +64,10 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
           {/* Left Hero Column */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             
-            {/* Top Pill: "● Handcrafted Notes & Placement Vault" */}
+            {/* Top Pill: "● Your ideas, finally connected" */}
             <div className="hero-pill-badge">
               <span className="dot"></span>
-              <span>Handcrafted Notes & Placement Vault</span>
+              <span>Your ideas, finally connected</span>
             </div>
 
             {/* Giant Title: "Learn the idea. Not just the answer." */}
@@ -80,16 +80,16 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
 
             {/* Subtitle */}
             <p className="mu" style={{ fontSize: 'clamp(16px, 2vw, 19px)', lineHeight: 1.6, maxWidth: '480px', color: 'var(--text-muted)' }}>
-              Conceptifyyy delivers verified engineering notes, DSA placement cheat sheets, and full-stack MERN projects. Master core concepts, ace campus drives, and own your tech career.
+              Conceptifyyy turns any chapter into a glowing universe of linked concepts. Tap a planet, understand it, quiz it, own it.
             </p>
 
             {/* CTA Buttons */}
             <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
               <Link to="/store" className="btn btn-yellow btn-lg">
-                Explore Notes & Projects
+                Build my first map
               </Link>
               <a href="#how-it-works" className="btn btn-dark btn-lg">
-                How It Works
+                Watch it work
               </a>
             </div>
 
@@ -144,7 +144,7 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
                 <div style={{ position: 'absolute', top: '20px', right: '24px', width: '16px', height: '16px', borderRadius: '50%', background: '#38E7AF' }}></div>
               </div>
 
-              {/* Center Sun: "Core Concept" */}
+              {/* Center Sun: "Your Concept" */}
               <div 
                 style={{ 
                   width: '104px', 
@@ -164,11 +164,11 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
                   zIndex: 10
                 }}
               >
-                <span>Core</span>
+                <span>Your</span>
                 <span>Concept</span>
               </div>
 
-              {/* Orbiting Pill 1: "Deep Intuition" (Top Left) */}
+              {/* Orbiting Pill 1: "Why does it work?" (Top Left) */}
               <div 
                 style={{ 
                   position: 'absolute', 
@@ -184,10 +184,10 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
                   zIndex: 12
                 }}
               >
-                Deep Intuition
+                Why does it work?
               </div>
 
-              {/* Orbiting Pill 2: "Verified Code & PDF" (Right Side) */}
+              {/* Orbiting Pill 2: "Real example" (Right Side) */}
               <div 
                 style={{ 
                   position: 'absolute', 
@@ -203,10 +203,10 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
                   zIndex: 12
                 }}
               >
-                Verified Code & PDF
+                Real example
               </div>
 
-              {/* Orbiting Pill 3: "Placement Ready" (Bottom Left) */}
+              {/* Orbiting Pill 3: "Quick quiz" (Bottom Left) */}
               <div 
                 style={{ 
                   position: 'absolute', 
@@ -222,7 +222,7 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
                   zIndex: 12
                 }}
               >
-                Placement Ready
+                Quick quiz
               </div>
 
             </div>
@@ -249,7 +249,7 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
         }}
       >
         <div style={{ display: 'inline-block', animation: 'marquee 25s linear infinite' }}>
-          DSA Placement Prep ✦ Python Programming ✦ MySQL & DBMS ✦ Quantitative Aptitude ✦ Full-Stack MERN Projects ✦ 92+ ATS Resumes ✦ Logical Reasoning ✦ Interview Cheat Sheets ✦ Campus Recruitment Drives ✦ DSA Placement Prep ✦ Python Programming ✦ MySQL & DBMS ✦ Quantitative Aptitude ✦ Full-Stack MERN Projects ✦ 92+ ATS Resumes ✦ Logical Reasoning ✦ Interview Cheat Sheets ✦
+          Science ✦ Maths ✦ History ✦ Languages ✦ Coding ✦ Biology ✦ Physics ✦ Economics ✦ Science ✦ Maths ✦ History ✦ Languages ✦ Coding ✦ Biology ✦ Physics ✦ Economics ✦
         </div>
       </div>
 
@@ -262,7 +262,7 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
             HOW IT WORKS
           </span>
           <h2 className="d" style={{ fontSize: 'clamp(32px, 4.5vw, 48px)', color: '#FFFFFF', fontWeight: 800 }}>
-            Three moves to <span className="title-box">"oh, I get it!"</span>
+            Three moves to <span className="title-box">“oh, I get it!”</span>
           </h2>
         </div>
 
@@ -275,10 +275,10 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
               1
             </div>
             <h3 className="d" style={{ fontSize: '24px', color: '#FFFFFF', margin: 0 }}>
-              Choose your subject
+              Drop a topic
             </h3>
             <p className="mu" style={{ fontSize: '15px', lineHeight: 1.6, margin: 0, color: 'var(--text-muted)' }}>
-              Browse verified handwritten notes, DSA placement sheets, DBMS guides, or full-stack capstone projects.
+              Type anything you are studying. It blooms into a map of small, connected ideas.
             </p>
           </div>
 
@@ -288,10 +288,10 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
               2
             </div>
             <h3 className="d" style={{ fontSize: '24px', color: '#FFFFFF', margin: 0 }}>
-              Master the intuition
+              Explore the planets
             </h3>
             <p className="mu" style={{ fontSize: '15px', lineHeight: 1.6, margin: 0, color: 'var(--text-muted)' }}>
-              Understand fundamental logic, algorithmic visual flowcharts, and high-frequency interview patterns.
+              Each node explains the why, shows a real-life example and points to what it depends on.
             </p>
           </div>
 
@@ -301,10 +301,10 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
               3
             </div>
             <h3 className="d" style={{ fontSize: '24px', color: '#FFFFFF', margin: 0 }}>
-              Lifetime vault access
+              Light it up
             </h3>
             <p className="mu" style={{ fontSize: '15px', lineHeight: 1.6, margin: 0, color: 'var(--text-muted)' }}>
-              Instant PDF download and perpetual access to digital files, source code, and updates in your personal vault.
+              Quick quizzes make each node glow as you master it, so you always see what is left.
             </p>
           </div>
 
@@ -337,7 +337,7 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
                   Concept maps
                 </h3>
                 <p style={{ fontSize: '15px', color: 'var(--ink)', lineHeight: 1.5, margin: 0 }}>
-                  Visual algorithmic flows, database schemas, and structured placement roadmaps in one clear view.
+                  The whole topic on one screen, and how every idea connects to the next.
                 </p>
               </div>
 
@@ -368,15 +368,13 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
                 Explain it your way
               </h3>
               <p style={{ fontSize: '15px', color: 'var(--ink)', lineHeight: 1.5, margin: 0 }}>
-                {explainLevel === 'quick' && 'Intuitive bullet points, key takeaways & visual diagrams.'}
-                {explainLevel === 'deep' && 'Complete chapter coverage, code flow & architectural concepts.'}
-                {explainLevel === 'exam' && 'Time complexities, edge cases & placement interview questions.'}
+                Flip between explanations at the level you need.
               </p>
             </div>
 
             {/* Pill Toggles */}
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '24px' }}>
-              {(['quick', 'deep', 'exam'] as const).map(lvl => (
+              {(['simple', 'standard', 'exam'] as const).map(lvl => (
                 <button
                   key={lvl}
                   onClick={() => setExplainLevel(lvl)}
@@ -392,7 +390,7 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
                     transition: 'all 0.15s ease'
                   }}
                 >
-                  {lvl === 'quick' ? 'Quick Notes' : lvl === 'deep' ? 'Deep Dive' : 'Exam-Ready'}
+                  {lvl === 'simple' ? 'Simple' : lvl === 'standard' ? 'Standard' : 'Exam-ready'}
                 </button>
               ))}
             </div>
@@ -402,22 +400,22 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
           <div className="pop" style={{ padding: '32px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '260px' }}>
             <div>
               <h3 className="d" style={{ fontSize: '28px', color: '#FFFFFF', marginBottom: '8px' }}>
-                Placement Quizzes
+                Mini quizzes
               </h3>
               <p style={{ fontSize: '15px', color: 'var(--text-muted)', lineHeight: 1.5, margin: 0 }}>
-                What is the average time complexity of a HashMap lookup?
+                What do plants release during photosynthesis?
               </p>
             </div>
 
             {/* Quiz Options */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '20px' }}>
               <button
-                onClick={() => setQuizSelected('linear')}
+                onClick={() => setQuizSelected('co2')}
                 style={{
                   width: '100%',
                   padding: '10px 18px',
                   borderRadius: '12px',
-                  border: quizSelected === 'linear' ? '1.5px solid var(--coral)' : '1.5px solid var(--bg-card-border-subtle)',
+                  border: quizSelected === 'co2' ? '1.5px solid var(--coral)' : '1.5px solid var(--bg-card-border-subtle)',
                   background: 'rgba(255,255,255,0.04)',
                   color: '#FFFFFF',
                   fontWeight: 600,
@@ -426,10 +424,10 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
                   cursor: 'pointer'
                 }}
               >
-                O(N) - Linear scan
+                Carbon dioxide
               </button>
               <button
-                onClick={() => setQuizSelected('constant')}
+                onClick={() => setQuizSelected('o2')}
                 style={{
                   width: '100%',
                   padding: '10px 18px',
@@ -443,7 +441,7 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
                   cursor: 'pointer'
                 }}
               >
-                O(1) - Constant time ✓
+                Oxygen ✓
               </button>
             </div>
           </div>
@@ -455,7 +453,7 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
                 Streak garden
               </h3>
               <p style={{ fontSize: '15px', color: 'var(--ink)', lineHeight: 1.5, margin: 0 }}>
-                Track your daily placement preparation, coding practice, and revision milestones.
+                Every day you study, a new square lights up on your personal knowledge garden.
               </p>
             </div>
 
@@ -579,12 +577,12 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
         <div className="pop-cta" style={{ padding: 'clamp(40px, 6vw, 64px) clamp(24px, 5vw, 48px)', textAlign: 'center' }}>
           
           <h2 className="d" style={{ fontSize: 'clamp(38px, 6vw, 64px)', lineHeight: 1.05, color: '#FFFFFF', fontWeight: 800, marginBottom: '16px' }}>
-            Concepts,<br />
-            <span style={{ color: 'var(--yellow)', fontStyle: 'italic', fontWeight: 800 }}>mastered.</span>
+            Ideas,<br />
+            <span style={{ color: 'var(--yellow)', fontStyle: 'italic', fontWeight: 800 }}>connected.</span>
           </h2>
 
-          <p className="mu" style={{ fontSize: '17px', color: 'var(--text-muted)', maxWidth: '480px', margin: '0 auto 28px' }}>
-            Get lifetime access to verified notes, placement preparation cheat sheets, and full-stack projects.
+          <p className="mu" style={{ fontSize: '17px', color: 'var(--text-muted)', maxWidth: '440px', margin: '0 auto 28px' }}>
+            Turn your next chapter into a map you actually remember.
           </p>
 
           {/* Email input + Start free button */}
@@ -593,7 +591,7 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
               type="email"
               value={emailInput}
               onChange={e => setEmailInput(e.target.value)}
-              placeholder="Enter your student email..."
+              placeholder="you@school.com"
               style={{
                 flex: '1 1 240px',
                 minHeight: '48px',
@@ -607,7 +605,7 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
               }}
             />
             <button type="submit" className="btn btn-yellow btn-lg" style={{ padding: '0 28px' }}>
-              Start Learning
+              Start free
             </button>
           </form>
 
