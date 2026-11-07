@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Conceptifyyy · Where Algorithms Come Alive</title>
+    <script>
+      // Single Page Application redirect script for static hosts (Render, GitHub Pages, etc.)
+      (function() {
+        var path = window.location.pathname;
+        var search = window.location.search;
+        var hash = window.location.hash;
+        // Redirect to root with query param or directly replace state
+        window.location.replace('/' + (path && path !== '/' ? '?route=' + encodeURIComponent(path + search + hash) : ''));
+      })();
+    </script>
+  </head>
+  <body style="font-family: sans-serif; text-align: center; padding: 50px; background: #F7F5FF; color: #1B1740;">
+    <h2>Redirecting to Conceptifyyy...</h2>
+    <p>If you are not redirected automatically, <a href="/" style="color: #5B3DF5; font-weight: bold;">click here</a>.</p>
+  </body>
+</html>

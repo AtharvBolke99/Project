@@ -1,41 +1,47 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingBag, Download, ShieldCheck, User } from 'lucide-react';
+import { Home as HomeIcon, ShoppingBag, Download, ShieldCheck, User, LogIn } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const MobileNav: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
   const location = useLocation();
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { user, isAuthenticated, isAdmin } = useAuth();
 
-  const isActive = (path: string) => {
-    if (path === '/' && (location.pathname === '/' || location.pathname === '/store')) return true;
-    if (path !== '/' && location.pathname.startsWith(path)) return true;
-    return false;
-  };
+  const isHomeActive = location.pathname === '/';
+  const isStoreActive = location.pathname.startsWith('/store') || location.pathname.startsWith('/notes') || location.pathname.startsWith('/projects');
+  const isPurchasesActive = location.pathname.startsWith('/my-purchases') || location.pathname.startsWith('/purchases');
+  const isAdminActive = location.pathname.startsWith('/admin');
 
   return (
-    <div className="mobile-bottom-dock">
-      <Link to="/" className={`mobile-dock-item ${isActive('/') ? 'active' : ''}`}>
-        <ShoppingBag size={18} />
+    <nav className="mobile-bottom-dock" aria-label="Mobile Navigation Bar">
+      {/* 1. Home */}
+      <Link to="/" className={`mobile-dock-item ${isHomeActive ? 'active' : ''}`}>
+        <HomeIcon size={20} />
+        <span>Home</span>
+      </Link>
+
+      {/* 2. Store */}
+      <Link to="/store" className={`mobile-dock-item ${isStoreActive ? 'active' : ''}`}>
+        <ShoppingBag size={20} />
         <span>Store</span>
       </Link>
 
-      <Link to="/my-purchases" className={`mobile-dock-item ${isActive('/my-purchases') ? 'active' : ''}`}>
-        <Download size={18} />
-        <span>Purchases</span>
+      {/* 3. My Downloads / Purchases */}
+      <Link to="/my-purchases" className={`mobile-dock-item ${isPurchasesActive ? 'active' : ''}`}>
+        <Download size={20} />
+        <span>Vault</span>
       </Link>
 
-      {isAdmin && (
-        <Link to="/admin/products" className={`mobile-dock-item ${isActive('/admin') ? 'active' : ''}`}>
-          <ShieldCheck size={18} />
+      {/* 4. Admin or Account / Login */}
+      {isAdmin ? (
+        <Link to="/admin/products" className={`mobile-dock-item ${isAdminActive ? 'active' : ''}`}>
+          <ShieldCheck size={20} color="var(--purple)" />
           <span>Admin</span>
         </Link>
-      )}
-
-      {isAuthenticated ? (
+      ) : isAuthenticated ? (
         <Link to="/my-purchases" className="mobile-dock-item">
-          <User size={18} />
-          <span>Account</span>
+          <User size={20} />
+          <span>{user?.name ? user.name.split(' ')[0] : 'Account'}</span>
         </Link>
       ) : (
         <button
@@ -43,10 +49,12 @@ export const MobileNav: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) 
           className="mobile-dock-item"
           style={{ background: 'none', border: 'none', cursor: 'pointer' }}
         >
-          <User size={18} />
+          <LogIn size={20} />
           <span>Login</span>
         </button>
       )}
-    </div>
+    </nav>
   );
 };
+
+export default MobileNav;

@@ -109,24 +109,24 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = () => {
         </div>
 
         {/* Right Column: Playful Rotated Resource Cards */}
-        <div style={{ flex: '1 1 400px', position: 'relative', minHeight: '480px', maxWidth: '520px', width: '100%' }}>
+        <div className="hero-card-stack">
           
           {/* Card 1: Purple DSA Notes */}
-          <Link to="/store/conceptifyyy-company-wise-dsa-placement-preparation-2026" className="pop" style={{ position: 'absolute', left: 0, top: '25px', width: '64%', background: '#5B3DF5', color: '#FFFFFF', borderRadius: '24px', padding: '22px', transform: 'rotate(-6deg)', minHeight: '230px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', zIndex: 2, cursor: 'pointer' }}>
+          <Link to="/store/conceptifyyy-company-wise-dsa-placement-preparation-2026" className="hero-c1 pop">
             <span className="tag" style={{ background: '#FFC933', color: '#1B1740' }}>DSA PLACEMENT</span>
             <h3 className="d" style={{ fontSize: '24px', lineHeight: 1.15, color: '#FFFFFF' }}>Company-Wise DSA Preparation</h3>
             <span style={{ fontSize: '13px', fontWeight: 700, color: '#EDE9FF' }}>192 pages · FREE Placement PDF</span>
           </Link>
 
           {/* Card 2: Yellow Python Mastery */}
-          <Link to="/store/conceptifyyy-python-mastery-2026" className="pop" style={{ position: 'absolute', right: 0, top: '5px', width: '58%', background: '#FFC933', borderRadius: '24px', padding: '22px', transform: 'rotate(5deg)', minHeight: '200px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', zIndex: 1, cursor: 'pointer' }}>
+          <Link to="/store/conceptifyyy-python-mastery-2026-complete-python-programming-course-pdf" className="hero-c2 pop">
             <span className="tag" style={{ background: '#FFFFFF' }}>PYTHON 2026</span>
             <h3 className="d" style={{ fontSize: '22px', lineHeight: 1.15, color: '#1B1740' }}>Complete Python Mastery Course</h3>
             <span style={{ fontSize: '13px', fontWeight: 700, color: '#1B1740' }}>140 pages · ₹9 Instant PDF</span>
           </Link>
 
           {/* Card 3: Mint Projects */}
-          <Link to="/store/centralized-realestate-management-system" className="pop" style={{ position: 'absolute', left: '14%', bottom: '15px', width: '66%', background: '#19C8A0', borderRadius: '24px', padding: '22px', transform: 'rotate(-2deg)', minHeight: '200px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', zIndex: 3, cursor: 'pointer' }}>
+          <Link to="/store/centralized-realestate-management-system-mern-stack-project-with-source-code-live-demo-documentation" className="hero-c3 pop">
             <span className="tag" style={{ background: '#FFFFFF' }}>MERN PROJECTS</span>
             <h3 className="d" style={{ fontSize: '22px', lineHeight: 1.15, color: '#1B1740' }}>Centralized RealEstate System</h3>
             <span style={{ fontSize: '13px', fontWeight: 700, background: '#FFFFFF', border: '2px solid #1B1740', borderRadius: '99px', padding: '4px 12px', width: 'fit-content' }}>
@@ -135,7 +135,7 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = () => {
           </Link>
 
           {/* Floating Pill: Instant PDF */}
-          <div className="pop" style={{ position: 'absolute', right: '4%', bottom: '115px', background: '#FFFFFF', borderRadius: '16px', padding: '10px 18px', fontWeight: 800, fontSize: '14px', transform: 'rotate(4deg)', zIndex: 4, display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div className="hero-badge-pill pop">
             <Zap size={16} color="#5B3DF5" />
             <span>Instant Access</span>
           </div>

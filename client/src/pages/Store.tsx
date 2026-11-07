@@ -255,7 +255,7 @@ export const Store: React.FC = () => {
         </div>
 
         {/* Category Pills Strip */}
-        <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '12px', marginBottom: '24px', scrollbarWidth: 'none' }}>
+        <div className="tags-scroll" style={{ marginBottom: '24px' }}>
           {categories.map(cat => {
             const isSelected = category === cat.id;
             const count = categoryCounts[cat.id] ?? 0;
@@ -321,7 +321,7 @@ export const Store: React.FC = () => {
       <section className="wrap">
         
         {loading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+          <div className="store-grid">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="pop skeleton-pop" style={{ height: '360px', borderRadius: '26px' }}></div>
             ))}
@@ -357,7 +357,7 @@ export const Store: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '26px' }}>
+          <div className="store-grid">
             {filteredProducts.map(prod => (
               <div
                 key={prod.id}

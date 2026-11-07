@@ -202,10 +202,23 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
   if (!product) {
     return (
       <div className="wrap" style={{ textAlign: 'center', padding: '5rem 1.5rem' }}>
-        <h2 className="d" style={{ fontSize: '32px', marginBottom: '1rem' }}>Resource not found.</h2>
-        <Link to="/store" className="btn v">
-          Back to Store
-        </Link>
+        <div className="pop" style={{ background: '#FFFFFF', borderRadius: '26px', padding: '3.5rem 2rem', maxWidth: '600px', margin: '0 auto' }}>
+          <div style={{ width: '64px', height: '64px', borderRadius: '18px', background: 'var(--yellow)', border: '2px solid var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+            <FileText size={32} color="var(--ink)" />
+          </div>
+          <h2 className="d" style={{ fontSize: '32px', marginBottom: '0.75rem' }}>Note or Project Not Found</h2>
+          <p className="mu" style={{ fontSize: '16px', lineHeight: 1.6, marginBottom: '2rem' }}>
+            The requested learning material may have moved or been updated. You can find all verified notes, cheat sheets, and full-stack projects in the Store.
+          </p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to="/store" className="btn v">
+              Browse All Resources
+            </Link>
+            <Link to="/" className="btn">
+              Back to Home
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
@@ -222,7 +235,7 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
         </Link>
 
         {/* Two-Column Detail Layout */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '32px', alignItems: 'flex-start' }}>
+        <div className="product-detail-grid">
           
           {/* Left Column: Media & Checkout Box */}
           <div style={{ position: 'sticky', top: '100px' }}>

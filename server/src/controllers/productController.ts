@@ -111,10 +111,33 @@ export const getProductBySlug = async (req: AuthRequest, res: Response) => {
   try {
     const { slug } = req.params;
     const userId = req.user?.id;
+    const targetSlug = (slug || '').toLowerCase().trim();
 
-    const product = db.findOne('products', p => p.slug === slug);
+    // Robust matching: exact slug, product ID, prefix match, or core keyword match
+    const product = db.findOne('products', p => {
+      if (p.isDeleted) return false;
+      const pSlug = (p.slug || '').toLowerCase().trim();
+      const pId = (p.id || '').toLowerCase().trim();
+
+      // 1. Exact match
+      if (pSlug === targetSlug || pId === targetSlug) return true;
+
+      // 2. Prefix or substring match for friendly shortened links
+      if (targetSlug.length >= 8 && (pSlug.startsWith(targetSlug) || targetSlug.startsWith(pSlug))) {
+        return true;
+      }
+
+      // 3. Keyword core match (e.g., 'realestate' or 'python-mastery')
+      const targetCore = targetSlug.replace(/^(conceptifyyy-|the-)/, '').split('-').slice(0, 3).join('-');
+      if (targetCore.length >= 6 && pSlug.includes(targetCore)) {
+        return true;
+      }
+
+      return false;
+    });
+
     console.log(`[NOTES] Fetching product by slug: "${slug}" (Found: ${!!product})`);
-    if (!product || product.isDeleted || (product.isPublished === false && req.user?.role !== 'ADMIN')) {
+    if (!product || (product.isPublished === false && req.user?.role !== 'ADMIN')) {
       return res.status(404).json({ success: false, message: 'Product not found.' });
     }
 

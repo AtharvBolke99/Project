@@ -110,9 +110,22 @@ if (activeClientDist) {
       status: 'online',
       platform: 'CONCEPTIFYYY API Server',
       message: 'CONCEPTIFYYY Backend API is running successfully.',
+      clientUrl: config.clientUrl || 'http://localhost:5173',
       healthCheck: '/api/health',
       timestamp: new Date().toISOString()
     });
+  });
+
+  // If a browser visits frontend page routes on backend, redirect to frontend URL
+  app.get('*', (req: Request, res: Response, next: NextFunction) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+      return next();
+    }
+    if (config.clientUrl) {
+      const targetUrl = `${config.clientUrl.replace(/\/$/, '')}${req.originalUrl}`;
+      return res.redirect(targetUrl);
+    }
+    next();
   });
 }
 
