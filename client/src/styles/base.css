@@ -12,14 +12,13 @@ html {
   overflow-x: hidden;
   width: 100%;
   max-width: 100vw;
+  background-color: var(--bg-cosmic);
 }
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--lavender);
-  background-image: radial-gradient(var(--lavender-dot) 1.4px, transparent 1.4px);
-  background-size: 28px 28px;
-  color: var(--ink);
+  background-color: var(--bg-cosmic);
+  color: var(--text-main);
   line-height: 1.6;
   min-height: 100vh;
   overflow-x: hidden;
@@ -27,90 +26,74 @@ body {
   max-width: 100vw;
 }
 
-/* Custom Scrollbars with Pop Aesthetic */
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--lavender);
-  border-left: 1px solid var(--lavender-accent);
+  background: var(--bg-cosmic);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--purple);
-  border: 2px solid var(--ink);
+  background: var(--bg-card-border-subtle);
   border-radius: var(--radius-full);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--purple-hover);
+  background: var(--purple);
 }
 
 /* Typography Hierarchy */
 h1, h2, h3, h4, h5, h6 {
-  color: var(--ink);
+  color: var(--text-main);
   font-weight: 800;
   line-height: 1.1;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.025em;
   font-family: var(--font-display);
   margin: 0;
 }
 
-h1 {
-  font-size: clamp(2.5rem, 5.5vw, 4.5rem);
+.d {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.025em;
 }
 
-h2 {
-  font-size: clamp(1.8rem, 3.5vw, 2.75rem);
-}
-
-h3 {
-  font-size: clamp(1.25rem, 2vw, 1.75rem);
-}
-
-p {
-  color: var(--muted);
-  margin: 0;
+.mu {
+  color: var(--text-muted);
 }
 
 a {
   color: inherit;
   text-decoration: none;
-  transition: all var(--transition-fast);
 }
 
-code, pre, kbd {
-  font-family: var(--font-mono);
-}
-
-/* Container Wrapper */
-.container, .wrap {
+/* Base Layout Container */
+.wrap {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1240px;
   margin-left: auto;
   margin-right: auto;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
+  padding-left: clamp(1rem, 4vw, 2.5rem);
+  padding-right: clamp(1rem, 4vw, 2.5rem);
 }
 
-button, input, select, textarea { 
-  font: inherit; 
+/* Responsive utility */
+.desktop-only {
+  display: flex !important;
 }
 
-button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px var(--purple);
+.mobile-only {
+  display: none !important;
 }
 
-/* Display Font Class */
-.d {
-  font-family: var(--font-display);
-  letter-spacing: -0.03em;
-}
-
-/* Muted Text Class */
-.mu {
-  color: var(--muted);
+@media(max-width: 860px) {
+  .desktop-only {
+    display: none !important;
+  }
+  .mobile-only {
+    display: flex !important;
+  }
 }

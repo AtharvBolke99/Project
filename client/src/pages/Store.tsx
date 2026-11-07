@@ -16,8 +16,7 @@ import {
   Brain,
   X,
   Download,
-  SlidersHorizontal,
-  ArrowUpDown
+  SlidersHorizontal
 } from 'lucide-react';
 import { api } from '../services/api';
 import { getAssetUrl, handleImageError } from '../utils/imageUrl';
@@ -74,13 +73,13 @@ export const Store: React.FC = () => {
   }, [searchParams]);
 
   const categories = [
-    { id: 'All', label: 'All Resources', color: '#FFFFFF', tagBg: '#FFFFFF' },
-    { id: 'Python', label: 'Python Course', color: '#FFC933', tagBg: '#FFE9A8' },
-    { id: 'MySQL / DBMS', label: 'MySQL & DBMS', color: '#FF8A6B', tagBg: '#FFD4C8' },
-    { id: 'DSA Notes', label: 'DSA Placement Prep', color: '#5B3DF5', tagBg: '#E3DDFF' },
-    { id: 'Aptitude Notes', label: 'Aptitude & Reasoning', color: '#19C8A0', tagBg: '#C9F7E8' },
-    { id: 'Placement Bundles', label: 'Resume & Bundles', color: '#FFC933', tagBg: '#FFE9A8' },
-    { id: 'Projects', label: 'Full-Stack Projects', color: '#19C8A0', tagBg: '#C9F7E8' }
+    { id: 'All', label: 'All Resources' },
+    { id: 'DSA Notes', label: 'DSA Placement Prep' },
+    { id: 'Python', label: 'Python Course' },
+    { id: 'MySQL / DBMS', label: 'MySQL & DBMS' },
+    { id: 'Aptitude Notes', label: 'Aptitude & Reasoning' },
+    { id: 'Projects', label: 'Full-Stack Projects' },
+    { id: 'Placement Bundles', label: 'Resume & Bundles' }
   ];
 
   const handleCategorySelect = (catId: string) => {
@@ -100,22 +99,16 @@ export const Store: React.FC = () => {
     const tagsLower = (p.tags || []).map((t: string) => t.toLowerCase());
 
     if (cat === 'Python') {
-      return titleLower.includes('python') || tagsLower.some((t: string) => t.includes('python'));
+      return titleLower.includes('python') || tagsLower.includes('python');
     }
     if (cat === 'MySQL / DBMS') {
-      return titleLower.includes('mysql') || titleLower.includes('dbms') || titleLower.includes('sql') || tagsLower.some((t: string) => t.includes('mysql') || t.includes('sql') || t.includes('dbms'));
-    }
-    if (cat === 'DSA Notes') {
-      return p.category === 'DSA Notes' || titleLower.includes('dsa') || tagsLower.some((t: string) => t.includes('dsa'));
-    }
-    if (cat === 'Aptitude Notes') {
-      return p.category === 'Aptitude Notes' || titleLower.includes('aptitude') || tagsLower.some((t: string) => t.includes('aptitude'));
-    }
-    if (cat === 'Placement Bundles') {
-      return p.category === 'Placement Bundles' || titleLower.includes('resume') || tagsLower.some((t: string) => t.includes('resume'));
+      return titleLower.includes('sql') || titleLower.includes('database') || tagsLower.includes('mysql');
     }
     if (cat === 'Projects') {
-      return p.category === 'Projects' || tagsLower.some((t: string) => t.includes('mern') || t.includes('project'));
+      return p.category === 'Projects' || tagsLower.includes('mern') || tagsLower.includes('project');
+    }
+    if (cat === 'Placement Bundles') {
+      return p.category === 'Placement Bundles' || titleLower.includes('resume');
     }
     return (p.category || '').toLowerCase() === catLower;
   };
@@ -166,21 +159,22 @@ export const Store: React.FC = () => {
   }, [allProducts, category, priceFilter, search, sortBy]);
 
   return (
-    <div className="store-page animate-fade-in" style={{ paddingBottom: '96px' }}>
+    <div className="store-page animate-fade-in" style={{ paddingBottom: '96px', background: 'var(--bg-cosmic)' }}>
       
       {/* ================= 1. STORE HEADER BANNER ================= */}
       <section className="wrap" style={{ paddingTop: '40px', paddingBottom: '32px' }}>
         <div style={{ maxWidth: '820px' }}>
           
-          <span className="tag" style={{ background: '#C9F7E8', marginBottom: '14px' }}>
-            Instant Digital Download Store
-          </span>
+          <div className="hero-pill-badge" style={{ marginBottom: '16px' }}>
+            <span className="dot"></span>
+            <span>Instant Digital Download Store</span>
+          </div>
 
-          <h1 className="d" style={{ fontSize: 'clamp(36px, 5.2vw, 64px)', lineHeight: 1.05, fontWeight: 800, marginBottom: '14px' }}>
-            Find your next <span className="chip" style={{ background: '#FFC933' }}>placement ace.</span>
+          <h1 className="d" style={{ fontSize: 'clamp(36px, 5.2vw, 64px)', lineHeight: 1.05, fontWeight: 800, marginBottom: '14px', color: '#FFFFFF' }}>
+            Find your next <span style={{ color: 'var(--yellow)', fontStyle: 'italic' }}>placement ace.</span>
           </h1>
 
-          <p className="mu" style={{ fontSize: '18px', lineHeight: 1.6, maxWidth: '640px' }}>
+          <p className="mu" style={{ fontSize: '18px', lineHeight: 1.6, maxWidth: '640px', color: 'var(--text-muted)' }}>
             Comprehensive handwritten study notes, campus company question packs, and production-ready MERN project source code.
           </p>
 
@@ -193,43 +187,53 @@ export const Store: React.FC = () => {
         {/* Search & Sort Controls Bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '20px' }}>
           
-          {/* Pop Search Input */}
-          <div className="pop" style={{ display: 'flex', background: '#FFFFFF', borderRadius: '18px', padding: '6px', flex: '1 1 340px', maxWidth: '520px', gap: '6px', alignItems: 'center' }}>
-            <Search size={18} color="var(--muted)" style={{ marginLeft: '10px' }} />
+          {/* Cosmic Search Input */}
+          <div className="pop" style={{ display: 'flex', background: 'var(--bg-card)', borderRadius: '18px', padding: '6px', flex: '1 1 340px', maxWidth: '520px', gap: '6px', alignItems: 'center', border: '2px solid var(--bg-card-border)' }}>
+            <Search size={18} color="var(--yellow)" style={{ marginLeft: '10px' }} />
             <input
               type="text"
               placeholder="Search Python, MySQL, Aptitude, Projects, Resume..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              style={{ flex: 1, minWidth: 0, border: 0, outline: 0, fontSize: '15px', padding: '0 8px', fontFamily: 'inherit', background: 'transparent', color: '#1B1740' }}
+              style={{ flex: 1, minWidth: 0, border: 0, outline: 0, fontSize: '15px', padding: '0 8px', fontFamily: 'inherit', background: 'transparent', color: '#FFFFFF' }}
             />
             {search && (
               <button
                 onClick={() => setSearch('')}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', color: 'var(--muted)' }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 8px', color: 'var(--text-muted)' }}
                 title="Clear search"
               >
                 <X size={16} />
               </button>
             )}
-            <button className="btn v" style={{ minHeight: '38px', padding: '0 18px', borderRadius: '12px', boxShadow: 'none' }}>
-              Filter
+            <button className="btn btn-yellow" style={{ minHeight: '38px', padding: '0 18px', borderRadius: '12px' }}>
+              Search
             </button>
           </div>
 
           {/* Sort & Price Filter Dropdowns */}
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
             
             {/* Price Filter */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <select
                 value={priceFilter}
                 onChange={e => setPriceFilter(e.target.value)}
-                className="select"
-                style={{ minHeight: '44px', padding: '0 14px', borderRadius: '14px', fontSize: '14px', fontWeight: 700 }}
+                style={{ 
+                  minHeight: '44px', 
+                  padding: '0 14px', 
+                  borderRadius: '14px', 
+                  fontSize: '14px', 
+                  fontWeight: 700,
+                  background: 'var(--bg-card)',
+                  color: '#FFFFFF',
+                  border: '2px solid var(--bg-card-border)',
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
               >
                 <option value="all">All Prices</option>
-                <option value="free">Free Only (₹0)</option>
+                <option value="free">Free Only</option>
                 <option value="under20">Under ₹20</option>
                 <option value="under50">Under ₹50</option>
               </select>
@@ -240,8 +244,18 @@ export const Store: React.FC = () => {
               <select
                 value={sortBy}
                 onChange={e => setSortBy(e.target.value)}
-                className="select"
-                style={{ minHeight: '44px', padding: '0 14px', borderRadius: '14px', fontSize: '14px', fontWeight: 700 }}
+                style={{ 
+                  minHeight: '44px', 
+                  padding: '0 14px', 
+                  borderRadius: '14px', 
+                  fontSize: '14px', 
+                  fontWeight: 700,
+                  background: 'var(--bg-card)',
+                  color: '#FFFFFF',
+                  border: '2px solid var(--bg-card-border)',
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
               >
                 <option value="popular">Most Popular</option>
                 <option value="price_asc">Price: Low to High</option>
@@ -263,14 +277,13 @@ export const Store: React.FC = () => {
               <button
                 key={cat.id}
                 onClick={() => handleCategorySelect(cat.id)}
-                className={`btn ${isSelected ? 'v' : ''}`}
+                className={`btn ${isSelected ? 'btn-yellow' : 'btn-dark'}`}
                 style={{
                   minHeight: '40px',
                   padding: '0 16px',
                   fontSize: '13px',
                   fontWeight: 700,
-                  background: isSelected ? 'var(--purple)' : '#FFFFFF',
-                  color: isSelected ? '#FFFFFF' : 'var(--ink)'
+                  gap: '8px'
                 }}
               >
                 <span>{cat.label}</span>
@@ -279,9 +292,8 @@ export const Store: React.FC = () => {
                     fontSize: '11px', 
                     padding: '2px 8px', 
                     borderRadius: '99px', 
-                    border: '1.5px solid var(--ink)', 
-                    background: isSelected ? '#FFC933' : 'var(--lavender-accent)',
-                    color: '#1B1740'
+                    background: isSelected ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.12)',
+                    color: isSelected ? 'var(--ink)' : '#FFFFFF'
                   }}
                 >
                   {count}
@@ -293,7 +305,7 @@ export const Store: React.FC = () => {
 
         {/* Active Filters Summary */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <span style={{ fontSize: '15px', color: 'var(--ink)', fontWeight: 700 }}>
+          <span style={{ fontSize: '15px', color: 'var(--text-muted)', fontWeight: 700 }}>
             Showing {filteredProducts.length} verified {filteredProducts.length === 1 ? 'material' : 'materials'}
           </span>
 
@@ -307,8 +319,8 @@ export const Store: React.FC = () => {
                 searchParams.delete('search');
                 setSearchParams(searchParams);
               }}
-              className="btn y btn-sm"
-              style={{ gap: '4px' }}
+              className="btn btn-dark btn-sm"
+              style={{ gap: '4px', color: 'var(--yellow)' }}
             >
               <X size={14} /> Clear All Filters
             </button>
@@ -317,26 +329,26 @@ export const Store: React.FC = () => {
 
       </section>
 
-      {/* ================= 3. PRODUCT CARDS GRID (POPPING NEOBRUTALISM) ================= */}
+      {/* ================= 3. PRODUCT CARDS GRID ================= */}
       <section className="wrap">
         
         {loading ? (
           <div className="store-grid">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="pop skeleton-pop" style={{ height: '360px', borderRadius: '26px' }}></div>
+              <div key={i} className="pop" style={{ height: '360px', borderRadius: '24px', opacity: 0.5 }}></div>
             ))}
           </div>
         ) : error ? (
-          <div className="pop" style={{ background: '#FFFFFF', borderRadius: '26px', padding: '3.5rem', textAlign: 'center' }}>
+          <div className="pop" style={{ borderRadius: '24px', padding: '3.5rem', textAlign: 'center' }}>
             <p style={{ color: 'var(--coral)', fontWeight: 800, fontSize: '17px', marginBottom: '1rem' }}>{error}</p>
-            <button onClick={fetchProducts} className="btn v btn-sm">
+            <button onClick={fetchProducts} className="btn btn-yellow btn-sm">
               <RefreshCw size={14} /> Refresh Catalog
             </button>
           </div>
         ) : filteredProducts.length === 0 ? (
-          <div className="pop" style={{ background: '#FFFFFF', borderRadius: '26px', padding: '4rem 2rem', textAlign: 'center', maxWidth: '580px', margin: '2rem auto' }}>
-            <ShoppingBag size={48} color="var(--ink)" style={{ margin: '0 auto 1.25rem' }} />
-            <h3 className="d" style={{ fontSize: '26px', fontWeight: 800, marginBottom: '0.5rem' }}>
+          <div className="pop" style={{ borderRadius: '24px', padding: '4rem 2rem', textAlign: 'center', maxWidth: '580px', margin: '2rem auto' }}>
+            <ShoppingBag size={48} color="var(--yellow)" style={{ margin: '0 auto 1.25rem' }} />
+            <h3 className="d" style={{ fontSize: '26px', fontWeight: 800, marginBottom: '0.5rem', color: '#FFFFFF' }}>
               No notes match your selection
             </h3>
             <p className="mu" style={{ fontSize: '15px', marginBottom: '1.5rem' }}>
@@ -351,7 +363,7 @@ export const Store: React.FC = () => {
                 searchParams.delete('search');
                 setSearchParams(searchParams);
               }}
-              className="btn y"
+              className="btn btn-yellow"
             >
               View All Resources
             </button>
@@ -361,10 +373,10 @@ export const Store: React.FC = () => {
             {filteredProducts.map(prod => (
               <div
                 key={prod.id}
-                className="pop card-hover"
+                className="pop"
                 style={{
-                  background: '#FFFFFF',
-                  borderRadius: '26px',
+                  background: 'var(--bg-card)',
+                  borderRadius: '24px',
                   overflow: 'hidden',
                   display: 'flex',
                   flexDirection: 'column',
@@ -372,7 +384,7 @@ export const Store: React.FC = () => {
                 }}
               >
                 {/* Image Cover Container */}
-                <div style={{ position: 'relative', width: '100%', height: '190px', background: 'var(--lavender-accent)', borderBottom: '2px solid var(--ink)', overflow: 'hidden' }}>
+                <div style={{ position: 'relative', width: '100%', height: '190px', background: '#0E0D22', borderBottom: '1px solid var(--bg-card-border)', overflow: 'hidden' }}>
                   <img
                     src={getAssetUrl(prod.thumbnail)}
                     alt={prod.title}
@@ -382,11 +394,11 @@ export const Store: React.FC = () => {
 
                   {/* Badges on Top */}
                   <div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                    <span className="tag" style={{ background: '#E3DDFF' }}>
+                    <span className="tag" style={{ background: 'var(--yellow)', color: 'var(--ink)', fontWeight: 800 }}>
                       {prod.category}
                     </span>
                     {prod.discountPercent > 0 && prod.price > 0 && (
-                      <span className="tag" style={{ background: '#FF8A6B' }}>
+                      <span className="tag" style={{ background: 'var(--coral)', color: 'var(--ink)', fontWeight: 800 }}>
                         {prod.discountPercent}% OFF
                       </span>
                     )}
@@ -399,7 +411,8 @@ export const Store: React.FC = () => {
                         position: 'absolute', 
                         bottom: '10px', 
                         right: '12px', 
-                        background: '#FFFFFF' 
+                        background: 'rgba(10, 9, 21, 0.8)',
+                        color: '#FFFFFF'
                       }}
                     >
                       {prod.fileFormat}
@@ -417,10 +430,10 @@ export const Store: React.FC = () => {
                         <Star key={i} size={14} color="#FFC933" fill="#FFC933" />
                       ))}
                     </div>
-                    <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--ink)' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: '#FFFFFF' }}>
                       {prod.rating || 4.9}
                     </span>
-                    <span style={{ fontSize: '12px', color: 'var(--muted)' }}>
+                    <span style={{ fontSize: '12px', color: 'var(--text-sub)' }}>
                       ({prod.reviewsCount || 120} reviews)
                     </span>
                   </div>
@@ -429,10 +442,11 @@ export const Store: React.FC = () => {
                   <h3 
                     className="d" 
                     style={{ 
-                      fontSize: '20px', 
+                      fontSize: '19px', 
                       fontWeight: 800, 
-                      lineHeight: 1.25, 
+                      lineHeight: 1.3, 
                       marginBottom: '8px',
+                      color: '#FFFFFF',
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical',
@@ -442,72 +456,66 @@ export const Store: React.FC = () => {
                     {prod.title}
                   </h3>
 
-                  {/* Short Description */}
+                  {/* Description */}
                   <p 
                     className="mu" 
                     style={{ 
-                      fontSize: '14px', 
+                      fontSize: '13.5px', 
                       lineHeight: 1.5, 
-                      marginBottom: '14px',
-                      flex: 1,
+                      marginBottom: '16px',
+                      color: 'var(--text-muted)',
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical',
                       overflow: 'hidden'
                     }}
                   >
-                    {prod.cardDescription || prod.shortDescription || prod.description}
+                    {prod.cardDescription || prod.description}
                   </p>
 
-                  {/* Highlights Bullets */}
-                  {prod.whatIncluded && Array.isArray(prod.whatIncluded) && prod.whatIncluded.length > 0 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', marginBottom: '16px' }}>
-                      {prod.whatIncluded.slice(0, 2).map((item: string, idx: number) => (
-                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--ink)', fontWeight: 600 }}>
-                          <CheckCircle2 size={14} color="#19C8A0" style={{ flexShrink: 0 }} />
-                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item}</span>
-                        </div>
+                  {/* Tags */}
+                  {prod.tags && prod.tags.length > 0 && (
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '18px' }}>
+                      {prod.tags.slice(0, 3).map((tag: string) => (
+                        <span key={tag} className="tag" style={{ fontSize: '11px', background: 'rgba(255,255,255,0.06)' }}>
+                          {tag}
+                        </span>
                       ))}
                     </div>
                   )}
 
-                  {/* Price & CTA Action Bar */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '14px', borderTop: '2px solid var(--lavender-accent)', marginTop: 'auto' }}>
-                    <div>
+                  {/* Pricing and Action Strip */}
+                  <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid var(--bg-card-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                        <span className="d" style={{ fontSize: '26px', fontWeight: 800, color: 'var(--ink)' }}>
+                        <span className="d" style={{ fontSize: '26px', fontWeight: 800, color: 'var(--yellow)' }}>
                           {prod.price === 0 ? 'FREE' : `₹${prod.price}`}
                         </span>
-                        {prod.originalPrice > prod.price && (
-                          <span style={{ fontSize: '13px', color: 'var(--muted)', textDecoration: 'line-through' }}>
+                        {prod.originalPrice && prod.originalPrice > prod.price && (
+                          <span style={{ fontSize: '13px', color: 'var(--text-sub)', textDecoration: 'line-through' }}>
                             ₹{prod.originalPrice}
                           </span>
                         )}
                       </div>
-                      <span style={{ fontSize: '11px', color: '#19C8A0', fontWeight: 800, textTransform: 'uppercase' }}>
-                        {prod.price === 0 ? 'Free Placement PDF' : 'Instant Download'}
+                      <span style={{ fontSize: '11px', color: 'var(--text-sub)' }}>
+                        Instant PDF Access
                       </span>
                     </div>
 
                     <Link
                       to={`/store/${prod.slug}`}
-                      className="btn v btn-sm"
-                      style={{ gap: '6px' }}
+                      className="btn btn-yellow btn-sm"
+                      style={{ padding: '0 20px', gap: '6px' }}
                     >
-                      {prod.price === 0 || prod.isPurchased ? (
-                        <>
-                          <Download size={14} /> Download
-                        </>
-                      ) : (
-                        <>
-                          <span>Get access</span>
-                          <ArrowRight size={14} />
-                        </>
-                      )}
+                      <span>{prod.price === 0 ? 'Get Free' : 'View'}</span>
+                      <ArrowRight size={14} />
                     </Link>
+
                   </div>
 
                 </div>
+
               </div>
             ))}
           </div>
@@ -518,3 +526,5 @@ export const Store: React.FC = () => {
     </div>
   );
 };
+
+export default Store;

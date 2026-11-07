@@ -1,100 +1,65 @@
 /* ==========================================================================
-   CONCEPTIFYYY GLOBAL DESIGN SYSTEM — DESIGN TOKENS
-   Visual Identity based on the Design Reference Artboard (Home page-html)
+   CONCEPTIFYYY GLOBAL DESIGN SYSTEM — COSMIC DARK THEME
+   Visual Identity based on the Attached Reference Design
    ========================================================================== */
 
 :root {
-  /* Reference Core Colors */
-  --ink: #1B1740;
-  --purple: #5B3DF5;
-  --purple-hover: #482AD4;
-  --purple-light: #EDE9FF;
-  --lavender: #F7F5FF;
-  --lavender-accent: #E3DDFF;
-  --lavender-dot: #D9D3FF;
+  /* Deep Midnight Cosmic Dark Palette */
+  --bg-cosmic: #0A0915;
+  --bg-cosmic-alt: #0E0D22;
+  --bg-card: #12102A;
+  --bg-card-hover: #171536;
+  --bg-card-border: #231F4D;
+  --bg-card-border-subtle: #2D2760;
+  --bg-card-light: #1A173B;
+
+  /* High-Contrast Accents */
   --yellow: #FFC933;
   --yellow-hover: #EBB624;
   --yellow-light: #FFE9A8;
-  --coral: #FF8A6B;
-  --coral-light: #FFD4C8;
-  --mint: #19C8A0;
-  --soft-mint: #C9F7E8;
-  --muted: #4F4A7A;
-  --white: #FFFFFF;
 
-  /* Typography */
+  --mint: #4EEDB8;
+  --mint-dark: #19C8A0;
+  --mint-soft: #C9F7E8;
+
+  --coral: #FF8A6B;
+  --coral-soft: #FFD4C8;
+
+  --purple: #5B3DF5;
+  --purple-hover: #482AD4;
+  --purple-glow: rgba(91, 61, 245, 0.4);
+  --purple-light: #EDE9FF;
+
+  /* Typography Colors */
+  --ink: #1B1740;
+  --white: #FFFFFF;
+  --text-main: #FFFFFF;
+  --text-muted: #A5A1C8;
+  --text-sub: #7D78A8;
+
+  /* Fonts */
   --font-display: 'Bricolage Grotesque', system-ui, -apple-system, sans-serif;
   --font-sans: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --font-mono: 'JetBrains Mono', monospace;
 
   /* Global Borders & Hard Offset Shadows */
-  --border: 2px solid var(--ink);
-  --border-thick: 2.5px solid var(--ink);
-  --border-subtle: var(--ink);
-  --border-medium: var(--ink);
-  --border-highlight: var(--purple);
+  --border: 2px solid var(--bg-card-border);
+  --border-ink: 2px solid var(--ink);
+  --border-light: 1.5px solid rgba(255, 255, 255, 0.15);
+  --shadow-sm: 3px 3px 0 #000000;
+  --shadow-md: 5px 5px 0 #000000;
+  --shadow-yellow: 6px 6px 0 var(--yellow);
 
-  --shadow-xs: 2px 2px 0 var(--ink);
-  --shadow-sm: 3px 3px 0 var(--ink);
-  --shadow-md: 5px 5px 0 var(--ink);
-  --shadow-lg: 7px 7px 0 var(--ink);
-  --shadow-xl: 10px 10px 0 var(--ink);
-  --shadow-focus: 0 0 0 3px rgba(91, 61, 245, 0.35);
-
-  /* Border Radii */
+  /* Radii */
   --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-card: 26px;
+  --radius-md: 18px;
+  --radius-card: 24px;
   --radius-lg: 26px;
-  --radius-xl: 30px;
   --radius-button: 999px;
   --radius-full: 9999px;
 
-  /* Layout */
-  --header-height: 80px;
-  --mobile-nav-height: 68px;
-
-  /* Component Compatibility Aliases */
-  --color-primary: var(--purple);
-  --color-primary-hover: var(--purple-hover);
-  --color-primary-light: var(--purple-light);
-  --color-secondary: var(--yellow);
-  --color-cyan: var(--mint);
-  --color-emerald: var(--mint);
-  --color-amber: var(--yellow);
-  --color-rose: var(--coral);
-  --color-purple: var(--purple);
-
-  --bg-primary: var(--lavender);
-  --bg-secondary: #FFFFFF;
-  --bg-tertiary: var(--lavender-accent);
-  --bg-card: #FFFFFF;
-  --bg-card-hover: var(--lavender-accent);
-  --bg-glass: rgba(255, 255, 255, 0.95);
-  --bg-glass-card: #FFFFFF;
-
-  --text-primary: var(--ink);
-  --text-secondary: var(--muted);
-  --text-muted: var(--muted);
-  --text-inverse: #FFFFFF;
-
-  --code-bg: var(--ink);
-  --code-text: #E3DDFF;
-
-  /* Transitions */
-  --transition-fast: 0.15s ease;
-  --transition-normal: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  --transition-slow: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* Ensure clean contrast in both light/default theme */
-[data-theme="light"], :root {
-  --bg-primary: var(--lavender);
-  --bg-secondary: #FFFFFF;
-  --bg-tertiary: var(--lavender-accent);
-  --bg-card: #FFFFFF;
-  --text-primary: var(--ink);
-  --text-secondary: var(--muted);
-  --border-subtle: var(--ink);
-  --border-medium: var(--ink);
+  /* Compatibility Tokens */
+  --lavender: var(--bg-cosmic);
+  --lavender-accent: var(--bg-card);
+  --muted: var(--text-muted);
 }

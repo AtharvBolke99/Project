@@ -7,9 +7,9 @@ import {
   LogOut, 
   ShieldCheck, 
   Download,
-  FileText,
-  FolderGit2,
-  Sparkles
+  Sparkles,
+  User,
+  LogIn
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -32,72 +32,74 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
   };
 
   const navLinks = [
-    { label: 'Home', path: '/' },
-    { label: 'Explore Notes', path: '/store' },
-    { label: 'Placement Prep', path: '/store?category=DSA+Notes' },
-    { label: 'Projects', path: '/store?category=Projects' },
-    { label: 'My Downloads', path: '/my-purchases' }
+    { label: 'How it works', path: '/#how-it-works' },
+    { label: 'Features', path: '/#features' },
+    { label: 'Store', path: '/store' },
+    { label: 'My Vault', path: '/my-purchases' }
   ];
 
   return (
     <>
-      <header style={{ position: 'sticky', top: 0, zIndex: 900, width: '100%' }}>
-        <div className="wrap" style={{ paddingTop: '16px', paddingBottom: '12px' }}>
+      <header style={{ position: 'sticky', top: 0, zIndex: 900, width: '100%', background: 'rgba(10, 9, 21, 0.85)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+        <div className="wrap" style={{ paddingTop: '16px', paddingBottom: '16px' }}>
           <div 
-            className="pop" 
             style={{ 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'space-between', 
-              gap: '16px', 
-              background: '#FFFFFF', 
-              borderRadius: '999px', 
-              padding: '8px 12px 8px 20px',
-              border: '2px solid var(--ink)',
-              boxShadow: '5px 5px 0 var(--ink)'
+              gap: '20px' 
             }}
           >
-            {/* Logo */}
+            {/* Logo from Reference (Glowing Planet System) */}
             <Link 
               to="/" 
               className="d" 
               style={{ 
-                fontSize: '24px', 
+                fontSize: '22px', 
                 fontWeight: 800, 
                 display: 'flex', 
                 alignItems: 'center', 
                 gap: '10px', 
-                color: 'var(--ink)', 
+                color: '#FFFFFF', 
                 textDecoration: 'none' 
               }}
             >
-              <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
-                <rect x="1" y="1" width="32" height="32" rx="10" fill="#5B3DF5" stroke="#1B1740" strokeWidth="2"></rect>
-                <path d="M10 9h11a3 3 0 0 1 3 3v13H13a3 3 0 0 1-3-3V9z" fill="none" stroke="#fff" strokeWidth="2"></path>
-                <path d="M14 15h6M14 19h4" stroke="#FFC933" strokeWidth="2" strokeLinecap="round"></path>
-              </svg>
+              {/* Planetary Concept Icon */}
+              <div style={{ position: 'relative', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '14px', height: '14px', borderRadius: '50%', background: 'var(--yellow)', boxShadow: '0 0 12px rgba(255, 201, 51, 0.8)' }}></div>
+                <div style={{ position: 'absolute', width: '5px', height: '5px', borderRadius: '50%', background: 'var(--mint)', top: '1px', right: '2px' }}></div>
+                <div style={{ position: 'absolute', width: '4px', height: '4px', borderRadius: '50%', background: 'var(--coral)', bottom: '2px', left: '1px' }}></div>
+                <div style={{ position: 'absolute', width: '3px', height: '3px', borderRadius: '50%', background: '#FFFFFF', bottom: '0px', right: '4px' }}></div>
+              </div>
               <span>Conceptifyyy</span>
             </Link>
 
             {/* Desktop Navigation Links */}
             <nav className="desktop-only">
-              <ul style={{ display: 'flex', gap: '22px', fontSize: '15px', fontWeight: 700, listStyle: 'none', margin: 0, padding: 0 }}>
+              <ul style={{ display: 'flex', alignItems: 'center', gap: '32px', fontSize: '14px', fontWeight: 600, listStyle: 'none', margin: 0, padding: 0 }}>
                 {navLinks.map(link => {
                   const active = isActive(link.path);
                   return (
                     <li key={link.path}>
-                      <Link
-                        to={link.path}
+                      <a
+                        href={link.path}
+                        onClick={(e) => {
+                          if (link.path.startsWith('/#')) {
+                            if (location.pathname === '/') {
+                              e.preventDefault();
+                              const targetId = link.path.replace('/#', '');
+                              document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
+                            }
+                          }
+                        }}
                         style={{
-                          color: active ? 'var(--purple)' : 'var(--ink)',
-                          textDecoration: active ? 'underline' : 'none',
-                          textUnderlineOffset: '6px',
-                          textDecorationThickness: '2px',
+                          color: active ? '#FFFFFF' : 'var(--text-muted)',
+                          textDecoration: 'none',
                           transition: 'color 0.15s ease'
                         }}
                       >
                         {link.label}
-                      </Link>
+                      </a>
                     </li>
                   );
                 })}
@@ -107,11 +109,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
                     <Link
                       to="/admin"
                       style={{
-                        color: 'var(--purple)',
-                        fontWeight: 800,
+                        color: 'var(--yellow)',
+                        fontWeight: 700,
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '4px'
+                        gap: '6px'
                       }}
                     >
                       <ShieldCheck size={16} />
@@ -123,25 +125,24 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
             </nav>
 
             {/* Right Action Buttons */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               {isAuthenticated && user ? (
                 <div style={{ position: 'relative' }}>
                   <button
                     onClick={() => setIsUserMenuOpen(prev => !prev)}
-                    className="btn"
+                    className="btn btn-dark"
                     style={{
                       minHeight: '40px',
                       padding: '4px 14px 4px 6px',
                       gap: '8px',
                       fontSize: '14px',
-                      borderRadius: '999px',
-                      background: '#FFFFFF'
+                      borderRadius: '999px'
                     }}
                   >
                     <img
                       src={user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.name}`}
                       alt={user.name}
-                      style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1.5px solid var(--ink)' }}
+                      style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1.5px solid var(--yellow)' }}
                     />
                     <span className="desktop-only">{user.name.split(' ')[0]}</span>
                     {isAdmin && (
@@ -159,24 +160,26 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
                         right: 0,
                         top: '48px',
                         width: '240px',
-                        background: '#FFFFFF',
+                        background: 'var(--bg-card)',
                         borderRadius: '20px',
                         padding: '12px',
                         zIndex: 100,
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: '8px'
+                        gap: '8px',
+                        border: '2px solid var(--bg-card-border-subtle)',
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
                       }}
                     >
-                      <div style={{ padding: '6px 8px', borderBottom: '2px solid var(--lavender-accent)' }}>
-                        <div style={{ fontWeight: 800, color: 'var(--ink)' }}>{user.name}</div>
-                        <div style={{ fontSize: '12px', color: 'var(--muted)' }}>{user.email}</div>
+                      <div style={{ padding: '6px 8px', borderBottom: '1px solid var(--bg-card-border)' }}>
+                        <div style={{ fontWeight: 800, color: '#FFFFFF' }}>{user.name}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{user.email}</div>
                       </div>
 
                       <Link
                         to="/my-purchases"
                         onClick={() => setIsUserMenuOpen(false)}
-                        className="btn btn-secondary btn-sm"
+                        className="btn btn-dark btn-sm"
                         style={{ width: '100%', justifyContent: 'flex-start' }}
                       >
                         <Download size={15} /> My Purchased Notes
@@ -186,8 +189,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
                         <Link
                           to="/admin/products"
                           onClick={() => setIsUserMenuOpen(false)}
-                          className="btn btn-secondary btn-sm"
-                          style={{ width: '100%', justifyContent: 'flex-start', color: 'var(--purple)' }}
+                          className="btn btn-dark btn-sm"
+                          style={{ width: '100%', justifyContent: 'flex-start', color: 'var(--yellow)' }}
                         >
                           <ShieldCheck size={15} /> Admin CMS Portal
                         </Link>
@@ -199,40 +202,37 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
                           logout();
                           navigate('/');
                         }}
-                        className="btn btn-sm"
-                        style={{ width: '100%', justifyContent: 'flex-start', color: 'var(--coral)', background: '#FFF' }}
+                        className="btn btn-dark btn-sm"
+                        style={{ width: '100%', justifyContent: 'flex-start', color: 'var(--coral)' }}
                       >
-                        <LogOut size={15} /> Logout
+                        <LogOut size={15} /> Sign Out
                       </button>
                     </div>
                   )}
                 </div>
               ) : (
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <button
                     onClick={() => onOpenAuth('login')}
-                    className="btn desktop-only"
+                    className="btn btn-dark desktop-only"
                     style={{
-                      boxShadow: 'none',
-                      borderColor: 'transparent',
                       minHeight: '40px',
-                      padding: '0 14px',
-                      background: 'transparent',
-                      fontWeight: 700
+                      padding: '0 18px',
+                      fontSize: '14px'
                     }}
                   >
                     Log in
                   </button>
                   <button
                     onClick={() => onOpenAuth('register')}
-                    className="btn v"
+                    className="btn btn-yellow"
                     style={{
                       minHeight: '40px',
                       padding: '0 20px',
                       fontSize: '14px'
                     }}
                   >
-                    Get started
+                    Start free
                   </button>
                 </div>
               )}
@@ -257,39 +257,31 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
           style={{
             position: 'fixed',
             inset: 0,
-            background: 'rgba(27, 23, 64, 0.6)',
-            backdropFilter: 'blur(6px)',
+            background: 'rgba(10, 9, 21, 0.8)',
+            backdropFilter: 'blur(8px)',
             zIndex: 1000,
             display: 'flex',
-            justifyContent: 'flex-end',
-            animation: 'fadeIn 0.15s ease'
+            justifyContent: 'flex-end'
           }}
         >
           <div 
             onClick={e => e.stopPropagation()}
-            className="pop"
             style={{
               width: '84%',
               maxWidth: '340px',
               height: '100%',
-              background: '#FFFFFF',
-              borderRadius: '0',
+              background: 'var(--bg-cosmic-alt)',
+              borderLeft: '2px solid var(--bg-card-border)',
               padding: '1.75rem',
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'space-between',
-              boxShadow: 'none',
-              borderLeft: '3px solid var(--ink)'
+              justifyContent: 'space-between'
             }}
           >
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', paddingBottom: '1rem', borderBottom: '2px solid var(--ink)' }}>
-                <Link to="/" onClick={() => setIsMobileDrawerOpen(false)} className="d" style={{ fontSize: '22px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <svg width="28" height="28" viewBox="0 0 34 34" aria-hidden="true">
-                    <rect x="1" y="1" width="32" height="32" rx="10" fill="#5B3DF5" stroke="#1B1740" strokeWidth="2"></rect>
-                    <path d="M10 9h11a3 3 0 0 1 3 3v13H13a3 3 0 0 1-3-3V9z" fill="none" stroke="#fff" strokeWidth="2"></path>
-                    <path d="M14 15h6M14 19h4" stroke="#FFC933" strokeWidth="2" strokeLinecap="round"></path>
-                  </svg>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', paddingBottom: '1rem', borderBottom: '1px solid var(--bg-card-border)' }}>
+                <Link to="/" onClick={() => setIsMobileDrawerOpen(false)} className="d" style={{ fontSize: '20px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px', color: '#FFFFFF' }}>
+                  <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'var(--yellow)', boxShadow: '0 0 10px var(--yellow)' }}></div>
                   <span>Conceptifyyy</span>
                 </Link>
                 <button
@@ -303,27 +295,27 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {navLinks.map(link => (
-                  <Link
+                  <a
                     key={link.path}
-                    to={link.path}
+                    href={link.path}
                     onClick={() => setIsMobileDrawerOpen(false)}
-                    className="btn"
+                    className="btn btn-dark"
                     style={{
                       justifyContent: 'flex-start',
                       width: '100%',
-                      background: isActive(link.path) ? 'var(--lavender-accent)' : '#FFFFFF',
-                      color: 'var(--ink)'
+                      background: isActive(link.path) ? 'var(--bg-card)' : 'transparent',
+                      color: '#FFFFFF'
                     }}
                   >
                     <span>{link.label}</span>
-                  </Link>
+                  </a>
                 ))}
 
                 {isAdmin && (
                   <Link
                     to="/admin"
                     onClick={() => setIsMobileDrawerOpen(false)}
-                    className="btn y"
+                    className="btn btn-yellow"
                     style={{ width: '100%', justifyContent: 'flex-start' }}
                   >
                     <ShieldCheck size={18} />
@@ -333,56 +325,29 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
               </div>
             </div>
 
-            {/* Bottom Auth Section */}
-            <div style={{ paddingTop: '1.25rem', borderTop: '2px solid var(--ink)' }}>
-              {isAuthenticated && user ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <img
-                      src={user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.name}`}
-                      alt={user.name}
-                      style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid var(--ink)' }}
-                    />
-                    <div>
-                      <div style={{ fontWeight: 800, fontSize: '15px' }}>{user.name}</div>
-                      <div style={{ fontSize: '12px', color: 'var(--muted)' }}>{user.email}</div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setIsMobileDrawerOpen(false);
-                      logout();
-                      navigate('/');
-                    }}
-                    className="btn c"
-                    style={{ width: '100%' }}
-                  >
-                    <LogOut size={16} /> Logout
-                  </button>
-                </div>
+            <div style={{ borderTop: '1px solid var(--bg-card-border)', paddingTop: '1.25rem' }}>
+              {!isAuthenticated ? (
+                <button
+                  onClick={() => {
+                    setIsMobileDrawerOpen(false);
+                    onOpenAuth('login');
+                  }}
+                  className="btn btn-yellow"
+                  style={{ width: '100%' }}
+                >
+                  <LogIn size={16} /> Sign In
+                </button>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <button
-                    onClick={() => {
-                      setIsMobileDrawerOpen(false);
-                      onOpenAuth('login');
-                    }}
-                    className="btn"
-                    style={{ width: '100%' }}
-                  >
-                    Log In
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsMobileDrawerOpen(false);
-                      onOpenAuth('register');
-                    }}
-                    className="btn v"
-                    style={{ width: '100%' }}
-                  >
-                    Get Started
-                  </button>
-                </div>
+                <button
+                  onClick={() => {
+                    setIsMobileDrawerOpen(false);
+                    logout();
+                  }}
+                  className="btn btn-dark"
+                  style={{ width: '100%', color: 'var(--coral)' }}
+                >
+                  <LogOut size={16} /> Sign Out
+                </button>
               )}
             </div>
           </div>
@@ -391,3 +356,5 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuth }) => {
     </>
   );
 };
+
+export default Navbar;

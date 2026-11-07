@@ -230,7 +230,7 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
       <div className="wrap" style={{ paddingTop: '32px' }}>
         
         {/* Back Button */}
-        <Link to="/store" className="btn btn-sm" style={{ marginBottom: '24px', gap: '6px' }}>
+        <Link to="/store" className="btn btn-dark btn-sm" style={{ marginBottom: '24px', gap: '6px' }}>
           <ChevronLeft size={16} /> Back to Store
         </Link>
 
@@ -242,14 +242,15 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
             <div 
               className="pop" 
               style={{ 
-                background: '#FFFFFF', 
+                background: 'var(--bg-card)', 
                 borderRadius: '26px', 
                 overflow: 'hidden', 
-                padding: '20px' 
+                padding: '24px',
+                border: '2px solid var(--bg-card-border)'
               }}
             >
               {/* Product Thumbnail */}
-              <div style={{ width: '100%', height: '260px', borderRadius: '18px', border: '2px solid var(--ink)', overflow: 'hidden', marginBottom: '20px', background: 'var(--lavender-accent)' }}>
+              <div style={{ width: '100%', height: '260px', borderRadius: '18px', border: '1.5px solid var(--bg-card-border)', overflow: 'hidden', marginBottom: '20px', background: '#0E0D22' }}>
                 <img
                   src={getAssetUrl(product.thumbnail)}
                   alt={product.title}
@@ -260,23 +261,23 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
 
               {/* Price & Action Strip */}
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '12px' }}>
-                <span className="d" style={{ fontSize: '38px', fontWeight: 800, color: 'var(--ink)' }}>
+                <span className="d" style={{ fontSize: '38px', fontWeight: 800, color: 'var(--yellow)' }}>
                   {product.price === 0 ? 'FREE' : `₹${product.price}`}
                 </span>
                 {product.originalPrice && product.originalPrice > product.price && (
-                  <span style={{ fontSize: '18px', color: 'var(--muted)', textDecoration: 'line-through' }}>
+                  <span style={{ fontSize: '18px', color: 'var(--text-sub)', textDecoration: 'line-through' }}>
                     ₹{product.originalPrice}
                   </span>
                 )}
                 {product.discountPercent && (
-                  <span className="tag" style={{ background: '#FF8A6B' }}>
+                  <span className="tag" style={{ background: 'var(--coral)', color: 'var(--ink)', fontWeight: 800 }}>
                     {product.discountPercent}% OFF
                   </span>
                 )}
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--muted)', marginBottom: '20px' }}>
-                <ShieldCheck size={18} color="#19C8A0" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px' }}>
+                <ShieldCheck size={18} color="var(--mint)" />
                 <span>Official Razorpay 256-Bit SSL Encrypted Checkout</span>
               </div>
 
@@ -285,14 +286,14 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <button
                     onClick={handleView}
-                    className="btn v btn-lg"
+                    className="btn btn-yellow btn-lg"
                     style={{ width: '100%', gap: '8px' }}
                   >
                     <ExternalLink size={20} /> Open / View PDF
                   </button>
                   <button
                     onClick={handleDownload}
-                    className="btn y btn-lg"
+                    className="btn btn-dark btn-lg"
                     style={{ width: '100%', gap: '8px' }}
                   >
                     <Download size={20} /> Download Resource
@@ -302,7 +303,7 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
                 <button
                   onClick={handleBuyNow}
                   disabled={checkoutLoading}
-                  className="btn v btn-lg"
+                  className="btn btn-yellow btn-lg"
                   style={{ width: '100%', gap: '10px' }}
                 >
                   <ShoppingBag size={20} />
@@ -310,7 +311,7 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
                 </button>
               )}
 
-              <div style={{ textAlign: 'center', marginTop: '14px', fontSize: '12px', color: 'var(--muted)', fontWeight: 600 }}>
+              <div style={{ textAlign: 'center', marginTop: '14px', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>
                 ✓ Instant Digital Delivery • ✓ Lifetime Vault Access
               </div>
             </div>
@@ -321,13 +322,13 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
             
             {/* Category & Tags Strip */}
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px' }}>
-              <span className="tag" style={{ background: '#E3DDFF' }}>{product.category}</span>
-              <span className="tag" style={{ background: '#C9F7E8' }}>{product.fileFormat || 'PDF Document'}</span>
-              {product.pageCount && <span className="tag" style={{ background: '#FFE9A8' }}>{product.pageCount} Pages</span>}
+              <span className="tag" style={{ background: 'var(--yellow)', color: 'var(--ink)', fontWeight: 800 }}>{product.category}</span>
+              <span className="tag">{product.fileFormat || 'PDF Document'}</span>
+              {product.pageCount && <span className="tag">{product.pageCount} Pages</span>}
             </div>
 
             {/* Title */}
-            <h1 className="d" style={{ fontSize: 'clamp(28px, 4vw, 42px)', lineHeight: 1.15, fontWeight: 800, marginBottom: '14px' }}>
+            <h1 className="d" style={{ fontSize: 'clamp(28px, 4vw, 42px)', lineHeight: 1.15, fontWeight: 800, marginBottom: '14px', color: '#FFFFFF' }}>
               {product.title}
             </h1>
 
@@ -338,8 +339,8 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
                   <Star key={i} size={16} color="#FFC933" fill="#FFC933" />
                 ))}
               </div>
-              <span style={{ fontSize: '14px', fontWeight: 800 }}>{product.rating || 4.9}</span>
-              <span style={{ fontSize: '13px', color: 'var(--muted)' }}>
+              <span style={{ fontSize: '14px', fontWeight: 800, color: '#FFFFFF' }}>{product.rating || 4.9}</span>
+              <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
                 ({product.reviewsCount || 120} verified student ratings)
               </span>
             </div>
@@ -349,16 +350,17 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
               <div 
                 className="pop" 
                 style={{ 
-                  background: '#E3DDFF', 
+                  background: 'var(--bg-card-light)', 
+                  border: '1.5px solid var(--bg-card-border-subtle)',
                   borderRadius: '20px', 
                   padding: '20px', 
                   marginBottom: '24px' 
                 }}
               >
-                <div style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--ink)' }}>
+                <div style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--yellow)' }}>
                   QUICK OVERVIEW
                 </div>
-                <p style={{ fontSize: '15px', color: 'var(--ink)', lineHeight: 1.6, fontWeight: 600 }}>
+                <p style={{ fontSize: '15px', color: '#FFFFFF', lineHeight: 1.6, fontWeight: 600, margin: 0 }}>
                   {product.cardDescription || product.shortDescription}
                 </p>
               </div>
@@ -368,16 +370,17 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
             <div 
               className="pop" 
               style={{ 
-                background: '#FFFFFF', 
+                background: 'var(--bg-card)', 
+                border: '2px solid var(--bg-card-border)',
                 borderRadius: '24px', 
                 padding: '26px', 
                 marginBottom: '24px' 
               }}
             >
-              <h3 className="d" style={{ fontSize: '22px', marginBottom: '14px' }}>
+              <h3 className="d" style={{ fontSize: '22px', marginBottom: '14px', color: '#FFFFFF' }}>
                 {product.stepDescription || product.detailedDescription ? 'Detailed Content & Step Breakdown' : 'About this resource'}
               </h3>
-              <div style={{ fontSize: '15px', color: 'var(--muted)', lineHeight: 1.75, whiteSpace: 'pre-line' }}>
+              <div style={{ fontSize: '15px', color: 'var(--text-muted)', lineHeight: 1.75, whiteSpace: 'pre-line' }}>
                 {product.stepDescription || product.detailedDescription || product.description}
               </div>
             </div>
