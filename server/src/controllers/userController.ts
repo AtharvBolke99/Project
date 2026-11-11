@@ -95,12 +95,31 @@ export const getMyPurchases = async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ success: false, message: 'Unauthenticated.' });
     }
 
+    // Self-healing: if user has any paid orders that are missing a purchases entry, create it
+    const paidOrders = db.find('orders', o => (o.userId === user.id || o.userEmail === user.email) && o.status === 'PAID');
+    for (const ord of paidOrders) {
+      const existingPurchase = db.findOne('purchases', p => p.orderId === ord.id || (p.userId === user.id && p.productId === ord.productId));
+      if (!existingPurchase) {
+        const licenseKey = `CPY-LIC-${Math.random().toString(36).substring(2, 8).toUpperCase()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+        db.insert('purchases', {
+          id: 'pur_' + Math.random().toString(36).substring(2, 10),
+          userId: user.id,
+          productId: ord.productId,
+          orderId: ord.id,
+          downloadCount: 0,
+          maxDownloads: 50,
+          accessGrantedAt: ord.paidAt || new Date().toISOString(),
+          licenseKey
+        });
+      }
+    }
+
     const purchases = db.find('purchases', p => p.userId === user.id);
     const allProducts = db.find('products');
     const allOrders = db.find('orders');
 
     const items = purchases.map(p => {
-      const product = allProducts.find(prod => prod.id === p.productId);
+      const product = allProducts.find(prod => prod.id === p.productId || prod.slug === p.productId);
       const order = allOrders.find(ord => ord.id === p.orderId);
 
       return {
@@ -108,15 +127,15 @@ export const getMyPurchases = async (req: AuthRequest, res: Response) => {
         productId: p.productId,
         orderId: p.orderId,
         orderNumber: order?.orderNumber,
-        productTitle: product?.title || 'Digital Product',
+        productTitle: product?.title || order?.productTitle || 'Placement Preparation Notes',
         productSlug: product?.slug,
-        category: product?.category,
-        thumbnail: product?.thumbnail,
-        fileFormat: product?.fileFormat,
+        category: product?.category || 'Placement Notes',
+        thumbnail: product?.thumbnail || '/uploads/thumbnails/conceptifyyy_dsa_prep_2026_thumb.svg',
+        fileFormat: product?.fileFormat || 'PDF Document',
         amount: order?.amount,
         licenseKey: p.licenseKey,
         accessGrantedAt: p.accessGrantedAt,
-        downloadCount: p.downloadCount,
+        downloadCount: p.downloadCount || 0,
         downloadUrl: `/api/downloads/${p.productId}`
       };
     });

@@ -110,6 +110,7 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
         amountPaise: amountInPaise,
         currency: 'INR',
         keyId,
+        razorpayKeyId: keyId,
         product: {
           id: product.id,
           title: product.title,
@@ -137,30 +138,34 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
  */
 export const verifyPayment = async (req: AuthRequest, res: Response) => {
   try {
-    const { orderId, razorpayOrderId, razorpayPaymentId, razorpaySignature } = req.body;
+    const razorpayOrderId = req.body.razorpayOrderId || req.body.razorpay_order_id;
+    const razorpayPaymentId = req.body.razorpayPaymentId || req.body.razorpay_payment_id;
+    const razorpaySignature = req.body.razorpaySignature || req.body.razorpay_signature;
+    let orderId = req.body.orderId || req.body.order_id;
     const user = req.user;
 
     if (!user) {
       return res.status(401).json({ success: false, message: 'Unauthorized' });
     }
 
-    if (!orderId || !razorpayOrderId || !razorpayPaymentId || !razorpaySignature) {
+    if (!razorpayOrderId || !razorpayPaymentId || !razorpaySignature) {
       return res.status(400).json({
         success: false,
-        message: 'Missing payment verification parameters (orderId, razorpayOrderId, razorpayPaymentId, razorpaySignature are required).'
+        message: 'Missing payment verification parameters (razorpay_order_id, razorpay_payment_id, and razorpay_signature are required).'
       });
     }
 
-    console.log(`[RAZORPAY] Payment response received for order ${orderId}, payment ${razorpayPaymentId}`);
-
-    // 1. Find internal order
-    const order = db.findOne('orders', o => o.id === orderId || o.razorpayOrderId === razorpayOrderId);
+    // 1. Find internal order (by orderId or razorpayOrderId)
+    const order = db.findOne('orders', o => (orderId && o.id === orderId) || (razorpayOrderId && o.razorpayOrderId === razorpayOrderId));
     if (!order) {
       return res.status(404).json({
         success: false,
         message: 'Order record not found in database.'
       });
     }
+
+    orderId = order.id;
+    console.log(`[RAZORPAY] Payment response received for order ${orderId}, payment ${razorpayPaymentId}`);
 
     // 2. Check if already marked as PAID (Idempotency)
     if (order.status === 'PAID') {

@@ -95,10 +95,10 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
         throw new Error(orderRes.message || 'Failed to initialize Razorpay checkout order.');
       }
 
-      const { razorpayOrderId, amountPaise, currency, razorpayKeyId } = orderRes.data;
+      const { razorpayOrderId, amountPaise, currency, razorpayKeyId, keyId, orderId } = orderRes.data;
 
       const options = {
-        key: razorpayKeyId,
+        key: razorpayKeyId || keyId,
         amount: amountPaise,
         currency: currency || 'INR',
         name: 'Conceptifyyy',
@@ -109,9 +109,14 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
           try {
             showToast('Verifying payment...', 'info');
             const verifyRes = await api.post('/payments/verify', {
-              razorpayOrderId: response.razorpay_order_id,
+              orderId: orderId,
+              order_id: orderId,
+              razorpayOrderId: response.razorpay_order_id || razorpayOrderId,
+              razorpay_order_id: response.razorpay_order_id || razorpayOrderId,
               razorpayPaymentId: response.razorpay_payment_id,
+              razorpay_payment_id: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,
+              razorpay_signature: response.razorpay_signature,
               productId: product.id
             });
 
