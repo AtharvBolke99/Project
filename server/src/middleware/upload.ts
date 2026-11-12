@@ -33,7 +33,7 @@ const storage = multer.diskStorage({
 // Supported MIME types and extensions
 const allowedExtensions = [
   '.pdf', '.doc', '.docx', '.ppt', '.pptx', '.zip', '.rar', 
-  '.png', '.jpg', '.jpeg', '.txt', '.csv'
+  '.png', '.jpg', '.jpeg', '.svg', '.webp', '.txt', '.csv'
 ];
 
 export const uploadMiddleware = multer({

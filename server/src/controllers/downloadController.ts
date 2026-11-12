@@ -98,20 +98,24 @@ export const downloadDigitalAsset = async (req: AuthRequest, res: Response) => {
     const clientDist = path.resolve(__dirname, '../../../client/dist');
 
     let physicalFilePath: string | null = null;
-    const fileTarget = product?.digitalFile || '';
+    const fileTarget = (product?.digitalFile || '').trim();
+    const cleanFileName = path.basename(fileTarget);
+    const cleanTarget = fileTarget.replace(/^\/?(uploads\/documents\/|uploads\/|documents\/)?/, '');
 
     const candidates = [
+      path.join(uploadsDir, cleanFileName),
+      path.join(uploadsDir, cleanTarget),
       path.join(uploadsDir, fileTarget),
-      path.join(uploadsDir, path.basename(fileTarget)),
-      path.join(uploadsRoot, fileTarget),
-      path.join(uploadsRoot, path.basename(fileTarget)),
-      path.join(dataDir, fileTarget),
-      path.join(dataDir, path.basename(fileTarget)),
-      path.join(clientPublic, fileTarget),
-      path.join(clientPublic, path.basename(fileTarget)),
-      path.join(clientDist, fileTarget),
-      path.join(clientDist, path.basename(fileTarget)),
-      path.resolve(__dirname, '../../', fileTarget)
+      path.join(uploadsRoot, cleanFileName),
+      path.join(uploadsRoot, cleanTarget),
+      path.join(dataDir, cleanFileName),
+      path.join(dataDir, cleanTarget),
+      path.join(clientPublic, cleanFileName),
+      path.join(clientDist, cleanFileName),
+      path.resolve(__dirname, '../../uploads/documents', cleanFileName),
+      path.resolve(process.cwd(), 'server/uploads/documents', cleanFileName),
+      path.resolve(process.cwd(), 'uploads/documents', cleanFileName),
+      path.resolve(__dirname, '../../', cleanFileName)
     ];
 
     for (const candidate of candidates) {

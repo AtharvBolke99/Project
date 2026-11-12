@@ -21,7 +21,7 @@ export const AdminProducts: React.FC = () => {
 
   // Form State
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState<'DSA Notes' | 'Aptitude Notes' | 'Placement Bundles' | 'Projects'>('DSA Notes');
+  const [category, setCategory] = useState<string>('DSA Notes');
   const [price, setPrice] = useState(39);
   const [originalPrice, setOriginalPrice] = useState(199);
   const [reviewsCount, setReviewsCount] = useState<number>(getRandomReviews);
@@ -184,14 +184,17 @@ export const AdminProducts: React.FC = () => {
       }
 
       const res = await api.postFormData('/admin/upload', formData);
-      if (res.success && res.data?.url) {
+      const uploadedUrl = res.data?.url || res.data?.fileUrl;
+      const uploadedFilename = res.data?.digitalFile || res.data?.filename || (uploadedUrl ? uploadedUrl.split('/').pop() : file.name);
+
+      if (res.success && (uploadedUrl || uploadedFilename)) {
         if (isThumbnail) {
-          setThumbnail(res.data.url);
+          setThumbnail(uploadedUrl);
           showToast('Thumbnail image uploaded!', 'success');
         } else {
-          setDigitalFile(res.data.url);
+          setDigitalFile(uploadedFilename);
           setDigitalFileName(file.name);
-          showToast('Digital resource file uploaded successfully!', 'success');
+          showToast(`Digital resource "${file.name}" attached successfully!`, 'success');
         }
       } else {
         showToast(res.message || 'File upload failed', 'error');
@@ -414,8 +417,10 @@ export const AdminProducts: React.FC = () => {
               <div className="form-grid-2">
                 <div className="form-group">
                   <label className="form-label">Category</label>
-                  <select className="select" value={category} onChange={e => setCategory(e.target.value as any)}>
+                  <select className="select" value={category} onChange={e => setCategory(e.target.value)}>
                     <option value="DSA Notes">DSA Notes</option>
+                    <option value="Python">Python</option>
+                    <option value="MySQL / DBMS">MySQL / DBMS</option>
                     <option value="Aptitude Notes">Aptitude Notes</option>
                     <option value="Placement Bundles">Placement Bundles</option>
                     <option value="Projects">Projects</option>

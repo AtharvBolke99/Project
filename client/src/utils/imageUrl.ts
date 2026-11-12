@@ -12,7 +12,11 @@ export const getAssetUrl = (url?: string): string => {
     return DEFAULT_PRODUCT_THUMBNAIL;
   }
   const clean = url.trim();
-  if (clean.startsWith('http://') || clean.startsWith('https://')) {
+  if (clean.startsWith('http://') || clean.startsWith('https://') || clean.startsWith('data:')) {
+    return clean;
+  }
+  // Frontend root public static assets (e.g., /ats_resume_thumb.jpg, /favicon.svg)
+  if (clean.startsWith('/') && !clean.startsWith('/uploads')) {
     return clean;
   }
   return getUploadUrl(clean);

@@ -541,10 +541,33 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
               {/* Card Body */}
               <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px', flex: 1, justifyContent: 'space-between' }}>
                 <div>
-                  <h3 className="d" style={{ fontSize: '18px', color: '#FFFFFF', lineHeight: 1.3, marginBottom: '6px' }}>
+                  <h3 
+                    className="d" 
+                    style={{ 
+                      fontSize: '18px', 
+                      color: '#FFFFFF', 
+                      lineHeight: 1.3, 
+                      marginBottom: '6px',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
+                    }}
+                  >
                     {prod.title}
                   </h3>
-                  <p className="mu" style={{ fontSize: '13px', lineHeight: 1.5, margin: 0 }}>
+                  <p 
+                    className="mu" 
+                    style={{ 
+                      fontSize: '13px', 
+                      lineHeight: 1.5, 
+                      margin: 0,
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
+                    }}
+                  >
                     {prod.cardDescription || prod.description || 'Comprehensive exam preparation materials.'}
                   </p>
                 </div>

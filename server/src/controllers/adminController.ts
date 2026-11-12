@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import path from 'path';
 import { db, Problem, AptitudeQuestion, Product, Order, User } from '../database/db';
 import { AuthRequest } from '../middleware/auth';
 import { v4 as uuidv4 } from 'uuid';
@@ -307,7 +308,7 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
       discountPercent: Number(data.discountPercent || 50),
       thumbnail: data.thumbnail || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop&q=80',
       previewImages: data.previewImages || [],
-      digitalFile: data.digitalFile || `${slug}.pdf`,
+      digitalFile: data.digitalFile ? path.basename(data.digitalFile) : `${slug}.pdf`,
       fileFormat: data.fileFormat || 'PDF',
       pageCount: data.pageCount || 120,
       rating: data.rating ? Number(data.rating) : 4.9,
@@ -372,6 +373,8 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
       p => ({
         ...p,
         ...data,
+        digitalFile: data.digitalFile !== undefined ? (data.digitalFile ? path.basename(data.digitalFile) : '') : p.digitalFile,
+        thumbnail: data.thumbnail || p.thumbnail,
         cardDescription: cardDesc,
         shortDescription: cardDesc || p.shortDescription,
         stepDescription: stepDesc,
@@ -736,7 +739,8 @@ export const uploadAdminFile = async (req: AuthRequest, res: Response) => {
     }
 
     const isImage = file.mimetype.startsWith('image/');
-    const relativeUrl = `/uploads/${isImage ? 'thumbnails' : 'documents'}/${file.filename}`;
+    const folder = isImage ? 'thumbnails' : 'documents';
+    const relativeUrl = `/uploads/${folder}/${file.filename}`;
 
     return res.json({
       success: true,
@@ -745,6 +749,9 @@ export const uploadAdminFile = async (req: AuthRequest, res: Response) => {
         filename: file.filename,
         originalName: file.originalname,
         fileUrl: relativeUrl,
+        url: relativeUrl,
+        downloadUrl: relativeUrl,
+        digitalFile: file.filename,
         sizeBytes: file.size,
         mimeType: file.mimetype,
         isImage
