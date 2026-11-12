@@ -268,10 +268,11 @@ export const deleteAptitudeQuestion = async (req: AuthRequest, res: Response) =>
 export const getAdminProducts = async (req: AuthRequest, res: Response) => {
   try {
     const products = db.find('products');
+    const sorted = [...products].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
     return res.json({
       success: true,
-      data: products,
-      total: products.length
+      data: sorted,
+      total: sorted.length
     });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });
@@ -281,18 +282,29 @@ export const getAdminProducts = async (req: AuthRequest, res: Response) => {
 export const createProduct = async (req: AuthRequest, res: Response) => {
   try {
     const data = req.body;
-    if (!data.title || !data.price) {
+    if (!data.title || data.price === undefined || data.price === null) {
       return res.status(400).json({ success: false, message: 'Product title and price are required.' });
     }
 
-    const slug = (data.slug || data.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    let baseSlug = (data.slug || data.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    if (!baseSlug) baseSlug = 'resource';
+    let slug = baseSlug;
+    let counter = 1;
+    while (db.findOne('products', p => p.slug === slug)) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
 
     const cardDesc = data.cardDescription || data.shortDescription || (data.description ? data.description.substring(0, 140) : '');
     const stepDesc = data.stepDescription || data.detailedDescription || data.description || '';
     const mainDesc = stepDesc || cardDesc || 'Premium comprehensive notes curated for placement interviews.';
 
+    const isDraft = data.status === 'Draft' || data.isPublished === false;
+    const status = isDraft ? 'Draft' : 'Published';
+    const isPublished = !isDraft;
+
     const newProduct: Product = {
-      id: 'prod_' + uuidv4().substring(0, 8),
+      id: 'prod_' + uuidv4().replace(/-/g, '').substring(0, 12),
       title: data.title,
       slug,
       category: data.category || 'DSA Notes',
@@ -303,19 +315,19 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
       detailedDescription: stepDesc,
       description: mainDesc,
       price: Number(data.price),
-      originalPrice: Number(data.originalPrice || Number(data.price) * 2),
+      originalPrice: Number(data.originalPrice || (Number(data.price) > 0 ? Number(data.price) * 2 : 0)),
       salePrice: data.salePrice ? Number(data.salePrice) : undefined,
-      discountPercent: Number(data.discountPercent || 50),
-      thumbnail: data.thumbnail || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop&q=80',
-      previewImages: data.previewImages || [],
-      digitalFile: data.digitalFile ? path.basename(data.digitalFile) : `${slug}.pdf`,
+      discountPercent: Number(data.discountPercent || (data.originalPrice && data.originalPrice > data.price ? Math.round(((data.originalPrice - data.price) / data.originalPrice) * 100) : 0)),
+      thumbnail: data.thumbnail ? data.thumbnail.trim() : '',
+      previewImages: Array.isArray(data.previewImages) ? data.previewImages : [],
+      digitalFile: data.digitalFile ? path.basename(data.digitalFile) : '',
       fileFormat: data.fileFormat || 'PDF',
       pageCount: data.pageCount || 120,
       rating: data.rating ? Number(data.rating) : 4.9,
-      reviewsCount: data.reviewsCount ? Number(data.reviewsCount) : (Math.floor(Math.random() * (200 - 50 + 1)) + 50),
-      whatIncluded: Array.isArray(data.whatIncluded) ? data.whatIncluded : ['Visual Diagrams', 'Pattern Cheat Sheets', 'Interview Questions'],
+      reviewsCount: data.reviewsCount !== undefined ? Number(data.reviewsCount) : (Math.floor(Math.random() * (200 - 50 + 1)) + 50),
+      whatIncluded: Array.isArray(data.whatIncluded) ? data.whatIncluded : (data.whatIncluded ? data.whatIncluded.split(',').map((s: string) => s.trim()).filter(Boolean) : ['Visual Diagrams', 'Pattern Cheat Sheets', 'Interview Questions']),
       tags: Array.isArray(data.tags) ? data.tags : ['DSA', 'Placement'],
-      techStack: data.techStack || [],
+      techStack: Array.isArray(data.techStack) ? data.techStack : [],
       githubRepoUrl: data.githubRepoUrl || '',
       liveDemoUrl: data.liveDemoUrl || '',
       documentationPdf: data.documentationPdf || '',
@@ -326,13 +338,14 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
       seoTitle: data.seoTitle || data.title,
       seoDescription: data.seoDescription || cardDesc || mainDesc,
       isFeatured: Boolean(data.isFeatured),
-      isPublished: data.isPublished !== undefined ? Boolean(data.isPublished) : true,
+      isPublished,
+      status: status as any,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
 
     db.insert('products', newProduct);
-    console.log(`[NOTES] Admin created product: "${newProduct.title}" (ID: ${newProduct.id}, Category: ${newProduct.category}, Price: ₹${newProduct.price})`);
+    console.log(`[NOTES] Admin created product: "${newProduct.title}" (ID: ${newProduct.id}, Slug: ${newProduct.slug}, Status: ${newProduct.status})`);
 
     return res.status(201).json({
       success: true,
@@ -367,14 +380,22 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
       ? data.description 
       : (stepDesc || existing.description);
 
+    const isDraft = data.status !== undefined
+      ? (data.status === 'Draft' || data.status === 'DRAFT')
+      : (data.isPublished !== undefined ? data.isPublished === false : (existing.status === 'Draft' || existing.status === 'DRAFT' || existing.isPublished === false));
+    const status = isDraft ? 'Draft' : 'Published';
+    const isPublished = !isDraft;
+
     const updated = db.update(
       'products',
       p => p.id === id,
       p => ({
         ...p,
         ...data,
+        isPublished,
+        status: status as any,
         digitalFile: data.digitalFile !== undefined ? (data.digitalFile ? path.basename(data.digitalFile) : '') : p.digitalFile,
-        thumbnail: data.thumbnail || p.thumbnail,
+        thumbnail: data.thumbnail !== undefined ? (data.thumbnail ? data.thumbnail.trim() : '') : p.thumbnail,
         cardDescription: cardDesc,
         shortDescription: cardDesc || p.shortDescription,
         stepDescription: stepDesc,
@@ -393,7 +414,7 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ success: false, message: 'Product not found.' });
     }
 
-    console.log(`[NOTES] Admin updated product ID: ${id} ("${updated.title}")`);
+    console.log(`[NOTES] Admin updated product ID: ${id} ("${updated.title}") Status: ${updated.status}`);
 
     return res.json({
       success: true,

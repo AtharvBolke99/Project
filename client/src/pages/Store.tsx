@@ -28,7 +28,7 @@ export const Store: React.FC = () => {
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [category, setCategory] = useState<string>(initialCat);
   const [search, setSearch] = useState<string>('');
-  const [sortBy, setSortBy] = useState<string>('popular');
+  const [sortBy, setSortBy] = useState<string>('newest');
   const [priceFilter, setPriceFilter] = useState<string>('all');
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -95,22 +95,31 @@ export const Store: React.FC = () => {
   const matchesCategory = (p: any, cat: string): boolean => {
     if (cat === 'All') return true;
     const catLower = cat.toLowerCase();
+    const pCatLower = (p.category || '').toLowerCase();
+    if (pCatLower === catLower) return true;
+
     const titleLower = (p.title || '').toLowerCase();
     const tagsLower = (p.tags || []).map((t: string) => t.toLowerCase());
 
     if (cat === 'Python') {
-      return titleLower.includes('python') || tagsLower.includes('python');
+      return pCatLower.includes('python') || titleLower.includes('python') || tagsLower.includes('python');
     }
     if (cat === 'MySQL / DBMS') {
-      return titleLower.includes('sql') || titleLower.includes('database') || tagsLower.includes('mysql');
+      return pCatLower.includes('sql') || pCatLower.includes('dbms') || titleLower.includes('sql') || titleLower.includes('database') || tagsLower.includes('mysql');
+    }
+    if (cat === 'DSA Notes') {
+      return pCatLower.includes('dsa') || titleLower.includes('dsa') || tagsLower.includes('dsa');
+    }
+    if (cat === 'Aptitude Notes') {
+      return pCatLower.includes('aptitude') || titleLower.includes('aptitude') || tagsLower.includes('aptitude');
     }
     if (cat === 'Projects') {
-      return p.category === 'Projects' || tagsLower.includes('mern') || tagsLower.includes('project');
+      return pCatLower.includes('project') || tagsLower.includes('mern') || tagsLower.includes('project');
     }
     if (cat === 'Placement Bundles') {
-      return p.category === 'Placement Bundles' || titleLower.includes('resume');
+      return pCatLower.includes('placement') || pCatLower.includes('bundle') || titleLower.includes('resume');
     }
-    return (p.category || '').toLowerCase() === catLower;
+    return pCatLower === catLower;
   };
 
   const categoryCounts = useMemo(() => {
@@ -257,10 +266,10 @@ export const Store: React.FC = () => {
                   cursor: 'pointer'
                 }}
               >
+                <option value="newest">Newest First</option>
                 <option value="popular">Most Popular</option>
                 <option value="price_asc">Price: Low to High</option>
                 <option value="price_desc">Price: High to Low</option>
-                <option value="newest">Newest First</option>
               </select>
             </div>
 

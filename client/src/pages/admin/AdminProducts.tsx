@@ -25,16 +25,21 @@ export const AdminProducts: React.FC = () => {
   const [price, setPrice] = useState(39);
   const [originalPrice, setOriginalPrice] = useState(199);
   const [reviewsCount, setReviewsCount] = useState<number>(getRandomReviews);
+  const [status, setStatus] = useState<'Published' | 'Draft'>('Published');
   const [isPublished, setIsPublished] = useState(true);
   const [cardDescription, setCardDescription] = useState('');
   const [stepDescription, setStepDescription] = useState('');
-  const [thumbnail, setThumbnail] = useState('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop&q=80');
+  const [uploadedThumbnailUrl, setUploadedThumbnailUrl] = useState('');
+  const [customThumbnailUrl, setCustomThumbnailUrl] = useState('');
+  const [instantThumbnailPreview, setInstantThumbnailPreview] = useState<string | null>(null);
+  const [uploadProgressThumbnail, setUploadProgressThumbnail] = useState<number>(0);
   const [githubRepoUrl, setGithubRepoUrl] = useState('');
   const [liveDemoUrl, setLiveDemoUrl] = useState('');
   const [techStack, setTechStack] = useState('React, Node.js, Express, TypeScript');
   const [fileFormat, setFileFormat] = useState('PDF');
   const [digitalFile, setDigitalFile] = useState('');
   const [digitalFileName, setDigitalFileName] = useState('');
+  const [uploadProgressDigitalFile, setUploadProgressDigitalFile] = useState<number>(0);
   const [whatIncluded, setWhatIncluded] = useState('180+ Pages Visual PDF, Top 100 Company Patterns, Cheat Sheet');
   const [uploadingDigitalFile, setUploadingDigitalFile] = useState(false);
   const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
@@ -130,16 +135,24 @@ export const AdminProducts: React.FC = () => {
     setPrice(39);
     setOriginalPrice(199);
     setReviewsCount(getRandomReviews());
+    setStatus('Published');
     setIsPublished(true);
     setCardDescription('');
     setStepDescription('');
-    setThumbnail('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop&q=80');
+    setUploadedThumbnailUrl('');
+    setCustomThumbnailUrl('');
+    if (instantThumbnailPreview) {
+      URL.revokeObjectURL(instantThumbnailPreview);
+    }
+    setInstantThumbnailPreview(null);
+    setUploadProgressThumbnail(0);
     setGithubRepoUrl('');
     setLiveDemoUrl('');
     setTechStack('React, Node.js, Express, TypeScript');
     setFileFormat('PDF');
     setDigitalFile('');
     setDigitalFileName('');
+    setUploadProgressDigitalFile(0);
     setWhatIncluded('180+ Pages Visual PDF, Top 100 Company Patterns, Cheat Sheet');
   };
 
@@ -155,13 +168,29 @@ export const AdminProducts: React.FC = () => {
     setPrice(p.price || 0);
     setOriginalPrice(p.originalPrice || 0);
     setReviewsCount(p.reviewsCount || getRandomReviews());
-    setIsPublished(p.isPublished !== false);
+    const isDraft = p.status === 'Draft' || p.isPublished === false;
+    setStatus(isDraft ? 'Draft' : 'Published');
+    setIsPublished(!isDraft);
     setCardDescription(p.cardDescription || p.shortDescription || p.description || '');
     setStepDescription(p.stepDescription || p.detailedDescription || p.description || '');
-    setThumbnail(p.thumbnail || '');
+    
+    const existingThumb = p.thumbnail || '';
+    if (existingThumb.startsWith('/uploads/') || existingThumb.startsWith('uploads/')) {
+      setUploadedThumbnailUrl(existingThumb);
+      setCustomThumbnailUrl('');
+    } else {
+      setUploadedThumbnailUrl('');
+      setCustomThumbnailUrl(existingThumb);
+    }
+    if (instantThumbnailPreview) {
+      URL.revokeObjectURL(instantThumbnailPreview);
+    }
+    setInstantThumbnailPreview(null);
+    setUploadProgressThumbnail(0);
     setFileFormat(p.fileFormat || 'PDF');
     setDigitalFile(p.digitalFile || '');
     setDigitalFileName(p.digitalFile ? p.digitalFile.split('/').pop() || p.digitalFile : '');
+    setUploadProgressDigitalFile(0);
     setGithubRepoUrl(p.githubRepoUrl || '');
     setLiveDemoUrl(p.liveDemoUrl || '');
     setTechStack(Array.isArray(p.techStack) ? p.techStack.join(', ') : (p.techStack || ''));
@@ -173,38 +202,90 @@ export const AdminProducts: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      if (isThumbnail) {
-        setUploadingThumbnail(true);
-      } else {
-        setUploadingDigitalFile(true);
+    if (isThumbnail) {
+      // Validate Thumbnail format and size
+      const allowedExts = ['.png', '.jpg', '.jpeg', '.webp'];
+      const fileExt = '.' + file.name.split('.').pop()?.toLowerCase();
+      if (!allowedExts.includes(fileExt) && !file.type.startsWith('image/')) {
+        showToast('Thumbnail must be a PNG, JPG, JPEG, or WEBP image.', 'error');
+        e.target.value = '';
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showToast(`Thumbnail image exceeds 5 MB limit (${(file.size / (1024 * 1024)).toFixed(1)} MB). Please choose a smaller image.`, 'error');
+        e.target.value = '';
+        return;
       }
 
-      const res = await api.postFormData('/admin/upload', formData);
-      const uploadedUrl = res.data?.url || res.data?.fileUrl;
-      const uploadedFilename = res.data?.digitalFile || res.data?.filename || (uploadedUrl ? uploadedUrl.split('/').pop() : file.name);
+      // Generate instant preview immediately
+      try {
+        if (instantThumbnailPreview) {
+          URL.revokeObjectURL(instantThumbnailPreview);
+        }
+        const previewUrl = URL.createObjectURL(file);
+        setInstantThumbnailPreview(previewUrl);
+      } catch (prevErr) {
+        console.warn('Could not generate instant object URL preview:', prevErr);
+      }
 
-      if (res.success && (uploadedUrl || uploadedFilename)) {
-        if (isThumbnail) {
-          setThumbnail(uploadedUrl);
-          showToast('Thumbnail image uploaded!', 'success');
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        setUploadingThumbnail(true);
+        setUploadProgressThumbnail(15);
+        const res = await api.postFormData('/admin/upload', formData, (percent) => {
+          setUploadProgressThumbnail(percent);
+        });
+
+        const uploadedUrl = res.data?.url || res.data?.fileUrl;
+        if (res.success && uploadedUrl) {
+          setUploadedThumbnailUrl(uploadedUrl);
+          showToast('Thumbnail image uploaded to server storage!', 'success');
         } else {
+          showToast(res.message || 'Thumbnail upload failed.', 'error');
+        }
+      } catch (err: any) {
+        showToast(err.message || 'Thumbnail upload failed.', 'error');
+      } finally {
+        setUploadingThumbnail(false);
+      }
+    } else {
+      // Validate Digital Resource format and size (.pdf, .zip, .docx, .pptx, .csv)
+      const allowedExts = ['.pdf', '.zip', '.docx', '.pptx', '.csv', '.doc', '.ppt', '.rar', '.txt'];
+      const fileExt = '.' + file.name.split('.').pop()?.toLowerCase();
+      if (!allowedExts.includes(fileExt)) {
+        showToast(`Unsupported format "${fileExt}". Accepted formats: .pdf, .zip, .docx, .pptx, .csv`, 'error');
+        e.target.value = '';
+        return;
+      }
+      if (file.size > 50 * 1024 * 1024) {
+        showToast(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds 50 MB limit. Please select a smaller file.`, 'error');
+        e.target.value = '';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        setUploadingDigitalFile(true);
+        setUploadProgressDigitalFile(15);
+        const res = await api.postFormData('/admin/upload', formData, (percent) => {
+          setUploadProgressDigitalFile(percent);
+        });
+
+        const uploadedFilename = res.data?.digitalFile || res.data?.filename || (res.data?.url ? res.data.url.split('/').pop() : file.name);
+        if (res.success && uploadedFilename) {
           setDigitalFile(uploadedFilename);
           setDigitalFileName(file.name);
-          showToast(`Digital resource "${file.name}" attached successfully!`, 'success');
+          showToast(`Digital resource "${file.name}" uploaded to secure storage!`, 'success');
+        } else {
+          showToast(res.message || 'Digital resource upload failed.', 'error');
         }
-      } else {
-        showToast(res.message || 'File upload failed', 'error');
-      }
-    } catch (err: any) {
-      showToast(err.message || 'File upload failed', 'error');
-    } finally {
-      if (isThumbnail) {
-        setUploadingThumbnail(false);
-      } else {
+      } catch (err: any) {
+        showToast(err.message || 'Digital resource upload failed.', 'error');
+      } finally {
         setUploadingDigitalFile(false);
       }
     }
@@ -212,23 +293,31 @@ export const AdminProducts: React.FC = () => {
 
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (uploadingDigitalFile || uploadingThumbnail) {
+      showToast('Please wait for file uploads to complete.', 'info');
+      return;
+    }
     setSaving(true);
     try {
+      // If both are given, the uploaded image wins.
+      const finalThumbnail = uploadedThumbnailUrl.trim() || customThumbnailUrl.trim() || '';
+
       const payload = {
         title,
         category,
+        status,
+        isPublished: status === 'Published',
         price: Number(price),
         originalPrice: Number(originalPrice),
         discountPercent: originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0,
         reviewsCount: Number(reviewsCount) || getRandomReviews(),
-        isPublished: Boolean(isPublished),
         cardDescription,
         shortDescription: cardDescription,
         stepDescription,
         detailedDescription: stepDescription,
         description: stepDescription || cardDescription,
-        thumbnail,
-        digitalFile: digitalFile || undefined,
+        thumbnail: finalThumbnail,
+        digitalFile: digitalFile ? digitalFile.split('/').pop() : undefined,
         githubRepoUrl: category === 'Projects' ? githubRepoUrl : undefined,
         liveDemoUrl: category === 'Projects' ? liveDemoUrl : undefined,
         techStack: category === 'Projects' ? techStack.split(',').map(s => s.trim()).filter(Boolean) : undefined,
@@ -356,13 +445,13 @@ export const AdminProducts: React.FC = () => {
                     <td>
                       {p.isDeleted ? (
                         <span className="badge" style={{ background: 'var(--color-rose)', color: '#FFF' }}>Archived</span>
-                      ) : p.isPublished !== false ? (
-                        <span className="badge badge-emerald" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                          <Eye size={12} /> Published
-                        </span>
-                      ) : (
+                      ) : (p.status === 'Draft' || p.isPublished === false) ? (
                         <span className="badge badge-amber" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                           <EyeOff size={12} /> Draft
+                        </span>
+                      ) : (
+                        <span className="badge badge-emerald" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          <Eye size={12} /> Published
                         </span>
                       )}
                     </td>
@@ -399,11 +488,21 @@ export const AdminProducts: React.FC = () => {
                 <label className="form-label" style={{ fontWeight: 700, marginBottom: '8px' }}>Storefront Visibility Status</label>
                 <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9rem' }}>
-                    <input type="radio" name="isPublishedRadio" checked={isPublished === true} onChange={() => setIsPublished(true)} />
+                    <input 
+                      type="radio" 
+                      name="statusRadio" 
+                      checked={status === 'Published'} 
+                      onChange={() => { setStatus('Published'); setIsPublished(true); }} 
+                    />
                     <span style={{ color: 'var(--color-emerald)', fontWeight: 700 }}>🟢 Published (Live on Store)</span>
                   </label>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9rem' }}>
-                    <input type="radio" name="isPublishedRadio" checked={isPublished === false} onChange={() => setIsPublished(false)} />
+                    <input 
+                      type="radio" 
+                      name="statusRadio" 
+                      checked={status === 'Draft'} 
+                      onChange={() => { setStatus('Draft'); setIsPublished(false); }} 
+                    />
                     <span style={{ color: 'var(--color-amber)', fontWeight: 700 }}>🟡 Draft (Hidden from Public Store)</span>
                   </label>
                 </div>
@@ -466,44 +565,91 @@ export const AdminProducts: React.FC = () => {
 
               <div className="form-grid-2">
                 <div className="form-group">
-                  <label className="form-label">Digital Resource File Upload (PDF, ZIP, DOCX, PPTX)</label>
+                  <label className="form-label">Digital Resource File (.pdf, .zip, .docx, .pptx, .csv — up to 50MB)</label>
                   <input
                     type="file"
                     className="input"
                     onChange={e => handleFileUpload(e, false)}
-                    accept=".pdf,.zip,.doc,.docx,.ppt,.pptx,.csv,.txt"
+                    accept=".pdf,.zip,.docx,.pptx,.csv,.doc,.ppt"
+                    disabled={uploadingDigitalFile}
                   />
-                  {uploadingDigitalFile && <div style={{ fontSize: '0.75rem', color: 'var(--color-cyan)', marginTop: '4px' }}>⏳ Uploading file to secure storage...</div>}
-                  {digitalFileName && (
-                    <div style={{ fontSize: '0.75rem', color: 'var(--color-emerald)', marginTop: '4px', fontWeight: 600 }}>
-                      ✔ File Attached: {digitalFileName}
+                  {uploadingDigitalFile && (
+                    <div style={{ marginTop: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--color-cyan)', marginBottom: '4px' }}>
+                        <span>Uploading resource file...</span>
+                        <span>{uploadProgressDigitalFile}%</span>
+                      </div>
+                      <div style={{ width: '100%', height: '6px', background: 'var(--border-subtle)', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ width: `${uploadProgressDigitalFile}%`, height: '100%', background: 'var(--color-cyan)', transition: 'width 0.2s' }}></div>
+                      </div>
+                    </div>
+                  )}
+                  {digitalFileName && !uploadingDigitalFile && (
+                    <div style={{ fontSize: '0.75rem', color: 'var(--color-emerald)', marginTop: '6px', fontWeight: 600 }}>
+                      ✔ File Attached & Saved: {digitalFileName} ({digitalFile})
                     </div>
                   )}
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Thumbnail Image Upload</label>
+                  <label className="form-label">Thumbnail Image Upload (.png, .jpg, .jpeg, .webp — up to 5MB)</label>
                   <input
                     type="file"
                     className="input"
                     onChange={e => handleFileUpload(e, true)}
-                    accept="image/*"
+                    accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
+                    disabled={uploadingThumbnail}
                   />
-                  {uploadingThumbnail && <div style={{ fontSize: '0.75rem', color: 'var(--color-cyan)', marginTop: '4px' }}>⏳ Uploading thumbnail...</div>}
+                  {uploadingThumbnail && (
+                    <div style={{ marginTop: '8px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--color-cyan)', marginBottom: '4px' }}>
+                        <span>Uploading thumbnail image...</span>
+                        <span>{uploadProgressThumbnail}%</span>
+                      </div>
+                      <div style={{ width: '100%', height: '6px', background: 'var(--border-subtle)', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ width: `${uploadProgressThumbnail}%`, height: '100%', background: 'var(--color-cyan)', transition: 'width 0.2s' }}></div>
+                      </div>
+                    </div>
+                  )}
+                  {uploadedThumbnailUrl && !uploadingThumbnail && (
+                    <div style={{ fontSize: '0.75rem', color: 'var(--color-emerald)', marginTop: '6px', fontWeight: 600 }}>
+                      ✔ Uploaded Image Attached (Overrides Custom URL)
+                    </div>
+                  )}
                 </div>
               </div>
 
               <div className="form-group">
-                <label className="form-label">Or Custom Thumbnail Image URL</label>
-                <input type="text" className="input" value={thumbnail} onChange={e => setThumbnail(e.target.value)} placeholder="https://..." />
-                {thumbnail && (
-                  <div style={{ marginTop: '6px', width: '60px', height: '60px', borderRadius: '6px', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
-                    <img
-                      src={getAssetUrl(thumbnail)}
-                      alt="Preview"
-                      onError={handleImageError}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
+                <label className="form-label">
+                  Or Custom Thumbnail Image URL <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>(Optional fallback. If an image is uploaded above, the uploaded image wins.)</span>
+                </label>
+                <input 
+                  type="text" 
+                  className="input" 
+                  value={customThumbnailUrl} 
+                  onChange={e => setCustomThumbnailUrl(e.target.value)} 
+                  placeholder="https://images.unsplash.com/... or /path/to/image.jpg" 
+                />
+                
+                {/* Instant Preview */}
+                {(instantThumbnailPreview || uploadedThumbnailUrl || customThumbnailUrl) && (
+                  <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '14px', background: 'var(--bg-tertiary)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
+                    <div style={{ width: '70px', height: '70px', borderRadius: '8px', overflow: 'hidden', border: '1.5px solid var(--border-subtle)', background: '#0E0D22', flexShrink: 0 }}>
+                      <img
+                        src={instantThumbnailPreview || (uploadedThumbnailUrl ? getAssetUrl(uploadedThumbnailUrl) : getAssetUrl(customThumbnailUrl))}
+                        alt="Thumbnail Preview"
+                        onError={handleImageError}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                        {instantThumbnailPreview ? '⚡ Instant Local Preview' : (uploadedThumbnailUrl ? '✔ Saved Server Thumbnail' : '🌐 Custom Image URL Preview')}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                        {uploadedThumbnailUrl ? `Stored at ${uploadedThumbnailUrl}` : (instantThumbnailPreview ? 'Selected from local computer' : customThumbnailUrl)}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

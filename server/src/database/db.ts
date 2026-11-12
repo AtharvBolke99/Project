@@ -182,7 +182,7 @@ export interface Product {
   isFeatured: boolean;
   isPublished: boolean;
   isDeleted?: boolean;
-  status?: 'PUBLISHED' | 'DRAFT' | 'ARCHIVED';
+  status?: 'Published' | 'Draft' | 'Archived' | 'PUBLISHED' | 'DRAFT' | 'ARCHIVED';
   createdAt: string;
   updatedAt: string;
 }

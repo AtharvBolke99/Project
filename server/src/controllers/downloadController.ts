@@ -140,8 +140,8 @@ export const downloadDigitalAsset = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    // Fallback: Default verified placement preparation handbook if specific notes pdf was not found
-    if (!physicalFilePath) {
+    // Fallback: Default verified placement preparation handbook ONLY for the default seeded DSA product
+    if (!physicalFilePath && (product?.id === 'prod_conceptifyyy_dsa_2026' || product?.slug === 'conceptifyyy-company-wise-dsa-placement-prep-2026')) {
       const defaultCandidates = [
         path.join(uploadsDir, 'conceptifyyy_company_wise_dsa_placement_prep_2026.pdf'),
         path.join(dataDir, 'conceptifyyy_company_wise_dsa_placement_prep_2026.pdf')
@@ -167,7 +167,9 @@ export const downloadDigitalAsset = async (req: AuthRequest, res: Response) => {
     console.warn(`[NOTES] Download requested for product "${product?.title || productId}" (ID: ${productId}), but physical file "${product?.digitalFile || 'none'}" was not found on disk.`);
     return res.status(404).json({
       success: false,
-      message: 'The digital file for this product is not available for download. Please contact support or the administrator.'
+      message: product?.digitalFile 
+        ? `The uploaded resource file "${product.digitalFile}" for "${product.title}" was not found on server storage.` 
+        : 'No digital resource file has been uploaded for this product yet.'
     });
   } catch (error: any) {
     console.error('[NOTES] Download error:', error);

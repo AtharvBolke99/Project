@@ -154,8 +154,59 @@ class ApiClient {
     return this.request<T>(endpoint, { method: 'DELETE' });
   }
 
-  public async postFormData<T = any>(endpoint: string, formData: FormData): Promise<ApiResponse<T>> {
+  public async postFormData<T = any>(
+    endpoint: string, 
+    formData: FormData, 
+    onProgress?: (percent: number) => void
+  ): Promise<ApiResponse<T>> {
     const token = this.getToken();
+    const url = `${getApiBase()}${endpoint}`;
+
+    if (onProgress) {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', url);
+        if (token) {
+          xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        }
+
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            onProgress(percent);
+          }
+        };
+
+        xhr.onload = () => {
+          try {
+            const rawText = xhr.responseText;
+            let data: any = null;
+            if (rawText && rawText.trim().length > 0) {
+              data = JSON.parse(rawText);
+            }
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve(data || { success: true });
+            } else {
+              const errorMsg = data?.message || `Upload failed with status ${xhr.status}`;
+              reject(new Error(errorMsg));
+            }
+          } catch (e: any) {
+            reject(new Error(e.message || 'Failed to parse upload response'));
+          }
+        };
+
+        xhr.onerror = () => {
+          reject(new Error('Network error during file upload. Please check your connection.'));
+        };
+
+        xhr.ontimeout = () => {
+          reject(new Error('File upload timed out. Please try again.'));
+        };
+
+        xhr.send(formData);
+      });
+    }
+
     const headers: Record<string, string> = {};
 
     if (token) {
@@ -163,7 +214,7 @@ class ApiClient {
     }
 
     try {
-      const response = await fetch(`${getApiBase()}${endpoint}`, {
+      const response = await fetch(url, {
         method: 'POST',
         headers, // Browser automatically sets Content-Type multipart/form-data with boundary
         body: formData

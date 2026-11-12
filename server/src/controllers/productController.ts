@@ -7,7 +7,7 @@ export const getProducts = async (req: AuthRequest, res: Response) => {
     const { category, search, tag, sort, minPrice, maxPrice } = req.query as Record<string, string>;
     const userId = req.user?.id;
 
-    let products = db.find('products', p => p.isPublished !== false && !p.isDeleted);
+    let products = db.find('products', p => p.isPublished !== false && p.status !== 'Draft' && p.status !== 'DRAFT' && !p.isDeleted);
     console.log(`[NOTES] Fetching store products (category: ${category || 'All'}, search: ${search || 'none'}). Total active in DB: ${products.length}`);
 
     if (category && category !== 'All') {
@@ -51,7 +51,7 @@ export const getProducts = async (req: AuthRequest, res: Response) => {
       );
     }
 
-    // Apply sorting
+    // Apply sorting (default: newest first)
     if (sort) {
       if (sort === 'price_asc') {
         products.sort((a, b) => a.price - b.price);
@@ -62,6 +62,8 @@ export const getProducts = async (req: AuthRequest, res: Response) => {
       } else if (sort === 'newest') {
         products.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
       }
+    } else {
+      products.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
     }
 
     const purchasedProductIds = new Set<string>();
@@ -137,7 +139,7 @@ export const getProductBySlug = async (req: AuthRequest, res: Response) => {
     });
 
     console.log(`[NOTES] Fetching product by slug: "${slug}" (Found: ${!!product})`);
-    if (!product || (product.isPublished === false && req.user?.role !== 'ADMIN')) {
+    if (!product || ((product.isPublished === false || product.status === 'Draft' || product.status === 'DRAFT') && req.user?.role !== 'ADMIN')) {
       return res.status(404).json({ success: false, message: 'Product not found.' });
     }
 
