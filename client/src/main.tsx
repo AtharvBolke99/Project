@@ -10,6 +10,7 @@ import './styles/layout.css';
 import './styles/visualizer.css';
 import './styles/animations.css';
 import './styles/admin.css';
+import './styles/storeModern.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

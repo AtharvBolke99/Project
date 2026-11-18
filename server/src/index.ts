@@ -6,6 +6,7 @@ import fs from 'fs';
 import { config } from './config/env';
 import apiRouter from './routes';
 import { seedDatabaseIfEmpty } from './database/seed';
+import { storeStorage } from './storage/storeStorage';
 
 const app = express();
 
@@ -60,8 +61,10 @@ app.use('/api/', limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Static serving for public product thumbnails only (paid documents remain protected)
+// Static serving for public product thumbnails only (file-based store storage & fallback)
+app.use('/uploads/thumbnails', express.static(storeStorage.getThumbnailsDir()));
 app.use('/uploads/thumbnails', express.static(path.resolve(__dirname, '../uploads/thumbnails')));
+app.use('/uploads/thumbnails', express.static(path.resolve(__dirname, '../../client/public/uploads/thumbnails')));
 
 // Root & Health Check Endpoints (Ensures Render health checks pass immediately)
 app.get('/health', (req: Request, res: Response) => {

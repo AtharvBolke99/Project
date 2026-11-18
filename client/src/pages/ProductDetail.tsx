@@ -7,17 +7,15 @@ import {
   CheckCircle2, 
   Star, 
   ChevronLeft, 
-  Zap,
   ExternalLink,
   AlertTriangle,
-  Copy,
-  X,
-  KeyRound
+  FileText,
+  BookOpen,
+  Lock
 } from 'lucide-react';
 import { api, getApiUrl } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { SkeletonLoader } from '../components/SkeletonLoader';
 import { getAssetUrl, handleImageError } from '../utils/imageUrl';
 
 declare global {
@@ -35,7 +33,6 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
     visible: boolean;
     rawError: string;
   } | null>(null);
-  const [copiedEnv, setCopiedEnv] = useState<boolean>(false);
 
   const { user, isAuthenticated, refreshUser } = useAuth();
   const { showToast } = useToast();
@@ -142,7 +139,7 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
           productTitle: product.title
         },
         theme: {
-          color: '#5B3DF5'
+          color: '#4F46E5'
         },
         modal: {
           ondismiss: function () {
@@ -198,29 +195,28 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
 
   if (loading) {
     return (
-      <div className="wrap" style={{ padding: '4rem 1.5rem' }}>
-        <div className="pop skeleton-pop" style={{ height: '400px', borderRadius: '26px' }}></div>
+      <div className="store-detail-page">
+        <div className="store-container">
+          <div className="store-skeleton-card" style={{ height: '440px' }}></div>
+        </div>
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="wrap" style={{ textAlign: 'center', padding: '5rem 1.5rem' }}>
-        <div className="pop" style={{ background: '#FFFFFF', borderRadius: '26px', padding: '3.5rem 2rem', maxWidth: '600px', margin: '0 auto' }}>
-          <div style={{ width: '64px', height: '64px', borderRadius: '18px', background: 'var(--yellow)', border: '2px solid var(--ink)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-            <FileText size={32} color="var(--ink)" />
-          </div>
-          <h2 className="d" style={{ fontSize: '32px', marginBottom: '0.75rem' }}>Note or Project Not Found</h2>
-          <p className="mu" style={{ fontSize: '16px', lineHeight: 1.6, marginBottom: '2rem' }}>
-            The requested learning material may have moved or been updated. You can find all verified notes, cheat sheets, and full-stack projects in the Store.
-          </p>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to="/store" className="btn v">
+      <div className="store-detail-page">
+        <div className="store-container">
+          <div className="store-empty-card" style={{ maxWidth: '580px' }}>
+            <FileText size={48} color="#4F46E5" style={{ margin: '0 auto 16px' }} />
+            <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+              Resource Not Found
+            </h2>
+            <p style={{ fontSize: '15px', color: '#64748B', lineHeight: 1.6, marginBottom: '24px' }}>
+              The requested study material or project could not be found or has been moved.
+            </p>
+            <Link to="/store" className="store-btn-action">
               Browse All Resources
-            </Link>
-            <Link to="/" className="btn">
-              Back to Home
             </Link>
           </div>
         </div>
@@ -228,184 +224,232 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
     );
   }
 
-  const canAccess = product.price === 0 || product.isPurchased;
+  const isFree = product.price === 0;
+  const canAccess = isFree || product.isPurchased;
+  const isFileAvailable = product.isFileAvailable !== false;
+  const thumbnailSrc = getAssetUrl(product.thumbnail);
 
   return (
-    <div className="product-detail-page animate-fade-in" style={{ paddingBottom: '96px' }}>
-      <div className="wrap" style={{ paddingTop: '32px' }}>
+    <div className="store-detail-page animate-fade-in">
+      <div className="store-container">
         
         {/* Back Button */}
-        <Link to="/store" className="btn btn-dark btn-sm" style={{ marginBottom: '24px', gap: '6px' }}>
-          <ChevronLeft size={16} /> Back to Store
-        </Link>
+        <div style={{ marginBottom: '24px' }}>
+          <Link 
+            to="/store" 
+            className="store-cat-pill"
+            style={{ textDecoration: 'none' }}
+          >
+            <ChevronLeft size={16} />
+            <span>Back to Store</span>
+          </Link>
+        </div>
 
         {/* Two-Column Detail Layout */}
-        <div className="product-detail-grid">
+        <div className="store-detail-grid">
           
           {/* Left Column: Media & Checkout Box */}
-          <div style={{ position: 'sticky', top: '100px' }}>
-            <div 
-              className="pop" 
-              style={{ 
-                background: 'var(--bg-card)', 
-                borderRadius: '26px', 
-                overflow: 'hidden', 
-                padding: '24px',
-                border: '2px solid var(--bg-card-border)'
-              }}
-            >
-              {/* Product Thumbnail */}
-              <div style={{ width: '100%', height: '260px', borderRadius: '18px', border: '1.5px solid var(--bg-card-border)', overflow: 'hidden', marginBottom: '20px', background: '#0E0D22' }}>
+          <aside className="store-detail-sidebar" style={{ position: 'sticky', top: '96px' }}>
+            
+            {/* Product Thumbnail */}
+            <div style={{ 
+              width: '100%', 
+              height: '240px', 
+              borderRadius: '16px', 
+              overflow: 'hidden', 
+              background: '#F1F5F9',
+              border: '1px solid #E2E8F0',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              {thumbnailSrc ? (
                 <img
-                  src={getAssetUrl(product.thumbnail)}
+                  src={thumbnailSrc}
                   alt={product.title}
                   onError={handleImageError}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
-              </div>
-
-              {/* Price & Action Strip */}
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '12px' }}>
-                <span className="d" style={{ fontSize: '38px', fontWeight: 800, color: 'var(--yellow)' }}>
-                  {product.price === 0 ? 'FREE' : `₹${product.price}`}
-                </span>
-                {product.originalPrice && product.originalPrice > product.price && (
-                  <span style={{ fontSize: '18px', color: 'var(--text-sub)', textDecoration: 'line-through' }}>
-                    ₹{product.originalPrice}
-                  </span>
-                )}
-                {product.discountPercent && (
-                  <span className="tag" style={{ background: 'var(--coral)', color: 'var(--ink)', fontWeight: 800 }}>
-                    {product.discountPercent}% OFF
-                  </span>
-                )}
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px' }}>
-                <ShieldCheck size={18} color="var(--mint)" />
-                <span>Official Razorpay 256-Bit SSL Encrypted Checkout</span>
-              </div>
-
-              {/* CTA Buttons */}
-              {canAccess ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <button
-                    onClick={handleView}
-                    className="btn btn-yellow btn-lg"
-                    style={{ width: '100%', gap: '8px' }}
-                  >
-                    <ExternalLink size={20} /> Open / View PDF
-                  </button>
-                  <button
-                    onClick={handleDownload}
-                    className="btn btn-dark btn-lg"
-                    style={{ width: '100%', gap: '8px' }}
-                  >
-                    <Download size={20} /> Download Resource
-                  </button>
-                </div>
               ) : (
-                <button
-                  onClick={handleBuyNow}
-                  disabled={checkoutLoading}
-                  className="btn btn-yellow btn-lg"
-                  style={{ width: '100%', gap: '10px' }}
-                >
-                  <ShoppingBag size={20} />
-                  <span>{checkoutLoading ? 'Opening Razorpay Checkout...' : `Buy Now — ₹${product.price}`}</span>
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: '#4F46E5' }}>
+                  <BookOpen size={48} />
+                  <span style={{ fontSize: '13px', fontWeight: 700, marginTop: '8px' }}>{product.category}</span>
+                </div>
               )}
-
-              <div style={{ textAlign: 'center', marginTop: '14px', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 600 }}>
-                ✓ Instant Digital Delivery • ✓ Lifetime Vault Access
-              </div>
             </div>
-          </div>
+
+            {/* Price & Discount */}
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '12px' }}>
+              {isFree ? (
+                <span className="store-price-free" style={{ fontSize: '32px' }}>FREE</span>
+              ) : (
+                <>
+                  <span className="store-price-main" style={{ fontSize: '32px' }}>₹{product.price}</span>
+                  {product.originalPrice && product.originalPrice > product.price && (
+                    <span className="store-price-original" style={{ fontSize: '16px' }}>₹{product.originalPrice}</span>
+                  )}
+                  {product.discountPercent > 0 && (
+                    <span className="store-badge store-badge-discount" style={{ marginLeft: 'auto' }}>
+                      {product.discountPercent}% OFF
+                    </span>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Trust badge */}
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px', 
+              fontSize: '12.5px', 
+              color: '#64748B', 
+              marginBottom: '20px',
+              padding: '10px 12px',
+              background: '#F8FAFC',
+              borderRadius: '10px',
+              border: '1px solid #E2E8F0'
+            }}>
+              <ShieldCheck size={16} color="#10B981" />
+              <span>Official Razorpay 256-Bit SSL Encrypted</span>
+            </div>
+
+            {/* Physical File Missing Notice if applicable */}
+            {!isFileAvailable && (
+              <div style={{ 
+                background: '#FFFBEB', 
+                border: '1px solid #FDE68A', 
+                borderRadius: '12px', 
+                padding: '12px 14px', 
+                fontSize: '13px', 
+                color: '#B45309', 
+                marginBottom: '16px' 
+              }}>
+                <strong>⚠️ File Syncing:</strong> The digital file for this note is currently being updated by the instructor. You can still purchase or save it for instant access once ready.
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            {canAccess ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <button
+                  onClick={handleView}
+                  className="store-detail-btn-buy store-detail-btn-free"
+                  disabled={!isFileAvailable}
+                >
+                  <ExternalLink size={18} />
+                  <span>Open / View Document</span>
+                </button>
+                <button
+                  onClick={handleDownload}
+                  className="store-detail-btn-buy"
+                  style={{ background: '#0F172A' }}
+                  disabled={!isFileAvailable}
+                >
+                  <Download size={18} />
+                  <span>Download Resource</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleBuyNow}
+                disabled={checkoutLoading}
+                className="store-detail-btn-buy"
+              >
+                <ShoppingBag size={18} />
+                <span>{checkoutLoading ? 'Opening Razorpay Checkout...' : `Buy Now — ₹${product.price}`}</span>
+              </button>
+            )}
+
+            <div style={{ textAlign: 'center', marginTop: '14px', fontSize: '12px', color: '#94A3B8', fontWeight: 600 }}>
+              ✓ Instant Digital Access • ✓ Lifetime Vault Storage
+            </div>
+          </aside>
 
           {/* Right Column: Information, Syllabus & Specs */}
-          <div>
+          <main>
             
-            {/* Category & Tags Strip */}
+            {/* Top Badges */}
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px' }}>
-              <span className="tag" style={{ background: 'var(--yellow)', color: 'var(--ink)', fontWeight: 800 }}>{product.category}</span>
-              <span className="tag">{product.fileFormat || 'PDF Document'}</span>
-              {product.pageCount && <span className="tag">{product.pageCount} Pages</span>}
+              <span className="store-badge store-badge-dsa" style={{ fontSize: '12.5px', padding: '6px 12px' }}>
+                {product.category}
+              </span>
+              <span className="store-badge store-badge-default" style={{ fontSize: '12.5px', padding: '6px 12px' }}>
+                {product.fileFormat || 'PDF Document'}
+              </span>
+              {product.pageCount && (
+                <span className="store-badge store-badge-default" style={{ fontSize: '12.5px', padding: '6px 12px' }}>
+                  {product.pageCount} Pages
+                </span>
+              )}
             </div>
 
-            {/* Title */}
-            <h1 className="d" style={{ fontSize: 'clamp(28px, 4vw, 42px)', lineHeight: 1.15, fontWeight: 800, marginBottom: '14px', color: '#FFFFFF' }}>
+            {/* Product Title */}
+            <h1 style={{ 
+              fontSize: 'clamp(26px, 3.5vw, 38px)', 
+              fontWeight: 800, 
+              color: '#0F172A', 
+              lineHeight: 1.25, 
+              margin: '0 0 14px 0',
+              letterSpacing: '-0.02em'
+            }}>
               {product.title}
             </h1>
 
-            {/* Reviews */}
+            {/* Ratings */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
               <div style={{ display: 'flex', gap: '2px' }}>
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={16} color="#FFC933" fill="#FFC933" />
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} size={16} color="#F59E0B" fill="#F59E0B" />
                 ))}
               </div>
-              <span style={{ fontSize: '14px', fontWeight: 800, color: '#FFFFFF' }}>{product.rating || 4.9}</span>
-              <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+              <span style={{ fontSize: '14px', fontWeight: 800, color: '#0F172A' }}>
+                {product.rating || 4.9}
+              </span>
+              <span style={{ fontSize: '13px', color: '#64748B' }}>
                 ({product.reviewsCount || 120} verified student ratings)
               </span>
             </div>
 
-            {/* Overview Box */}
+            {/* Short Description Box */}
             {(product.cardDescription || product.shortDescription) && (
-              <div 
-                className="pop" 
-                style={{ 
-                  background: 'var(--bg-card-light)', 
-                  border: '1.5px solid var(--bg-card-border-subtle)',
-                  borderRadius: '20px', 
-                  padding: '20px', 
-                  marginBottom: '24px' 
-                }}
-              >
-                <div style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', marginBottom: '6px', color: 'var(--yellow)' }}>
-                  QUICK OVERVIEW
+              <div style={{ 
+                background: '#EEF2FF', 
+                border: '1px solid #E0E7FF', 
+                borderRadius: '16px', 
+                padding: '18px 20px', 
+                marginBottom: '24px' 
+              }}>
+                <div style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', color: '#4F46E5', letterSpacing: '0.05em', marginBottom: '6px' }}>
+                  OVERVIEW
                 </div>
-                <p style={{ fontSize: '15px', color: '#FFFFFF', lineHeight: 1.6, fontWeight: 600, margin: 0 }}>
+                <p style={{ fontSize: '15px', color: '#1E293B', lineHeight: 1.6, fontWeight: 500, margin: 0 }}>
                   {product.cardDescription || product.shortDescription}
                 </p>
               </div>
             )}
 
-            {/* Complete Syllabus & Description */}
-            <div 
-              className="pop" 
-              style={{ 
-                background: 'var(--bg-card)', 
-                border: '2px solid var(--bg-card-border)',
-                borderRadius: '24px', 
-                padding: '26px', 
-                marginBottom: '24px' 
-              }}
-            >
-              <h3 className="d" style={{ fontSize: '22px', marginBottom: '14px', color: '#FFFFFF' }}>
-                {product.stepDescription || product.detailedDescription ? 'Detailed Content & Step Breakdown' : 'About this resource'}
+            {/* Detailed Description / Syllabus Card */}
+            <div className="store-detail-card">
+              <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', marginTop: 0, marginBottom: '14px' }}>
+                {product.stepDescription || product.detailedDescription ? 'Detailed Content & Topics' : 'About this Resource'}
               </h3>
-              <div style={{ fontSize: '15px', color: 'var(--text-muted)', lineHeight: 1.75, whiteSpace: 'pre-line' }}>
+              <div style={{ fontSize: '15px', color: '#475569', lineHeight: 1.75, whiteSpace: 'pre-line' }}>
                 {product.stepDescription || product.detailedDescription || product.description}
               </div>
             </div>
 
             {/* What's Included */}
             {product.whatIncluded && product.whatIncluded.length > 0 && (
-              <div 
-                className="pop" 
-                style={{ 
-                  background: '#FFFFFF', 
-                  borderRadius: '24px', 
-                  padding: '26px', 
-                  marginBottom: '24px' 
-                }}
-              >
-                <h3 className="d" style={{ fontSize: '20px', marginBottom: '14px' }}>What's Included:</h3>
+              <div className="store-detail-card">
+                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', marginTop: 0, marginBottom: '14px' }}>
+                  What's Included:
+                </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {product.whatIncluded.map((item: string, idx: number) => (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '15px', color: 'var(--ink)', fontWeight: 600 }}>
-                      <CheckCircle2 size={18} color="#19C8A0" />
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14.5px', color: '#1E293B', fontWeight: 600 }}>
+                      <CheckCircle2 size={18} color="#10B981" />
                       <span>{item}</span>
                     </div>
                   ))}
@@ -415,19 +459,13 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
 
             {/* Tech Stack for Projects */}
             {product.techStack && product.techStack.length > 0 && (
-              <div 
-                className="pop" 
-                style={{ 
-                  background: '#FFFFFF', 
-                  borderRadius: '24px', 
-                  padding: '26px', 
-                  marginBottom: '24px' 
-                }}
-              >
-                <h3 className="d" style={{ fontSize: '20px', marginBottom: '14px' }}>Technology Stack & Tools:</h3>
+              <div className="store-detail-card">
+                <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', marginTop: 0, marginBottom: '14px' }}>
+                  Technology Stack & Tools:
+                </h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                   {product.techStack.map((tech: string) => (
-                    <span key={tech} className="tag tag-yellow" style={{ fontSize: '13px' }}>
+                    <span key={tech} className="store-cat-pill" style={{ height: '34px', fontSize: '13px' }}>
                       {tech}
                     </span>
                   ))}
@@ -436,36 +474,31 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
             )}
 
             {/* FAQ Card */}
-            <div 
-              className="pop" 
-              style={{ 
-                background: '#FFFFFF', 
-                borderRadius: '24px', 
-                padding: '26px' 
-              }}
-            >
-              <h4 className="d" style={{ fontSize: '20px', marginBottom: '16px' }}>Frequently Asked Questions</h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', fontSize: '14px' }}>
+            <div className="store-detail-card">
+              <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#0F172A', marginTop: 0, marginBottom: '16px' }}>
+                Frequently Asked Questions
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', fontSize: '14.5px' }}>
                 <div>
-                  <strong style={{ color: 'var(--ink)', display: 'block', marginBottom: '4px' }}>
+                  <strong style={{ color: '#0F172A', display: 'block', marginBottom: '4px' }}>
                     Q: How do I access my files after purchasing?
                   </strong>
-                  <p className="mu">
-                    Your digital files unlock immediately upon verified payment and remain permanently accessible under your "My Purchases" library.
+                  <p style={{ color: '#64748B', lineHeight: 1.6, margin: 0 }}>
+                    Your digital files unlock immediately upon verified payment and remain permanently accessible under your "My Purchases" vault.
                   </p>
                 </div>
                 <div>
-                  <strong style={{ color: 'var(--ink)', display: 'block', marginBottom: '4px' }}>
-                    Q: Are future updates to these notes included?
+                  <strong style={{ color: '#0F172A', display: 'block', marginBottom: '4px' }}>
+                    Q: Are future revisions to these notes included?
                   </strong>
-                  <p className="mu">
-                    Yes! Any new interview questions or updated diagrams added by instructors are automatically available for re-download.
+                  <p style={{ color: '#64748B', lineHeight: 1.6, margin: 0 }}>
+                    Yes! Any newly added company interview questions or updated diagrams are automatically available for re-download anytime.
                   </p>
                 </div>
               </div>
             </div>
 
-          </div>
+          </main>
 
         </div>
 
@@ -480,23 +513,24 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
           <div 
             className="modal-content"
             onClick={e => e.stopPropagation()}
+            style={{ maxWidth: '480px', padding: '24px' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-              <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'var(--coral)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid var(--ink)' }}>
-                <AlertTriangle size={22} color="#FFFFFF" />
+              <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <AlertTriangle size={22} color="#DC2626" />
               </div>
               <div>
-                <h3 className="d" style={{ fontSize: '20px', margin: 0 }}>Razorpay Key Configuration Needed</h3>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: '#0F172A' }}>Razorpay Configuration Required</h3>
               </div>
             </div>
 
-            <p style={{ fontSize: '14px', color: 'var(--muted)', lineHeight: 1.5, marginBottom: '16px' }}>
-              The backend received an authentication error when contacting Razorpay. Please verify your Razorpay API Key ID and Key Secret in Render environment variables.
+            <p style={{ fontSize: '14px', color: '#64748B', lineHeight: 1.6, marginBottom: '20px' }}>
+              The backend received an authentication error when contacting Razorpay. Please verify your Razorpay API Key ID and Key Secret in your environment configuration.
             </p>
 
             <button
               onClick={() => setAuthErrorModalData(null)}
-              className="btn v"
+              className="store-btn-action"
               style={{ width: '100%' }}
             >
               Understood
@@ -504,6 +538,9 @@ export const ProductDetail: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth
           </div>
         </div>
       )}
+
     </div>
   );
 };
+
+export default ProductDetail;

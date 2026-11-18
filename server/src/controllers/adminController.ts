@@ -3,6 +3,7 @@ import path from 'path';
 import { db, Problem, AptitudeQuestion, Product, Order, User } from '../database/db';
 import { AuthRequest } from '../middleware/auth';
 import { v4 as uuidv4 } from 'uuid';
+import { storeStorage } from '../storage/storeStorage';
 
 export const getAdminOverview = async (req: AuthRequest, res: Response) => {
   try {
@@ -267,12 +268,11 @@ export const deleteAptitudeQuestion = async (req: AuthRequest, res: Response) =>
 // ================= PRODUCT & NOTES CMS =================
 export const getAdminProducts = async (req: AuthRequest, res: Response) => {
   try {
-    const products = db.find('products');
-    const sorted = [...products].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+    const products = storeStorage.getAllProducts({ includeDrafts: true });
     return res.json({
       success: true,
-      data: sorted,
-      total: sorted.length
+      data: products,
+      total: products.length
     });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });
@@ -286,66 +286,7 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ success: false, message: 'Product title and price are required.' });
     }
 
-    let baseSlug = (data.slug || data.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    if (!baseSlug) baseSlug = 'resource';
-    let slug = baseSlug;
-    let counter = 1;
-    while (db.findOne('products', p => p.slug === slug)) {
-      slug = `${baseSlug}-${counter}`;
-      counter++;
-    }
-
-    const cardDesc = data.cardDescription || data.shortDescription || (data.description ? data.description.substring(0, 140) : '');
-    const stepDesc = data.stepDescription || data.detailedDescription || data.description || '';
-    const mainDesc = stepDesc || cardDesc || 'Premium comprehensive notes curated for placement interviews.';
-
-    const isDraft = data.status === 'Draft' || data.isPublished === false;
-    const status = isDraft ? 'Draft' : 'Published';
-    const isPublished = !isDraft;
-
-    const newProduct: Product = {
-      id: 'prod_' + uuidv4().replace(/-/g, '').substring(0, 12),
-      title: data.title,
-      slug,
-      category: data.category || 'DSA Notes',
-      subcategory: data.subcategory || '',
-      cardDescription: cardDesc,
-      shortDescription: cardDesc,
-      stepDescription: stepDesc,
-      detailedDescription: stepDesc,
-      description: mainDesc,
-      price: Number(data.price),
-      originalPrice: Number(data.originalPrice || (Number(data.price) > 0 ? Number(data.price) * 2 : 0)),
-      salePrice: data.salePrice ? Number(data.salePrice) : undefined,
-      discountPercent: Number(data.discountPercent || (data.originalPrice && data.originalPrice > data.price ? Math.round(((data.originalPrice - data.price) / data.originalPrice) * 100) : 0)),
-      thumbnail: data.thumbnail ? data.thumbnail.trim() : '',
-      previewImages: Array.isArray(data.previewImages) ? data.previewImages : [],
-      digitalFile: data.digitalFile ? path.basename(data.digitalFile) : '',
-      fileFormat: data.fileFormat || 'PDF',
-      pageCount: data.pageCount || 120,
-      rating: data.rating ? Number(data.rating) : 4.9,
-      reviewsCount: data.reviewsCount !== undefined ? Number(data.reviewsCount) : (Math.floor(Math.random() * (200 - 50 + 1)) + 50),
-      whatIncluded: Array.isArray(data.whatIncluded) ? data.whatIncluded : (data.whatIncluded ? data.whatIncluded.split(',').map((s: string) => s.trim()).filter(Boolean) : ['Visual Diagrams', 'Pattern Cheat Sheets', 'Interview Questions']),
-      tags: Array.isArray(data.tags) ? data.tags : ['DSA', 'Placement'],
-      techStack: Array.isArray(data.techStack) ? data.techStack : [],
-      githubRepoUrl: data.githubRepoUrl || '',
-      liveDemoUrl: data.liveDemoUrl || '',
-      documentationPdf: data.documentationPdf || '',
-      sourceCodeZip: data.sourceCodeZip || '',
-      presentationPpt: data.presentationPpt || '',
-      synopsis: data.synopsis || '',
-      difficulty: data.difficulty || 'Intermediate',
-      seoTitle: data.seoTitle || data.title,
-      seoDescription: data.seoDescription || cardDesc || mainDesc,
-      isFeatured: Boolean(data.isFeatured),
-      isPublished,
-      status: status as any,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-
-    db.insert('products', newProduct);
-    console.log(`[NOTES] Admin created product: "${newProduct.title}" (ID: ${newProduct.id}, Slug: ${newProduct.slug}, Status: ${newProduct.status})`);
+    const newProduct = storeStorage.createProduct(data);
 
     return res.status(201).json({
       success: true,
@@ -363,58 +304,10 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const data = req.body;
 
-    const existing = db.findOne('products', p => p.id === id);
-    if (!existing) {
-      return res.status(404).json({ success: false, message: 'Product not found.' });
-    }
-
-    const cardDesc = data.cardDescription !== undefined 
-      ? data.cardDescription 
-      : (data.shortDescription !== undefined ? data.shortDescription : existing.cardDescription);
-
-    const stepDesc = data.stepDescription !== undefined 
-      ? data.stepDescription 
-      : (data.detailedDescription !== undefined ? data.detailedDescription : existing.stepDescription);
-
-    const mainDesc = data.description !== undefined 
-      ? data.description 
-      : (stepDesc || existing.description);
-
-    const isDraft = data.status !== undefined
-      ? (data.status === 'Draft' || data.status === 'DRAFT')
-      : (data.isPublished !== undefined ? data.isPublished === false : (existing.status === 'Draft' || existing.status === 'DRAFT' || existing.isPublished === false));
-    const status = isDraft ? 'Draft' : 'Published';
-    const isPublished = !isDraft;
-
-    const updated = db.update(
-      'products',
-      p => p.id === id,
-      p => ({
-        ...p,
-        ...data,
-        isPublished,
-        status: status as any,
-        digitalFile: data.digitalFile !== undefined ? (data.digitalFile ? path.basename(data.digitalFile) : '') : p.digitalFile,
-        thumbnail: data.thumbnail !== undefined ? (data.thumbnail ? data.thumbnail.trim() : '') : p.thumbnail,
-        cardDescription: cardDesc,
-        shortDescription: cardDesc || p.shortDescription,
-        stepDescription: stepDesc,
-        detailedDescription: stepDesc,
-        description: mainDesc,
-        reviewsCount: data.reviewsCount !== undefined 
-          ? Number(data.reviewsCount) 
-          : (existing.reviewsCount && existing.reviewsCount >= 50 && existing.reviewsCount <= 200 
-              ? existing.reviewsCount 
-              : (Math.floor(Math.random() * (200 - 50 + 1)) + 50)),
-        updatedAt: new Date().toISOString()
-      })
-    );
-
+    const updated = storeStorage.updateProduct(id, data);
     if (!updated) {
       return res.status(404).json({ success: false, message: 'Product not found.' });
     }
-
-    console.log(`[NOTES] Admin updated product ID: ${id} ("${updated.title}") Status: ${updated.status}`);
 
     return res.json({
       success: true,
@@ -430,30 +323,17 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
 export const deleteProduct = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { permanent } = req.query;
 
-    if (permanent === 'true') {
-      const deleted = db.delete('products', p => p.id === id);
-      if (!deleted) {
-        return res.status(404).json({ success: false, message: 'Product not found.' });
-      }
-      console.log(`[NOTES] Admin permanently deleted product ID: ${id}`);
-      return res.json({ success: true, message: 'Product permanently deleted from database.' });
-    }
-
-    // Soft deletion by default to prevent accidental data loss
-    const updated = db.update(
-      'products',
-      p => p.id === id,
-      p => ({ ...p, isDeleted: true, updatedAt: new Date().toISOString() })
-    );
-
-    if (!updated) {
+    // Permanently removes product from products.json and deletes associated PDF & thumbnail from disk
+    const result = storeStorage.deleteProduct(id);
+    if (!result.success) {
       return res.status(404).json({ success: false, message: 'Product not found.' });
     }
 
-    console.log(`[NOTES] Admin soft-deleted product ID: ${id} ("${updated.title}")`);
-    return res.json({ success: true, message: 'Product archived and removed from store.' });
+    return res.json({
+      success: true,
+      message: 'Product permanently removed from store catalog and storage files cleaned up.'
+    });
   } catch (error: any) {
     console.error('[NOTES] Error deleting product:', error);
     return res.status(500).json({ success: false, message: error.message });

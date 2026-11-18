@@ -2,15 +2,21 @@ services:
   - type: web
     name: conceptifyyy-backend
     env: node
-    plan: free
+    plan: starter
     buildCommand: npm install && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
+    disk:
+      name: conceptifyyy-store-data
+      mountPath: /var/data/store
+      sizeGB: 1
     envVars:
       - key: NODE_ENV
         value: production
       - key: CLIENT_URL
         value: https://new-project-gnar.onrender.com
+      - key: STORE_DATA_PATH
+        value: /var/data/store
       - key: JWT_SECRET
         generateValue: true
       - key: RAZORPAY_KEY_ID

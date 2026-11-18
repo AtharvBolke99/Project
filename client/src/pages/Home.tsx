@@ -30,13 +30,7 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
       setLoading(true);
       const res = await api.get('/store/products');
       if (res.success && Array.isArray(res.data)) {
-        const real = res.data.filter((p: any) => 
-          p.isPublished && 
-          p.category !== 'Test Mode' && 
-          p.slug !== 'conceptifyyy-test-product' &&
-          p.id !== 'prod_test_mode_item'
-        );
-        setTopProducts(real.slice(0, 6));
+        setTopProducts(res.data.slice(0, 6));
       }
     } catch (err: any) {
       console.error('[HOME] Failed to fetch top products:', err);

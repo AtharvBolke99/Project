@@ -1,13 +1,13 @@
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { storeStorage } from '../storage/storeStorage';
 
-const UPLOADS_DIR = path.resolve(__dirname, '../../uploads');
-const DOCUMENTS_DIR = path.join(UPLOADS_DIR, 'documents');
-const THUMBNAILS_DIR = path.join(UPLOADS_DIR, 'thumbnails');
+const PDFS_DIR = storeStorage.getPdfsDir();
+const THUMBNAILS_DIR = storeStorage.getThumbnailsDir();
 
 // Ensure upload directories exist
-[UPLOADS_DIR, DOCUMENTS_DIR, THUMBNAILS_DIR].forEach(dir => {
+[PDFS_DIR, THUMBNAILS_DIR].forEach(dir => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
     if (file.fieldname === 'thumbnail' || file.mimetype.startsWith('image/')) {
       cb(null, THUMBNAILS_DIR);
     } else {
-      cb(null, DOCUMENTS_DIR);
+      cb(null, PDFS_DIR);
     }
   },
   filename: (req, file, cb) => {

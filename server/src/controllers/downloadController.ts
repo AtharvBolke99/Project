@@ -3,6 +3,7 @@ import { db } from '../database/db';
 import { AuthRequest } from '../middleware/auth';
 import path from 'path';
 import fs from 'fs';
+import { storeStorage } from '../storage/storeStorage';
 
 const MIME_MAP: Record<string, string> = {
   '.pdf': 'application/pdf',
@@ -89,7 +90,7 @@ export const downloadDigitalAsset = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    // 3. Check for physical file in uploads directory, data directory, or client assets
+    // 3. Check for physical file in file-based store, uploads directory, data directory, or client assets
     const cleanTitle = (product?.title || 'Conceptifyyy_Placement_Notes').replace(/[^a-zA-Z0-9_-]/g, '_');
     const uploadsDir = path.resolve(__dirname, '../../uploads/documents');
     const uploadsRoot = path.resolve(__dirname, '../../uploads');
@@ -97,31 +98,32 @@ export const downloadDigitalAsset = async (req: AuthRequest, res: Response) => {
     const clientPublic = path.resolve(__dirname, '../../../client/public');
     const clientDist = path.resolve(__dirname, '../../../client/dist');
 
-    let physicalFilePath: string | null = null;
     const fileTarget = (product?.digitalFile || '').trim();
-    const cleanFileName = path.basename(fileTarget);
-    const cleanTarget = fileTarget.replace(/^\/?(uploads\/documents\/|uploads\/|documents\/)?/, '');
+    let physicalFilePath: string | null = storeStorage.resolvePhysicalDocumentPath(fileTarget);
 
-    const candidates = [
-      path.join(uploadsDir, cleanFileName),
-      path.join(uploadsDir, cleanTarget),
-      path.join(uploadsDir, fileTarget),
-      path.join(uploadsRoot, cleanFileName),
-      path.join(uploadsRoot, cleanTarget),
-      path.join(dataDir, cleanFileName),
-      path.join(dataDir, cleanTarget),
-      path.join(clientPublic, cleanFileName),
-      path.join(clientDist, cleanFileName),
-      path.resolve(__dirname, '../../uploads/documents', cleanFileName),
-      path.resolve(process.cwd(), 'server/uploads/documents', cleanFileName),
-      path.resolve(process.cwd(), 'uploads/documents', cleanFileName),
-      path.resolve(__dirname, '../../', cleanFileName)
-    ];
+    if (!physicalFilePath) {
+      const cleanFileName = path.basename(fileTarget);
+      const cleanTarget = fileTarget.replace(/^\/?(uploads\/documents\/|uploads\/pdfs\/|uploads\/|documents\/)?/, '');
 
-    for (const candidate of candidates) {
-      if (candidate && fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
-        physicalFilePath = candidate;
-        break;
+      const candidates = [
+        path.join(storeStorage.getPdfsDir(), cleanFileName),
+        path.join(storeStorage.getPdfsDir(), cleanTarget),
+        path.join(uploadsDir, cleanFileName),
+        path.join(uploadsDir, cleanTarget),
+        path.join(uploadsDir, fileTarget),
+        path.join(uploadsRoot, cleanFileName),
+        path.join(uploadsRoot, cleanTarget),
+        path.join(dataDir, cleanFileName),
+        path.join(dataDir, cleanTarget),
+        path.join(clientPublic, cleanFileName),
+        path.join(clientDist, cleanFileName)
+      ];
+
+      for (const candidate of candidates) {
+        if (candidate && fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+          physicalFilePath = candidate;
+          break;
+        }
       }
     }
 

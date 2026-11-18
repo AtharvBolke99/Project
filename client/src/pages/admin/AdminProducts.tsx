@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Plus, Trash2, Edit2, ChevronLeft, Download, Upload, Database, AlertTriangle, Eye, EyeOff } from 'lucide-react';
+import { ShoppingBag, Plus, Trash2, Edit2, ChevronLeft, Download, Upload, Database, AlertTriangle, Eye, EyeOff, Search } from 'lucide-react';
 import { api } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { SkeletonLoader } from '../../components/SkeletonLoader';
@@ -16,6 +16,24 @@ export const AdminProducts: React.FC = () => {
   // Delete Confirmation Modal State
   const [deleteModalProduct, setDeleteModalProduct] = useState<any | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Admin Search & Filter State
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('All');
+
+  const activeProducts = useMemo(() => {
+    return products.filter(p => !p.isDeleted);
+  }, [products]);
+
+  const filteredAdminProducts = useMemo(() => {
+    return activeProducts.filter(p => {
+      const matchesCat = categoryFilter === 'All' || (p.category || '').toLowerCase() === categoryFilter.toLowerCase();
+      const matchesSearch = !searchTerm.trim() || 
+        (p.title && p.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (p.slug && p.slug.toLowerCase().includes(searchTerm.toLowerCase()));
+      return matchesCat && matchesSearch;
+    });
+  }, [activeProducts, categoryFilter, searchTerm]);
 
   const getRandomReviews = () => Math.floor(Math.random() * (200 - 50 + 1)) + 50;
 
@@ -347,8 +365,8 @@ export const AdminProducts: React.FC = () => {
     if (!deleteModalProduct) return;
     setDeleting(true);
     try {
-      await api.delete(`/admin/products/${deleteModalProduct.id}`);
-      showToast('Product archived and hidden from the Store.', 'info');
+      await api.delete(`/admin/products/${deleteModalProduct.id}?permanent=true`);
+      showToast(`Product "${deleteModalProduct.title}" permanently deleted from catalog and storage.`, 'success');
       setDeleteModalProduct(null);
       fetchProducts();
     } catch (e: any) {
@@ -403,12 +421,48 @@ export const AdminProducts: React.FC = () => {
               <Database size={18} color="var(--purple)" />
             </div>
             <span style={{ fontSize: '14px', color: 'var(--ink)' }}>
-              <strong>Admin Storage Vault Active:</strong> All {products.length} materials are permanently stored in the database. Materials will never be automatically deleted or overwritten across restarts.
+              <strong>Permanent File Storage Vault:</strong> All {activeProducts.length} verified products are securely preserved in <code>server/data/store/products.json</code> and local storage directories. Deleted products are wiped immediately and will never resurrect on restart.
             </span>
           </div>
           <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 600 }}>
             Click <strong>Export Backup</strong> for offline snapshots.
           </span>
+        </div>
+
+        {/* Search & Filter Controls */}
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+          <div style={{ flex: '1 1 260px', position: 'relative' }}>
+            <input
+              type="text"
+              placeholder="Search products by title or slug..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="input"
+              style={{ paddingLeft: '36px' }}
+            />
+            <Search size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+          </div>
+
+          <div style={{ flex: '0 0 auto' }}>
+            <select
+              value={categoryFilter}
+              onChange={e => setCategoryFilter(e.target.value)}
+              className="select"
+              style={{ minWidth: '180px' }}
+            >
+              <option value="All">All Categories</option>
+              <option value="DSA Notes">DSA Notes</option>
+              <option value="Python">Python</option>
+              <option value="MySQL / DBMS">MySQL / DBMS</option>
+              <option value="Aptitude Notes">Aptitude Notes</option>
+              <option value="Projects">Projects</option>
+              <option value="Placement Bundles">Placement Bundles</option>
+            </select>
+          </div>
+
+          <div style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: 600 }}>
+            Showing {filteredAdminProducts.length} of {activeProducts.length} products
+          </div>
         </div>
 
         <div className="data-table-wrapper pop">
@@ -430,7 +484,7 @@ export const AdminProducts: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {products.map(p => (
+                {filteredAdminProducts.map(p => (
                   <tr key={p.id}>
                     <td>
                       <strong style={{ color: 'var(--text-primary)' }}>{p.title}</strong>
@@ -443,9 +497,7 @@ export const AdminProducts: React.FC = () => {
                     <td style={{ fontWeight: 800, color: 'var(--color-cyan)', fontFamily: 'var(--font-mono)' }}>₹{p.price}</td>
                     <td><span className="badge badge-cyan">{p.fileFormat}</span></td>
                     <td>
-                      {p.isDeleted ? (
-                        <span className="badge" style={{ background: 'var(--color-rose)', color: '#FFF' }}>Archived</span>
-                      ) : (p.status === 'Draft' || p.isPublished === false) ? (
+                      {(p.status === 'Draft' || p.isPublished === false) ? (
                         <span className="badge badge-amber" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                           <EyeOff size={12} /> Draft
                         </span>
@@ -733,20 +785,20 @@ export const AdminProducts: React.FC = () => {
       {/* Delete Confirmation Modal Dialog */}
       {deleteModalProduct && (
         <div className="modal-overlay" onClick={() => setDeleteModalProduct(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px', padding: '1.75rem' }}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '460px', padding: '1.75rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '1rem' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(244, 63, 94, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <AlertTriangle size={22} color="var(--color-rose)" />
               </div>
               <h3 style={{ fontSize: '1.15rem', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>
-                Archive Product from Store?
+                Permanently Delete Product?
               </h3>
             </div>
 
             <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '1.5rem' }}>
-              Are you sure you want to remove <strong>"{deleteModalProduct.title}"</strong> from the public store?
+              Are you sure you want to permanently delete <strong>"{deleteModalProduct.title}"</strong>?
               <br /><br />
-              This product will be safely archived and hidden from public visitors immediately.
+              This will permanently remove its metadata from <code>products.json</code> and delete its uploaded PDF/document and thumbnail files from storage. This cannot be undone.
             </p>
 
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
@@ -765,7 +817,7 @@ export const AdminProducts: React.FC = () => {
                 style={{ background: 'var(--color-rose)', borderColor: 'var(--color-rose)' }}
                 disabled={deleting}
               >
-                {deleting ? 'Archiving...' : 'Yes, Archive Product'}
+                {deleting ? 'Deleting...' : 'Yes, Permanently Delete'}
               </button>
             </div>
           </div>

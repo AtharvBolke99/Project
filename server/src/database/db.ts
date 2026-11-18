@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { triggerCloudPersistence } from '../services/persistenceService';
+import { storeStorage } from '../storage/storeStorage';
 
 export interface User {
   id: string;
@@ -387,6 +388,10 @@ class Database {
     collection: T,
     predicate: (item: DatabaseSchema[T][number]) => boolean
   ): DatabaseSchema[T][number] | undefined {
+    if (collection === 'products') {
+      const list = storeStorage.loadProducts();
+      return (list as any[]).find(predicate) as any;
+    }
     return (this.data[collection] as any[]).find(predicate);
   }
 
@@ -394,6 +399,11 @@ class Database {
     collection: T,
     predicate?: (item: DatabaseSchema[T][number]) => boolean
   ): DatabaseSchema[T] {
+    if (collection === 'products') {
+      const list = storeStorage.loadProducts();
+      if (!predicate) return (list as any) as DatabaseSchema[T];
+      return ((list as any[]).filter(predicate) as any) as DatabaseSchema[T];
+    }
     if (!predicate) return this.data[collection];
     return (this.data[collection] as any[]).filter(predicate) as any;
   }
@@ -402,6 +412,10 @@ class Database {
     collection: T,
     item: DatabaseSchema[T][number]
   ): DatabaseSchema[T][number] {
+    if (collection === 'products') {
+      const created = storeStorage.createProduct(item as any);
+      return created as any;
+    }
     (this.data[collection] as any[]).push(item);
     this.save();
     return item;
@@ -412,6 +426,14 @@ class Database {
     predicate: (item: DatabaseSchema[T][number]) => boolean,
     updater: (item: DatabaseSchema[T][number]) => Partial<DatabaseSchema[T][number]>
   ): DatabaseSchema[T][number] | null {
+    if (collection === 'products') {
+      const list = storeStorage.loadProducts();
+      const existing = (list as any[]).find(predicate);
+      if (!existing) return null;
+      const updates = updater(existing);
+      const updated = storeStorage.updateProduct(existing.id, updates as any);
+      return updated as any;
+    }
     const list = this.data[collection] as any[];
     const index = list.findIndex(predicate);
     if (index === -1) return null;
@@ -424,6 +446,13 @@ class Database {
     collection: T,
     predicate: (item: DatabaseSchema[T][number]) => boolean
   ): boolean {
+    if (collection === 'products') {
+      const list = storeStorage.loadProducts();
+      const existing = (list as any[]).find(predicate);
+      if (!existing) return false;
+      const res = storeStorage.deleteProduct(existing.id);
+      return res.success;
+    }
     const list = this.data[collection] as any[];
     const index = list.findIndex(predicate);
     if (index === -1) return false;
