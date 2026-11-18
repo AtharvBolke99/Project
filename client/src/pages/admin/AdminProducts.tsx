@@ -1,13 +1,47 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { ShoppingBag, Plus, Trash2, Edit2, ChevronLeft, Download, Upload, Database, AlertTriangle, Eye, EyeOff, Search } from 'lucide-react';
+import { Link, NavLink } from 'react-router-dom';
+import { 
+  ShoppingBag, 
+  Plus, 
+  Trash2, 
+  Edit2, 
+  ChevronLeft, 
+  Download, 
+  Upload, 
+  Database, 
+  AlertTriangle, 
+  Eye, 
+  EyeOff, 
+  Search,
+  LayoutDashboard,
+  FolderTree,
+  MessageSquare,
+  Home as HomeIcon,
+  Receipt,
+  Sparkles,
+  CheckCircle2,
+  Clock,
+  ShieldCheck
+} from 'lucide-react';
 import { api } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { SkeletonLoader } from '../../components/SkeletonLoader';
 import { getAssetUrl, handleImageError } from '../../utils/imageUrl';
 
+const QUALITY_INDICATOR_OPTIONS = [
+  'Beginner Friendly',
+  'Intermediate',
+  'Advanced',
+  'Interview Focused',
+  'Exam Preparation',
+  'Practice-Oriented',
+  'Updated Resource',
+  'Free Resource'
+];
+
 export const AdminProducts: React.FC = () => {
   const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -20,6 +54,75 @@ export const AdminProducts: React.FC = () => {
   // Admin Search & Filter State
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All');
+
+  const getRandomReviews = () => Math.floor(Math.random() * (200 - 50 + 1)) + 50;
+
+  // Form State - Complete Manual Control
+  const [title, setTitle] = useState('');
+  const [category, setCategory] = useState<string>('');
+  const [subcategory, setSubcategory] = useState<string>('');
+  const [customCategoryInput, setCustomCategoryInput] = useState<string>('');
+  const [customSubcategoryInput, setCustomSubcategoryInput] = useState<string>('');
+  const [price, setPrice] = useState(39);
+  const [originalPrice, setOriginalPrice] = useState(199);
+  const [reviewsCount, setReviewsCount] = useState<number>(getRandomReviews);
+  const [status, setStatus] = useState<'Published' | 'Draft'>('Published');
+  const [cardDescription, setCardDescription] = useState('');
+  const [stepDescription, setStepDescription] = useState('');
+  const [uploadedThumbnailUrl, setUploadedThumbnailUrl] = useState('');
+  const [customThumbnailUrl, setCustomThumbnailUrl] = useState('');
+  const [instantThumbnailPreview, setInstantThumbnailPreview] = useState<string | null>(null);
+  const [uploadProgressThumbnail, setUploadProgressThumbnail] = useState<number>(0);
+  const [fileFormat, setFileFormat] = useState('PDF');
+  const [digitalFile, setDigitalFile] = useState('');
+  const [digitalFileName, setDigitalFileName] = useState('');
+  const [uploadProgressDigitalFile, setUploadProgressDigitalFile] = useState<number>(0);
+  const [whatIncluded, setWhatIncluded] = useState('');
+  const [tags, setTags] = useState('');
+  const [difficulty, setDifficulty] = useState<string>('');
+  const [targetAudience, setTargetAudience] = useState<string>('');
+  const [learningOutcomes, setLearningOutcomes] = useState<string>('');
+  const [pageCount, setPageCount] = useState<number | ''>('');
+  const [estimatedTime, setEstimatedTime] = useState<string>('');
+  const [adminReview, setAdminReview] = useState<string>('');
+  const [qualityIndicators, setQualityIndicators] = useState<string[]>([]);
+  const [lastUpdatedDate, setLastUpdatedDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [isFeatured, setIsFeatured] = useState<boolean>(false);
+  const [githubRepoUrl, setGithubRepoUrl] = useState('');
+  const [liveDemoUrl, setLiveDemoUrl] = useState('');
+  const [techStack, setTechStack] = useState('');
+
+  const [uploadingDigitalFile, setUploadingDigitalFile] = useState(false);
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const { showToast } = useToast();
+
+  const fetchInitialData = async () => {
+    setLoading(true);
+    try {
+      const [prodRes, catRes] = await Promise.all([
+        api.get('/admin/products'),
+        api.get('/admin/categories')
+      ]);
+
+      if (prodRes.success && Array.isArray(prodRes.data)) {
+        setProducts(prodRes.data);
+      }
+      if (catRes.success && Array.isArray(catRes.data)) {
+        setCategories(catRes.data);
+      }
+    } catch (e: any) {
+      console.error('[ADMIN] Failed to fetch data for admin:', e);
+      showToast('Unable to connect to backend storage.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
 
   const activeProducts = useMemo(() => {
     return products.filter(p => !p.isDeleted);
@@ -35,65 +138,14 @@ export const AdminProducts: React.FC = () => {
     });
   }, [activeProducts, categoryFilter, searchTerm]);
 
-  const getRandomReviews = () => Math.floor(Math.random() * (200 - 50 + 1)) + 50;
+  // Dynamic Subcategories based on selected main category
+  const currentCategoryObj = useMemo(() => {
+    return categories.find(c => c.name.toLowerCase() === category.toLowerCase());
+  }, [categories, category]);
 
-  // Form State
-  const [title, setTitle] = useState('');
-  const [category, setCategory] = useState<string>('DSA Notes');
-  const [price, setPrice] = useState(39);
-  const [originalPrice, setOriginalPrice] = useState(199);
-  const [reviewsCount, setReviewsCount] = useState<number>(getRandomReviews);
-  const [status, setStatus] = useState<'Published' | 'Draft'>('Published');
-  const [isPublished, setIsPublished] = useState(true);
-  const [cardDescription, setCardDescription] = useState('');
-  const [stepDescription, setStepDescription] = useState('');
-  const [uploadedThumbnailUrl, setUploadedThumbnailUrl] = useState('');
-  const [customThumbnailUrl, setCustomThumbnailUrl] = useState('');
-  const [instantThumbnailPreview, setInstantThumbnailPreview] = useState<string | null>(null);
-  const [uploadProgressThumbnail, setUploadProgressThumbnail] = useState<number>(0);
-  const [githubRepoUrl, setGithubRepoUrl] = useState('');
-  const [liveDemoUrl, setLiveDemoUrl] = useState('');
-  const [techStack, setTechStack] = useState('React, Node.js, Express, TypeScript');
-  const [fileFormat, setFileFormat] = useState('PDF');
-  const [digitalFile, setDigitalFile] = useState('');
-  const [digitalFileName, setDigitalFileName] = useState('');
-  const [uploadProgressDigitalFile, setUploadProgressDigitalFile] = useState<number>(0);
-  const [whatIncluded, setWhatIncluded] = useState('180+ Pages Visual PDF, Top 100 Company Patterns, Cheat Sheet');
-  const [uploadingDigitalFile, setUploadingDigitalFile] = useState(false);
-  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
-  const [saving, setSaving] = useState(false);
-
-  const { showToast } = useToast();
-
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      const res = await api.get('/admin/products');
-      if (res.success && Array.isArray(res.data)) {
-        setProducts(res.data);
-      } else {
-        // Fallback to store products
-        const storeRes = await api.get('/store/products');
-        if (storeRes.success && Array.isArray(storeRes.data)) {
-          setProducts(storeRes.data);
-        } else {
-          showToast(res.message || 'Failed to fetch products', 'error');
-        }
-      }
-    } catch (e: any) {
-      console.error('[ADMIN] Failed to fetch products for admin:', e);
-      try {
-        const storeRes = await api.get('/store/products');
-        if (storeRes.success && Array.isArray(storeRes.data)) {
-          setProducts(storeRes.data);
-          return;
-        }
-      } catch (err) {}
-      showToast('Unable to connect to backend database. Please check your connection.', 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const availableSubcategories = useMemo(() => {
+    return currentCategoryObj?.subcategories || [];
+  }, [currentCategoryObj]);
 
   const handleExportBackup = async () => {
     try {
@@ -130,7 +182,7 @@ export const AdminProducts: React.FC = () => {
       const res = await api.post('/admin/products/restore', { products: parsed });
       if (res.success) {
         showToast(res.message || 'Catalog restored successfully!', 'success');
-        fetchProducts();
+        fetchInitialData();
       } else {
         showToast(res.message || 'Failed to restore backup.', 'error');
       }
@@ -142,19 +194,17 @@ export const AdminProducts: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
   const resetForm = () => {
     setEditingId(null);
     setTitle('');
-    setCategory('DSA Notes');
+    setCategory('');
+    setSubcategory('');
+    setCustomCategoryInput('');
+    setCustomSubcategoryInput('');
     setPrice(39);
     setOriginalPrice(199);
     setReviewsCount(getRandomReviews());
     setStatus('Published');
-    setIsPublished(true);
     setCardDescription('');
     setStepDescription('');
     setUploadedThumbnailUrl('');
@@ -166,12 +216,22 @@ export const AdminProducts: React.FC = () => {
     setUploadProgressThumbnail(0);
     setGithubRepoUrl('');
     setLiveDemoUrl('');
-    setTechStack('React, Node.js, Express, TypeScript');
+    setTechStack('');
     setFileFormat('PDF');
     setDigitalFile('');
     setDigitalFileName('');
     setUploadProgressDigitalFile(0);
-    setWhatIncluded('180+ Pages Visual PDF, Top 100 Company Patterns, Cheat Sheet');
+    setWhatIncluded('');
+    setTags('');
+    setDifficulty('');
+    setTargetAudience('');
+    setLearningOutcomes('');
+    setPageCount('');
+    setEstimatedTime('');
+    setAdminReview('');
+    setQualityIndicators([]);
+    setLastUpdatedDate(new Date().toISOString().split('T')[0]);
+    setIsFeatured(false);
   };
 
   const handleOpenAddModal = () => {
@@ -182,13 +242,15 @@ export const AdminProducts: React.FC = () => {
   const handleEditProduct = (p: any) => {
     setEditingId(p.id);
     setTitle(p.title || '');
-    setCategory(p.category || 'DSA Notes');
+    setCategory(p.category || '');
+    setSubcategory(p.subcategory || '');
+    setCustomCategoryInput('');
+    setCustomSubcategoryInput('');
     setPrice(p.price || 0);
     setOriginalPrice(p.originalPrice || 0);
     setReviewsCount(p.reviewsCount || getRandomReviews());
     const isDraft = p.status === 'Draft' || p.isPublished === false;
     setStatus(isDraft ? 'Draft' : 'Published');
-    setIsPublished(!isDraft);
     setCardDescription(p.cardDescription || p.shortDescription || p.description || '');
     setStepDescription(p.stepDescription || p.detailedDescription || p.description || '');
     
@@ -213,6 +275,16 @@ export const AdminProducts: React.FC = () => {
     setLiveDemoUrl(p.liveDemoUrl || '');
     setTechStack(Array.isArray(p.techStack) ? p.techStack.join(', ') : (p.techStack || ''));
     setWhatIncluded(Array.isArray(p.whatIncluded) ? p.whatIncluded.join(', ') : (p.whatIncluded || ''));
+    setTags(Array.isArray(p.tags) ? p.tags.join(', ') : (p.tags || ''));
+    setDifficulty(p.difficulty || '');
+    setTargetAudience(p.targetAudience || '');
+    setLearningOutcomes(Array.isArray(p.learningOutcomes) ? p.learningOutcomes.join('\n') : (p.learningOutcomes || ''));
+    setPageCount(p.pageCount !== undefined ? p.pageCount : '');
+    setEstimatedTime(p.estimatedTime || '');
+    setAdminReview(p.adminReview || '');
+    setQualityIndicators(Array.isArray(p.qualityIndicators) ? p.qualityIndicators : []);
+    setLastUpdatedDate(p.lastUpdatedDate || (p.updatedAt ? p.updatedAt.split('T')[0] : new Date().toISOString().split('T')[0]));
+    setIsFeatured(Boolean(p.isFeatured));
     setIsModalOpen(true);
   };
 
@@ -221,7 +293,6 @@ export const AdminProducts: React.FC = () => {
     if (!file) return;
 
     if (isThumbnail) {
-      // Validate Thumbnail format and size
       const allowedExts = ['.png', '.jpg', '.jpeg', '.webp'];
       const fileExt = '.' + file.name.split('.').pop()?.toLowerCase();
       if (!allowedExts.includes(fileExt) && !file.type.startsWith('image/')) {
@@ -230,12 +301,11 @@ export const AdminProducts: React.FC = () => {
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        showToast(`Thumbnail image exceeds 5 MB limit (${(file.size / (1024 * 1024)).toFixed(1)} MB). Please choose a smaller image.`, 'error');
+        showToast(`Thumbnail image exceeds 5 MB limit (${(file.size / (1024 * 1024)).toFixed(1)} MB).`, 'error');
         e.target.value = '';
         return;
       }
 
-      // Generate instant preview immediately
       try {
         if (instantThumbnailPreview) {
           URL.revokeObjectURL(instantThumbnailPreview);
@@ -259,7 +329,7 @@ export const AdminProducts: React.FC = () => {
         const uploadedUrl = res.data?.url || res.data?.fileUrl;
         if (res.success && uploadedUrl) {
           setUploadedThumbnailUrl(uploadedUrl);
-          showToast('Thumbnail image uploaded to server storage!', 'success');
+          showToast('Thumbnail uploaded to storage!', 'success');
         } else {
           showToast(res.message || 'Thumbnail upload failed.', 'error');
         }
@@ -269,16 +339,15 @@ export const AdminProducts: React.FC = () => {
         setUploadingThumbnail(false);
       }
     } else {
-      // Validate Digital Resource format and size (.pdf, .zip, .docx, .pptx, .csv)
       const allowedExts = ['.pdf', '.zip', '.docx', '.pptx', '.csv', '.doc', '.ppt', '.rar', '.txt'];
       const fileExt = '.' + file.name.split('.').pop()?.toLowerCase();
       if (!allowedExts.includes(fileExt)) {
-        showToast(`Unsupported format "${fileExt}". Accepted formats: .pdf, .zip, .docx, .pptx, .csv`, 'error');
+        showToast(`Unsupported format "${fileExt}". Accepted: .pdf, .zip, .docx, .pptx, .csv`, 'error');
         e.target.value = '';
         return;
       }
       if (file.size > 50 * 1024 * 1024) {
-        showToast(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds 50 MB limit. Please select a smaller file.`, 'error');
+        showToast(`File size exceeds 50 MB limit.`, 'error');
         e.target.value = '';
         return;
       }
@@ -309,38 +378,68 @@ export const AdminProducts: React.FC = () => {
     }
   };
 
+  const handleToggleQualityIndicator = (indicator: string) => {
+    setQualityIndicators(prev => 
+      prev.includes(indicator) ? prev.filter(i => i !== indicator) : [...prev, indicator]
+    );
+  };
+
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (uploadingDigitalFile || uploadingThumbnail) {
       showToast('Please wait for file uploads to complete.', 'info');
       return;
     }
+
+    const finalCategory = (customCategoryInput.trim() || category.trim());
+    if (!finalCategory) {
+      showToast('Please select or specify a Main Category.', 'error');
+      return;
+    }
+
+    const finalSubcategory = (customSubcategoryInput.trim() || subcategory.trim());
+
     setSaving(true);
     try {
-      // If both are given, the uploaded image wins.
       const finalThumbnail = uploadedThumbnailUrl.trim() || customThumbnailUrl.trim() || '';
 
+      const outcomesArray = learningOutcomes
+        .split('\n')
+        .map(line => line.trim())
+        .filter(Boolean);
+
       const payload = {
-        title,
-        category,
+        title: title.trim(),
+        category: finalCategory,
+        subcategory: finalSubcategory || undefined,
         status,
         isPublished: status === 'Published',
         price: Number(price),
         originalPrice: Number(originalPrice),
         discountPercent: originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0,
         reviewsCount: Number(reviewsCount) || getRandomReviews(),
-        cardDescription,
-        shortDescription: cardDescription,
-        stepDescription,
-        detailedDescription: stepDescription,
-        description: stepDescription || cardDescription,
+        cardDescription: cardDescription.trim(),
+        shortDescription: cardDescription.trim(),
+        stepDescription: stepDescription.trim(),
+        detailedDescription: stepDescription.trim(),
+        description: stepDescription.trim() || cardDescription.trim(),
         thumbnail: finalThumbnail,
         digitalFile: digitalFile ? digitalFile.split('/').pop() : undefined,
-        githubRepoUrl: category === 'Projects' ? githubRepoUrl : undefined,
-        liveDemoUrl: category === 'Projects' ? liveDemoUrl : undefined,
-        techStack: category === 'Projects' ? techStack.split(',').map(s => s.trim()).filter(Boolean) : undefined,
+        difficulty: difficulty || undefined,
+        targetAudience: targetAudience.trim() || undefined,
+        learningOutcomes: outcomesArray,
+        pageCount: pageCount !== '' ? Number(pageCount) : undefined,
+        estimatedTime: estimatedTime.trim() || undefined,
+        adminReview: adminReview.trim() || undefined,
+        qualityIndicators,
+        lastUpdatedDate: lastUpdatedDate || undefined,
+        isFeatured,
+        githubRepoUrl: githubRepoUrl.trim() || undefined,
+        liveDemoUrl: liveDemoUrl.trim() || undefined,
+        techStack: techStack.split(',').map(s => s.trim()).filter(Boolean),
         whatIncluded: whatIncluded.split(',').map(item => item.trim()).filter(Boolean),
-        fileFormat: category === 'Projects' ? 'ZIP' : fileFormat
+        tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+        fileFormat: fileFormat || 'PDF'
       };
 
       if (editingId) {
@@ -353,7 +452,7 @@ export const AdminProducts: React.FC = () => {
 
       setIsModalOpen(false);
       resetForm();
-      fetchProducts();
+      fetchInitialData();
     } catch (err: any) {
       showToast(err.message || 'Failed to save product', 'error');
     } finally {
@@ -368,7 +467,7 @@ export const AdminProducts: React.FC = () => {
       await api.delete(`/admin/products/${deleteModalProduct.id}?permanent=true`);
       showToast(`Product "${deleteModalProduct.title}" permanently deleted from catalog and storage.`, 'success');
       setDeleteModalProduct(null);
-      fetchProducts();
+      fetchInitialData();
     } catch (e: any) {
       showToast(e.message || 'Delete failed', 'error');
     } finally {
@@ -378,19 +477,39 @@ export const AdminProducts: React.FC = () => {
 
   return (
     <div className="admin-layout animate-fade-in">
+      {/* Sidebar Navigation */}
       <aside className="admin-sidebar">
         <Link to="/" className="btn y btn-sm" style={{ marginBottom: '1.25rem', justifyContent: 'flex-start' }}>
           <ChevronLeft size={16} /> Back to Website
         </Link>
-        <Link to="/admin" className="admin-sidebar-link">
-          <Database size={18} /> Overview
-        </Link>
-        <Link to="/admin/products" className="admin-sidebar-link active">
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.25rem 0.5rem', marginBottom: '0.75rem' }}>
+          <strong style={{ fontSize: '15px', color: '#FFFFFF', fontFamily: 'var(--font-display)' }}>Admin CMS Portal</strong>
+        </div>
+
+        <NavLink to="/admin" end className={({ isActive }) => `admin-sidebar-link ${isActive ? 'active' : ''}`}>
+          <LayoutDashboard size={18} /> Overview
+        </NavLink>
+
+        <NavLink to="/admin/products" className={({ isActive }) => `admin-sidebar-link ${isActive ? 'active' : ''}`}>
           <ShoppingBag size={18} /> Products & Notes
-        </Link>
-        <Link to="/admin/orders" className="admin-sidebar-link">
-          <Database size={18} /> Orders & Revenue
-        </Link>
+        </NavLink>
+
+        <NavLink to="/admin/categories" className={({ isActive }) => `admin-sidebar-link ${isActive ? 'active' : ''}`}>
+          <FolderTree size={18} /> Categories & Subs
+        </NavLink>
+
+        <NavLink to="/admin/reviews" className={({ isActive }) => `admin-sidebar-link ${isActive ? 'active' : ''}`}>
+          <MessageSquare size={18} /> Reviews & Feedback
+        </NavLink>
+
+        <NavLink to="/admin/homepage" className={({ isActive }) => `admin-sidebar-link ${isActive ? 'active' : ''}`}>
+          <HomeIcon size={18} /> Homepage Content
+        </NavLink>
+
+        <NavLink to="/admin/orders" className={({ isActive }) => `admin-sidebar-link ${isActive ? 'active' : ''}`}>
+          <Receipt size={18} /> Orders & Revenue
+        </NavLink>
       </aside>
 
       <main className="admin-content">
@@ -398,7 +517,7 @@ export const AdminProducts: React.FC = () => {
           <div>
             <span className="tag" style={{ background: '#C9F7E8', marginBottom: '8px' }}>Admin Management</span>
             <h1 className="d" style={{ fontSize: 'clamp(28px, 4vw, 36px)', fontWeight: 800 }}>Store Products & Notes CMS</h1>
-            <p className="mu" style={{ fontSize: '15px' }}>Publish, edit and permanently safeguard notes, formula cheat sheets, and source code packages.</p>
+            <p className="mu" style={{ fontSize: '15px' }}>Complete manual control over titles, dynamic categories, pricing, target audiences, and transparency badges.</p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <button onClick={handleExportBackup} className="btn y btn-sm" title="Download catalog backup JSON">
@@ -421,7 +540,7 @@ export const AdminProducts: React.FC = () => {
               <Database size={18} color="var(--purple)" />
             </div>
             <span style={{ fontSize: '14px', color: 'var(--ink)' }}>
-              <strong>Permanent File Storage Vault:</strong> All {activeProducts.length} verified products are securely preserved in <code>server/data/store/products.json</code> and local storage directories. Deleted products are wiped immediately and will never resurrect on restart.
+              <strong>Permanent File Storage Vault:</strong> All {activeProducts.length} verified products are preserved in <code>server/data/store/products.json</code>. No categories or subcategories are automatically assigned.
             </span>
           </div>
           <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 600 }}>
@@ -429,7 +548,7 @@ export const AdminProducts: React.FC = () => {
           </span>
         </div>
 
-        {/* Search & Filter Controls */}
+        {/* Search & Dynamic Category Filter Controls */}
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
           <div style={{ flex: '1 1 260px', position: 'relative' }}>
             <input
@@ -450,13 +569,10 @@ export const AdminProducts: React.FC = () => {
               className="select"
               style={{ minWidth: '180px' }}
             >
-              <option value="All">All Categories</option>
-              <option value="DSA Notes">DSA Notes</option>
-              <option value="Python">Python</option>
-              <option value="MySQL / DBMS">MySQL / DBMS</option>
-              <option value="Aptitude Notes">Aptitude Notes</option>
-              <option value="Projects">Projects</option>
-              <option value="Placement Bundles">Placement Bundles</option>
+              <option value="All">All Categories ({activeProducts.length})</option>
+              {categories.map(c => (
+                <option key={c.id} value={c.name}>{c.name}</option>
+              ))}
             </select>
           </div>
 
@@ -465,6 +581,7 @@ export const AdminProducts: React.FC = () => {
           </div>
         </div>
 
+        {/* Products Table */}
         <div className="data-table-wrapper pop">
           {loading ? (
             <div style={{ padding: '2rem' }}>
@@ -474,12 +591,12 @@ export const AdminProducts: React.FC = () => {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Product Title & URL</th>
+                  <th>Product Title & Subcategory</th>
                   <th>Category</th>
                   <th>Price</th>
                   <th>Format</th>
+                  <th>Difficulty & Target</th>
                   <th>Status</th>
-                  <th>Rating</th>
                   <th style={{ textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
@@ -487,15 +604,30 @@ export const AdminProducts: React.FC = () => {
                 {filteredAdminProducts.map(p => (
                   <tr key={p.id}>
                     <td>
-                      <strong style={{ color: 'var(--text-primary)' }}>{p.title}</strong>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>/store/{p.slug}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        {p.isFeatured && (
+                          <span title="Featured on Homepage" style={{ color: '#F59E0B' }}>⭐</span>
+                        )}
+                        <strong style={{ color: 'var(--text-primary)' }}>{p.title}</strong>
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                        /store/{p.slug} {p.subcategory ? `• Subcategory: ${p.subcategory}` : ''}
+                      </div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--color-cyan)', marginTop: '3px', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         📇 {p.cardDescription || p.shortDescription || p.description}
                       </div>
                     </td>
-                    <td><span className="badge badge-purple">{p.category}</span></td>
-                    <td style={{ fontWeight: 800, color: 'var(--color-cyan)', fontFamily: 'var(--font-mono)' }}>₹{p.price}</td>
-                    <td><span className="badge badge-cyan">{p.fileFormat}</span></td>
+                    <td>
+                      <span className="badge badge-purple">{p.category}</span>
+                    </td>
+                    <td style={{ fontWeight: 800, color: 'var(--color-cyan)', fontFamily: 'var(--font-mono)' }}>
+                      {p.price === 0 ? 'FREE' : `₹${p.price}`}
+                    </td>
+                    <td><span className="badge badge-cyan">{p.fileFormat || 'PDF'}</span></td>
+                    <td style={{ fontSize: '12.5px', color: '#64748B' }}>
+                      {p.difficulty && <span className="badge" style={{ background: '#F1F5F9', color: '#0F172A', marginRight: '4px' }}>{p.difficulty}</span>}
+                      {p.targetAudience ? p.targetAudience : '—'}
+                    </td>
                     <td>
                       {(p.status === 'Draft' || p.isPublished === false) ? (
                         <span className="badge badge-amber" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
@@ -507,7 +639,6 @@ export const AdminProducts: React.FC = () => {
                         </span>
                       )}
                     </td>
-                    <td>⭐ {p.rating} <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>({p.reviewsCount || 120})</span></td>
                     <td style={{ textAlign: 'right' }}>
                       <div style={{ display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
                         <button onClick={() => handleEditProduct(p)} className="btn-icon" title="Edit Product" style={{ color: 'var(--color-cyan)' }}>
@@ -526,25 +657,24 @@ export const AdminProducts: React.FC = () => {
         </div>
       </main>
 
-      {/* Product Add/Edit Modal */}
+      {/* Product Add/Edit Modal (Complete Manual Control) */}
       {isModalOpen && (
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content modal-content-lg" onClick={e => e.stopPropagation()}>
-            <h3 style={{ fontSize: '1.25rem', marginBottom: '1.25rem' }}>
-              {editingId ? 'Edit Store Product / Notes' : 'Publish New Store Product'}
+          <div className="modal-content modal-content-lg" onClick={e => e.stopPropagation()} style={{ maxWidth: '780px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <h3 style={{ fontSize: '1.3rem', marginBottom: '1.25rem', fontWeight: 800 }}>
+              {editingId ? 'Edit Store Product / Notes' : 'Publish New Store Product (Manual Control)'}
             </h3>
             <form onSubmit={handleSaveProduct}>
               
-              {/* Visibility / Draft Switch */}
-              <div className="form-group" style={{ background: 'var(--bg-tertiary)', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--border-subtle)', marginBottom: '16px' }}>
-                <label className="form-label" style={{ fontWeight: 700, marginBottom: '8px' }}>Storefront Visibility Status</label>
-                <div style={{ display: 'flex', gap: '2rem', alignItems: 'center' }}>
+              {/* 1. Visibility & Featured Switch */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-tertiary)', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--border-subtle)', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9rem' }}>
                     <input 
                       type="radio" 
                       name="statusRadio" 
                       checked={status === 'Published'} 
-                      onChange={() => { setStatus('Published'); setIsPublished(true); }} 
+                      onChange={() => setStatus('Published')} 
                     />
                     <span style={{ color: 'var(--color-emerald)', fontWeight: 700 }}>🟢 Published (Live on Store)</span>
                   </label>
@@ -553,227 +683,348 @@ export const AdminProducts: React.FC = () => {
                       type="radio" 
                       name="statusRadio" 
                       checked={status === 'Draft'} 
-                      onChange={() => { setStatus('Draft'); setIsPublished(false); }} 
+                      onChange={() => setStatus('Draft')} 
                     />
                     <span style={{ color: 'var(--color-amber)', fontWeight: 700 }}>🟡 Draft (Hidden from Public Store)</span>
                   </label>
                 </div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9rem' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={isFeatured} 
+                    onChange={e => setIsFeatured(e.target.checked)} 
+                  />
+                  <span style={{ fontWeight: 700 }}>⭐ Featured Product</span>
+                </label>
+              </div>
+
+              {/* 2. Title */}
+              <div className="form-group">
+                <label className="form-label">Product / Notes Title *</label>
+                <input 
+                  type="text" 
+                  className="input" 
+                  value={title} 
+                  onChange={e => setTitle(e.target.value)} 
+                  placeholder="e.g. Complete System Design & Microservices Handout" 
+                  required 
+                />
+              </div>
+
+              {/* 3. Dynamic Category & Subcategory */}
+              <div className="form-grid-2">
+                <div className="form-group">
+                  <label className="form-label">Main Category * (Select or Type New)</label>
+                  <select 
+                    className="select" 
+                    value={category} 
+                    onChange={e => {
+                      setCategory(e.target.value);
+                      setSubcategory('');
+                    }}
+                  >
+                    <option value="">-- Select Main Category --</option>
+                    {categories.map(c => (
+                      <option key={c.id} value={c.name}>{c.name}</option>
+                    ))}
+                    <option value="__custom__">+ Add Custom Category...</option>
+                  </select>
+                  {category === '__custom__' && (
+                    <input 
+                      type="text" 
+                      className="input" 
+                      style={{ marginTop: '8px' }} 
+                      placeholder="Type custom category name..." 
+                      value={customCategoryInput} 
+                      onChange={e => setCustomCategoryInput(e.target.value)} 
+                    />
+                  )}
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Subcategory (Optional - Depends on Category)</label>
+                  <select 
+                    className="select" 
+                    value={subcategory} 
+                    onChange={e => setSubcategory(e.target.value)}
+                  >
+                    <option value="">No Subcategory (None)</option>
+                    {availableSubcategories.map(sub => (
+                      <option key={sub} value={sub}>{sub}</option>
+                    ))}
+                    <option value="__custom_sub__">+ Type Custom Subcategory...</option>
+                  </select>
+                  {subcategory === '__custom_sub__' && (
+                    <input 
+                      type="text" 
+                      className="input" 
+                      style={{ marginTop: '8px' }} 
+                      placeholder="Type custom subcategory..." 
+                      value={customSubcategoryInput} 
+                      onChange={e => setCustomSubcategoryInput(e.target.value)} 
+                    />
+                  )}
+                </div>
+              </div>
+
+              {/* 4. Pricing */}
+              <div className="form-grid-2">
+                <div className="form-group">
+                  <label className="form-label">Selling Price (₹) * (Enter 0 for Free)</label>
+                  <input 
+                    type="number" 
+                    className="input" 
+                    value={price} 
+                    onChange={e => setPrice(Number(e.target.value))} 
+                    min={0} 
+                    required 
+                  />
+                  <span style={{ fontSize: '11px', color: '#64748B' }}>
+                    {price === 0 ? '✨ This resource will be displayed as FREE to students.' : `Will sell at ₹${price}`}
+                  </span>
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Original Strikethrough Price (₹)</label>
+                  <input 
+                    type="number" 
+                    className="input" 
+                    value={originalPrice} 
+                    onChange={e => setOriginalPrice(Number(e.target.value))} 
+                    min={0} 
+                  />
+                </div>
+              </div>
+
+              {/* 5. Descriptions */}
+              <div className="form-group">
+                <label className="form-label">Short Summary (1–2 lines shown on Store Card) *</label>
+                <textarea 
+                  className="textarea" 
+                  rows={2} 
+                  value={cardDescription} 
+                  onChange={e => setCardDescription(e.target.value)} 
+                  placeholder="Concise overview explaining why this resource helps students..." 
+                  required 
+                />
               </div>
 
               <div className="form-group">
-                <label className="form-label">Product Name / Title</label>
-                <input type="text" className="input" value={title} onChange={e => setTitle(e.target.value)} required />
+                <label className="form-label">Detailed Content Breakdown / Syllabus *</label>
+                <textarea 
+                  className="textarea" 
+                  rows={5} 
+                  value={stepDescription} 
+                  onChange={e => setStepDescription(e.target.value)} 
+                  placeholder="Comprehensive chapter breakdown, step-by-step topics, and modules..." 
+                  required 
+                />
               </div>
 
+              {/* 6. Target Audience & Learning Outcomes */}
               <div className="form-grid-2">
                 <div className="form-group">
-                  <label className="form-label">Category</label>
-                  <select className="select" value={category} onChange={e => setCategory(e.target.value)}>
-                    <option value="DSA Notes">DSA Notes</option>
-                    <option value="Python">Python</option>
-                    <option value="MySQL / DBMS">MySQL / DBMS</option>
-                    <option value="Aptitude Notes">Aptitude Notes</option>
-                    <option value="Placement Bundles">Placement Bundles</option>
-                    <option value="Projects">Projects</option>
+                  <label className="form-label">Target Audience / Who Should Use This?</label>
+                  <input 
+                    type="text" 
+                    className="input" 
+                    value={targetAudience} 
+                    onChange={e => setTargetAudience(e.target.value)} 
+                    placeholder="e.g. 3rd & 4th Year B.Tech, Off-campus placement applicants" 
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Estimated Learning Time (Optional)</label>
+                  <input 
+                    type="text" 
+                    className="input" 
+                    value={estimatedTime} 
+                    onChange={e => setEstimatedTime(e.target.value)} 
+                    placeholder="e.g. 4-6 Hours, 3 Days Intensive" 
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Learning Outcomes / What You Will Learn (One per line)</label>
+                <textarea 
+                  className="textarea" 
+                  rows={3} 
+                  value={learningOutcomes} 
+                  onChange={e => setLearningOutcomes(e.target.value)} 
+                  placeholder="Master BFS & DFS recurrence trees&#10;Solve top 50 FAANG graph problems&#10;Avoid common off-by-one complexity errors" 
+                />
+              </div>
+
+              {/* 7. Difficulty & Format & Pages & Last Updated */}
+              <div className="form-grid-2">
+                <div className="form-group">
+                  <label className="form-label">Difficulty Level</label>
+                  <select 
+                    className="select" 
+                    value={difficulty} 
+                    onChange={e => setDifficulty(e.target.value)}
+                  >
+                    <option value="">Not Specified (None)</option>
+                    <option value="Beginner">Beginner Friendly</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced / Expert</option>
                   </select>
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Price in INR (₹) — 0 for Free</label>
-                  <input type="number" className="input" value={price} onChange={e => setPrice(Number(e.target.value))} required />
+                  <label className="form-label">File Format</label>
+                  <select 
+                    className="select" 
+                    value={fileFormat} 
+                    onChange={e => setFileFormat(e.target.value)}
+                  >
+                    <option value="PDF">PDF Document</option>
+                    <option value="ZIP">ZIP Archive (Code/Source)</option>
+                    <option value="DOCX">DOCX Word Document</option>
+                    <option value="PPTX">PPTX Presentation</option>
+                    <option value="CSV">CSV Data File</option>
+                  </select>
                 </div>
               </div>
 
               <div className="form-grid-2">
                 <div className="form-group">
-                  <label className="form-label">Original Strikethrough Price (₹)</label>
-                  <input type="number" className="input" value={originalPrice} onChange={e => setOriginalPrice(Number(e.target.value))} />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Student Reviews Count (50–200)</label>
+                  <label className="form-label">Number of Pages (Optional)</label>
                   <input 
                     type="number" 
                     className="input" 
-                    min={50} 
-                    max={200} 
-                    value={reviewsCount} 
-                    onChange={e => setReviewsCount(Number(e.target.value))} 
-                    placeholder="e.g. 142" 
+                    value={pageCount} 
+                    onChange={e => setPageCount(e.target.value ? Number(e.target.value) : '')} 
+                    placeholder="e.g. 185" 
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Last Maintained / Updated Date</label>
+                  <input 
+                    type="date" 
+                    className="input" 
+                    value={lastUpdatedDate} 
+                    onChange={e => setLastUpdatedDate(e.target.value)} 
                   />
                 </div>
               </div>
 
-              <div className="form-group">
-                <label className="form-label">File Format</label>
-                <select className="select" value={fileFormat} onChange={e => setFileFormat(e.target.value)}>
-                  <option value="PDF">PDF Document</option>
-                  <option value="ZIP">ZIP Archive (Source Code)</option>
-                  <option value="DOCX">Word Document (.docx)</option>
-                  <option value="PPTX">PowerPoint (.pptx)</option>
-                  <option value="CSV">Data / Sheets (.csv)</option>
-                </select>
+              {/* 8. Quality & Transparency Badges */}
+              <div className="form-group" style={{ background: '#F8FAFC', padding: '16px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                <label className="form-label" style={{ fontWeight: 800, marginBottom: '8px' }}>
+                  Quality & Transparency Indicators (Only checked items will be displayed)
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px' }}>
+                  {QUALITY_INDICATOR_OPTIONS.map(opt => (
+                    <label key={opt} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={qualityIndicators.includes(opt)} 
+                        onChange={() => handleToggleQualityIndicator(opt)} 
+                      />
+                      <span>{opt}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
 
+              {/* 9. Editorial Recommendation / Trust Message */}
+              <div className="form-group">
+                <label className="form-label">Admin's Editorial Recommendation / Trust Message (Optional)</label>
+                <textarea 
+                  className="textarea" 
+                  rows={2} 
+                  value={adminReview} 
+                  onChange={e => setAdminReview(e.target.value)} 
+                  placeholder="e.g. Recommended for students preparing for campus hiring rounds with TCS, Infosys, and Amazon." 
+                />
+                <span style={{ fontSize: '11px', color: '#64748B' }}>
+                  Displayed transparently on the detail page as an editorial instructor note.
+                </span>
+              </div>
+
+              {/* 10. File & Thumbnail Uploads */}
               <div className="form-grid-2">
                 <div className="form-group">
-                  <label className="form-label">Digital Resource File (.pdf, .zip, .docx, .pptx, .csv — up to 50MB)</label>
-                  <input
-                    type="file"
-                    className="input"
-                    onChange={e => handleFileUpload(e, false)}
-                    accept=".pdf,.zip,.docx,.pptx,.csv,.doc,.ppt"
-                    disabled={uploadingDigitalFile}
+                  <label className="form-label">Digital Resource File (.pdf, .zip, .docx, .pptx, .csv)</label>
+                  <input 
+                    type="file" 
+                    className="input" 
+                    onChange={e => handleFileUpload(e, false)} 
+                    disabled={uploadingDigitalFile} 
                   />
                   {uploadingDigitalFile && (
-                    <div style={{ marginTop: '8px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--color-cyan)', marginBottom: '4px' }}>
-                        <span>Uploading resource file...</span>
-                        <span>{uploadProgressDigitalFile}%</span>
-                      </div>
-                      <div style={{ width: '100%', height: '6px', background: 'var(--border-subtle)', borderRadius: '3px', overflow: 'hidden' }}>
-                        <div style={{ width: `${uploadProgressDigitalFile}%`, height: '100%', background: 'var(--color-cyan)', transition: 'width 0.2s' }}></div>
-                      </div>
+                    <div style={{ marginTop: '6px', fontSize: '12px', color: 'var(--color-cyan)' }}>
+                      Uploading file... {uploadProgressDigitalFile}%
                     </div>
                   )}
-                  {digitalFileName && !uploadingDigitalFile && (
-                    <div style={{ fontSize: '0.75rem', color: 'var(--color-emerald)', marginTop: '6px', fontWeight: 600 }}>
-                      ✔ File Attached & Saved: {digitalFileName} ({digitalFile})
+                  {digitalFileName && (
+                    <div style={{ fontSize: '12px', color: 'var(--color-emerald)', marginTop: '4px' }}>
+                      ✓ File loaded: {digitalFileName}
                     </div>
                   )}
                 </div>
 
                 <div className="form-group">
-                  <label className="form-label">Thumbnail Image Upload (.png, .jpg, .jpeg, .webp — up to 5MB)</label>
-                  <input
-                    type="file"
-                    className="input"
-                    onChange={e => handleFileUpload(e, true)}
-                    accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"
-                    disabled={uploadingThumbnail}
+                  <label className="form-label">Thumbnail Image (Upload or URL)</label>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="input" 
+                    onChange={e => handleFileUpload(e, true)} 
+                    disabled={uploadingThumbnail} 
                   />
-                  {uploadingThumbnail && (
-                    <div style={{ marginTop: '8px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--color-cyan)', marginBottom: '4px' }}>
-                        <span>Uploading thumbnail image...</span>
-                        <span>{uploadProgressThumbnail}%</span>
-                      </div>
-                      <div style={{ width: '100%', height: '6px', background: 'var(--border-subtle)', borderRadius: '3px', overflow: 'hidden' }}>
-                        <div style={{ width: `${uploadProgressThumbnail}%`, height: '100%', background: 'var(--color-cyan)', transition: 'width 0.2s' }}></div>
-                      </div>
-                    </div>
-                  )}
-                  {uploadedThumbnailUrl && !uploadingThumbnail && (
-                    <div style={{ fontSize: '0.75rem', color: 'var(--color-emerald)', marginTop: '6px', fontWeight: 600 }}>
-                      ✔ Uploaded Image Attached (Overrides Custom URL)
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">
-                  Or Custom Thumbnail Image URL <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>(Optional fallback. If an image is uploaded above, the uploaded image wins.)</span>
-                </label>
-                <input 
-                  type="text" 
-                  className="input" 
-                  value={customThumbnailUrl} 
-                  onChange={e => setCustomThumbnailUrl(e.target.value)} 
-                  placeholder="https://images.unsplash.com/... or /path/to/image.jpg" 
-                />
-                
-                {/* Instant Preview */}
-                {(instantThumbnailPreview || uploadedThumbnailUrl || customThumbnailUrl) && (
-                  <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '14px', background: 'var(--bg-tertiary)', padding: '10px', borderRadius: '8px', border: '1px solid var(--border-subtle)' }}>
-                    <div style={{ width: '70px', height: '70px', borderRadius: '8px', overflow: 'hidden', border: '1.5px solid var(--border-subtle)', background: '#0E0D22', flexShrink: 0 }}>
-                      <img
-                        src={instantThumbnailPreview || (uploadedThumbnailUrl ? getAssetUrl(uploadedThumbnailUrl) : getAssetUrl(customThumbnailUrl))}
-                        alt="Thumbnail Preview"
-                        onError={handleImageError}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  <input 
+                    type="text" 
+                    className="input" 
+                    style={{ marginTop: '6px' }} 
+                    value={customThumbnailUrl} 
+                    onChange={e => setCustomThumbnailUrl(e.target.value)} 
+                    placeholder="Or enter custom image URL" 
+                  />
+                  {(instantThumbnailPreview || uploadedThumbnailUrl || customThumbnailUrl) && (
+                    <div style={{ marginTop: '8px', width: '80px', height: '50px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #E2E8F0' }}>
+                      <img 
+                        src={instantThumbnailPreview || getAssetUrl(uploadedThumbnailUrl || customThumbnailUrl)} 
+                        alt="Preview" 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                        onError={handleImageError} 
                       />
                     </div>
-                    <div>
-                      <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                        {instantThumbnailPreview ? '⚡ Instant Local Preview' : (uploadedThumbnailUrl ? '✔ Saved Server Thumbnail' : '🌐 Custom Image URL Preview')}
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                        {uploadedThumbnailUrl ? `Stored at ${uploadedThumbnailUrl}` : (instantThumbnailPreview ? 'Selected from local computer' : customThumbnailUrl)}
-                      </div>
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
-              {category === 'Projects' && (
-                <div style={{ background: 'var(--bg-tertiary)', padding: '12px', borderRadius: '8px', border: '1px solid var(--border-subtle)', marginBottom: '12px' }}>
-                  <h4 style={{ fontSize: '0.875rem', color: 'var(--color-cyan)', marginBottom: '8px' }}>Project Specific Links & Metadata</h4>
-                  <div className="form-group">
-                    <label className="form-label">GitHub Repository URL</label>
-                    <input type="url" className="input" value={githubRepoUrl} onChange={e => setGithubRepoUrl(e.target.value)} placeholder="https://github.com/org/repo" />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Live Demo URL</label>
-                    <input type="url" className="input" value={liveDemoUrl} onChange={e => setLiveDemoUrl(e.target.value)} placeholder="https://demo.app" />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Tech Stack (comma separated)</label>
-                    <input type="text" className="input" value={techStack} onChange={e => setTechStack(e.target.value)} />
-                  </div>
+              {/* 11. Tags & What is Included */}
+              <div className="form-grid-2">
+                <div className="form-group">
+                  <label className="form-label">What is Included (Comma-separated)</label>
+                  <input 
+                    type="text" 
+                    className="input" 
+                    value={whatIncluded} 
+                    onChange={e => setWhatIncluded(e.target.value)} 
+                    placeholder="Visual PDF, Pattern Cheat Sheets, Solved Problems" 
+                  />
                 </div>
-              )}
-
-              {/* 1. Card Info / Preview Summary */}
-              <div className="form-group" style={{ background: 'rgba(56, 189, 248, 0.05)', border: '1px solid rgba(56, 189, 248, 0.25)', padding: '14px', borderRadius: '8px', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <label className="form-label" style={{ color: 'var(--color-cyan)', fontWeight: 700, margin: 0, fontSize: '0.9rem' }}>
-                    📇 1. Card Info / Preview Summary (Shown on Store Card)
-                  </label>
-                  <span className="badge badge-cyan" style={{ fontSize: '0.65rem' }}>Storefront Card</span>
+                <div className="form-group">
+                  <label className="form-label">Product Search Tags (Comma-separated)</label>
+                  <input 
+                    type="text" 
+                    className="input" 
+                    value={tags} 
+                    onChange={e => setTags(e.target.value)} 
+                    placeholder="DSA, Python, Campus Placement, Interview" 
+                  />
                 </div>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '8px', lineHeight: '1.4' }}>
-                  Brief summary shown directly on the catalog card in the Store (1-3 lines). This is what students see while browsing.
-                </p>
-                <textarea
-                  className="textarea"
-                  rows={2}
-                  value={cardDescription}
-                  onChange={e => setCardDescription(e.target.value)}
-                  placeholder="e.g. 180+ Pages Visual Hand-drawn Notes covering Top 25 FAANG Algorithms, Complexity Maps & Code Templates."
-                  required
-                />
-              </div>
-
-              {/* 2. Complete Step Description / Detailed Content */}
-              <div className="form-group" style={{ background: 'rgba(168, 85, 247, 0.05)', border: '1px solid rgba(168, 85, 247, 0.25)', padding: '14px', borderRadius: '8px', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <label className="form-label" style={{ color: 'var(--color-purple)', fontWeight: 700, margin: 0, fontSize: '0.9rem' }}>
-                    📖 2. Complete Step Description / Detailed Content (Shown After Opening Card)
-                  </label>
-                  <span className="badge badge-purple" style={{ fontSize: '0.65rem' }}>Detail Page</span>
-                </div>
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '8px', lineHeight: '1.4' }}>
-                  Comprehensive step-by-step breakdown shown on the product detail page when the student opens the card. Detail all steps, syllabus, modules, and what they will learn.
-                </p>
-                <textarea
-                  className="textarea"
-                  rows={6}
-                  value={stepDescription}
-                  onChange={e => setStepDescription(e.target.value)}
-                  placeholder={`Step 1: Foundational Array & Two Pointer Algorithms\nStep 2: Tree & Graph Traversals with Recursion Trees\nStep 3: Dynamic Programming Patterns & Memoization Tables\nStep 4: Top 100 Solved FAANG Interview Problems`}
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">What is Included (comma separated)</label>
-                <input type="text" className="input" value={whatIncluded} onChange={e => setWhatIncluded(e.target.value)} />
               </div>
 
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
-                <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary">Cancel</button>
-                <button type="submit" disabled={saving} className="btn btn-primary">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary">
+                  Cancel
+                </button>
+                <button type="submit" disabled={saving} className="btn btn-primary" style={{ minWidth: '160px' }}>
                   {saving ? 'Saving...' : (editingId ? 'Update Product' : 'Save Product')}
                 </button>
               </div>
@@ -827,3 +1078,5 @@ export const AdminProducts: React.FC = () => {
     </div>
   );
 };
+
+export default AdminProducts;

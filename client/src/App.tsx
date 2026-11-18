@@ -29,6 +29,9 @@ import { ShippingPolicy } from './pages/ShippingPolicy';
 // Admin Store Management
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminProducts } from './pages/admin/AdminProducts';
+import { AdminCategories } from './pages/admin/AdminCategories';
+import { AdminReviews } from './pages/admin/AdminReviews';
+import { AdminHomepage } from './pages/admin/AdminHomepage';
 import { AdminOrders } from './pages/admin/AdminOrders';
 
 // Protected Route Component
@@ -160,6 +163,30 @@ export const AppContent: React.FC = () => {
           element={
             <ProtectedRoute requireAdmin={true}>
               <AdminProducts />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/categories"
+          element={
+            <ProtectedRoute requireAdmin={true}>
+              <AdminCategories />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/reviews"
+          element={
+            <ProtectedRoute requireAdmin={true}>
+              <AdminReviews />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/homepage"
+          element={
+            <ProtectedRoute requireAdmin={true}>
+              <AdminHomepage />
             </ProtectedRoute>
           }
         />

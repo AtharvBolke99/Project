@@ -1,11 +1,14 @@
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { Product } from '../database/db';
+import { Product, Category, Review, HomepageContent } from '../database/db';
 
 export interface StoreStorageConfig {
   storeDir: string;
   productsFile: string;
+  categoriesFile: string;
+  reviewsFile: string;
+  homepageFile: string;
   pdfsDir: string;
   thumbnailsDir: string;
 }
@@ -13,10 +16,12 @@ export interface StoreStorageConfig {
 export class StoreStorage {
   private config: StoreStorageConfig;
   private productsCache: Product[] | null = null;
+  private categoriesCache: Category[] | null = null;
+  private reviewsCache: Review[] | null = null;
+  private homepageCache: HomepageContent | null = null;
   private isInitialized = false;
 
   constructor(customDir?: string) {
-    // Custom Dir, Render Persistent Disk or Environment Variable override
     const targetDir = customDir || process.env.STORE_DATA_PATH || process.env.RENDER_DISK_PATH;
     const storeDir = targetDir
       ? path.resolve(targetDir)
@@ -25,6 +30,9 @@ export class StoreStorage {
     this.config = {
       storeDir,
       productsFile: path.join(storeDir, 'products.json'),
+      categoriesFile: path.join(storeDir, 'categories.json'),
+      reviewsFile: path.join(storeDir, 'reviews.json'),
+      homepageFile: path.join(storeDir, 'homepage.json'),
       pdfsDir: path.join(storeDir, 'uploads', 'pdfs'),
       thumbnailsDir: path.join(storeDir, 'uploads', 'thumbnails')
     };
@@ -33,9 +41,7 @@ export class StoreStorage {
   }
 
   /**
-   * Initializes store directories and products.json.
-   * If products.json does not exist, performs a safe one-time import from existing database,
-   * then locks products.json as the sole source of truth.
+   * Initializes store directories, products.json, categories.json, reviews.json, and homepage.json.
    */
   private init(): void {
     if (this.isInitialized) return;
@@ -51,15 +57,12 @@ export class StoreStorage {
       // 2. Ensure initial products.json
       if (!fs.existsSync(this.config.productsFile)) {
         let initialProducts: Product[] = [];
-
-        // Check legacy conceptifyyy.db.json for real existing products
         const legacyDbPath = path.resolve(__dirname, '../../data/conceptifyyy.db.json');
         if (fs.existsSync(legacyDbPath)) {
           try {
             const raw = fs.readFileSync(legacyDbPath, 'utf8');
             const parsed = JSON.parse(raw);
             if (Array.isArray(parsed.products)) {
-              // Exclude test products or archived items from legacy data
               initialProducts = parsed.products.filter((p: any) => 
                 p && 
                 p.id !== 'prod_test_mode_item' && 
@@ -72,12 +75,176 @@ export class StoreStorage {
             console.warn('[STORE-STORAGE] Could not read legacy db for migration:', e.message);
           }
         }
-
         this.saveProductsAtomic(initialProducts);
         console.log(`[STORE-STORAGE] Initialized products.json at ${this.config.productsFile} with ${initialProducts.length} materials.`);
       } else {
-        // Load into cache
         this.loadProducts();
+      }
+
+      // 3. Ensure initial categories.json
+      if (!fs.existsSync(this.config.categoriesFile)) {
+        const initialCategories: Category[] = [
+          {
+            id: 'cat_dsa_notes',
+            name: 'DSA Notes',
+            slug: 'dsa-notes',
+            description: 'Comprehensive Data Structures & Algorithms notes with visual diagrams',
+            subcategories: ['Arrays & Strings', 'Linked Lists', 'Trees & Graphs', 'Dynamic Programming', 'Recursion & Backtracking'],
+            order: 1,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          {
+            id: 'cat_python',
+            name: 'Python',
+            slug: 'python',
+            description: 'Complete Python programming guide from fundamentals to OOP',
+            subcategories: ['Basics & Syntax', 'OOP Concepts', 'Data Structures', 'Projects & Modules'],
+            order: 2,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          {
+            id: 'cat_mysql_dbms',
+            name: 'MySQL / DBMS',
+            slug: 'mysql-dbms',
+            description: 'Database management systems, SQL queries, normalization, and indexing',
+            subcategories: ['SQL Queries & Joins', 'Database Design & Normalization', 'Transactions & Indexing'],
+            order: 3,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          {
+            id: 'cat_aptitude',
+            name: 'Aptitude Notes',
+            slug: 'aptitude-notes',
+            description: 'Quantitative aptitude, logical reasoning, and shortcut formula guides',
+            subcategories: ['Quantitative Aptitude', 'Logical Reasoning', 'Speed Math & Shortcuts'],
+            order: 4,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          {
+            id: 'cat_projects',
+            name: 'Projects',
+            slug: 'projects',
+            description: 'Full-stack production projects with source code and documentation',
+            subcategories: ['MERN Stack', 'Full-Stack Web', 'API & Backend'],
+            order: 5,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          {
+            id: 'cat_placement_bundles',
+            name: 'Placement Bundles',
+            slug: 'placement-bundles',
+            description: 'ATS-friendly resumes, HR round guides, and company interview packs',
+            subcategories: ['Resume Templates', 'Interview Question Packs', 'HR & Technical Prep'],
+            order: 6,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }
+        ];
+        this.saveCategoriesAtomic(initialCategories);
+      } else {
+        this.loadCategories();
+      }
+
+      // 4. Ensure initial reviews.json (Transparent Editorial Recommendations & Genuine Feedback)
+      if (!fs.existsSync(this.config.reviewsFile)) {
+        const initialReviews: Review[] = [
+          {
+            id: 'rev_editorial_1',
+            reviewerName: 'Conceptifyyy Academic Team',
+            reviewerRole: 'Curriculum & Placement Editorial Team',
+            reviewTitle: 'Curated for FAANG & Tier-1 Campus Hiring',
+            reviewDescription: 'Every concept in this visual guide is formatted around common interview patterns: recurrence trees, edge-case detection, and optimal memory layouts.',
+            reviewerImage: '',
+            rating: 5,
+            reviewDate: '2026-02-10',
+            isFeatured: true,
+            isEditorial: true,
+            badge: 'Editorial Recommendation',
+            status: 'Published',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          {
+            id: 'rev_editorial_2',
+            reviewerName: 'Campus Placement Mentor',
+            reviewerRole: 'Technical Instructor & Interviewer',
+            reviewTitle: 'Clear diagrams eliminate rote memorization',
+            reviewDescription: 'Students frequently struggle with pointer manipulation and tree traversals. The visual diagrams break down pointer updates step by step.',
+            reviewerImage: '',
+            rating: 5,
+            reviewDate: '2026-02-18',
+            isFeatured: true,
+            isEditorial: true,
+            badge: 'Instructor Note',
+            status: 'Published',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }
+        ];
+        this.saveReviewsAtomic(initialReviews);
+      } else {
+        this.loadReviews();
+      }
+
+      // 5. Ensure initial homepage.json
+      if (!fs.existsSync(this.config.homepageFile)) {
+        const initialHomepage: HomepageContent = {
+          heroHeading: 'Learn the idea. Not just the answer.',
+          heroHighlight: 'placement ace.',
+          heroSubtitle: 'Comprehensive handwritten study notes, campus company question packs, and production-ready project source code.',
+          heroCtaText: 'Explore Notes & Store',
+          heroCtaLink: '/store',
+          announcement: {
+            enabled: true,
+            text: '⚡ Verified 2026 Campus Placement Notes & Visual Roadmaps are live!',
+            link: '/store'
+          },
+          whyTrustSection: {
+            heading: 'Why Trust Conceptifyyy?',
+            subtitle: 'Built with academic rigor, full transparency, and student-focused preparation.',
+            items: [
+              {
+                title: 'Curated Learning Resources',
+                description: 'Every resource is selected and organized to help students prepare for academics, technical interviews, and placements.',
+                icon: 'BookOpen'
+              },
+              {
+                title: 'Clear Product Information',
+                description: 'Students can check the topics, file format, learning outcomes, and pricing before purchasing.',
+                icon: 'FileCheck'
+              },
+              {
+                title: 'Student-Focused Platform',
+                description: 'Resources are organized around real student learning and placement preparation needs.',
+                icon: 'GraduationCap'
+              },
+              {
+                title: 'Transparent Pricing',
+                description: 'Display accurate prices without hidden charges. Zero surprise fees.',
+                icon: 'Tag'
+              },
+              {
+                title: 'Secure Payments',
+                description: 'Official 256-bit SSL encrypted checkout powered securely by Razorpay.',
+                icon: 'ShieldCheck'
+              },
+              {
+                title: 'Easy Access to Resources',
+                description: 'Instant digital downloads and lifetime perpetual access in your personal student vault.',
+                icon: 'Download'
+              }
+            ]
+          },
+          featuredProductIds: []
+        };
+        this.saveHomepageAtomic(initialHomepage);
+      } else {
+        this.loadHomepage();
       }
 
       this.isInitialized = true;
@@ -85,6 +252,8 @@ export class StoreStorage {
       console.error('[STORE-STORAGE] Initialization error:', err);
     }
   }
+
+  // ================= STORAGE DIRECTORY GETTERS =================
 
   public getStoreDir(): string {
     return this.config.storeDir;
@@ -102,27 +271,40 @@ export class StoreStorage {
     return this.config.productsFile;
   }
 
-  /**
-   * Atomically writes products array to disk using a temporary file and atomic rename.
-   * Prevents corrupted files during server crashes or concurrent writes.
-   */
-  private saveProductsAtomic(products: Product[]): void {
-    const tempFile = `${this.config.productsFile}.tmp_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+  public getCategoriesFilePath(): string {
+    return this.config.categoriesFile;
+  }
+
+  public getReviewsFilePath(): string {
+    return this.config.reviewsFile;
+  }
+
+  public getHomepageFilePath(): string {
+    return this.config.homepageFile;
+  }
+
+  // ================= ATOMIC FILE WRITE UTILITIES =================
+
+  private writeJsonAtomic(filePath: string, data: any): void {
+    const tempFile = `${filePath}.tmp_${Date.now()}_${Math.random().toString(36).substring(7)}`;
     try {
-      fs.writeFileSync(tempFile, JSON.stringify(products, null, 2), 'utf8');
-      fs.renameSync(tempFile, this.config.productsFile);
-      this.productsCache = [...products];
+      fs.writeFileSync(tempFile, JSON.stringify(data, null, 2), 'utf8');
+      fs.renameSync(tempFile, filePath);
     } catch (err: any) {
       if (fs.existsSync(tempFile)) {
         try { fs.unlinkSync(tempFile); } catch {}
       }
-      throw new Error(`Failed to save store products atomically: ${err.message}`);
+      throw new Error(`Failed to write atomic file (${path.basename(filePath)}): ${err.message}`);
     }
   }
 
-  /**
-   * Loads products from products.json (always authoritative from disk).
-   */
+  // ================= 1. PRODUCTS MANAGEMENT =================
+
+  private saveProductsAtomic(products: Product[]): void {
+    this.writeJsonAtomic(this.config.productsFile, products);
+    this.productsCache = [...products];
+  }
+
   public loadProducts(): Product[] {
     try {
       if (!fs.existsSync(this.config.productsFile)) {
@@ -142,12 +324,10 @@ export class StoreStorage {
     }
   }
 
-  /**
-   * Retrieves products with search, category filtering, and sorting.
-   */
   public getAllProducts(options: {
     includeDrafts?: boolean;
     category?: string;
+    subcategory?: string;
     search?: string;
     sort?: string;
   } = {}): (Product & { isFileAvailable: boolean })[] {
@@ -158,35 +338,38 @@ export class StoreStorage {
       products = products.filter(p => p.isPublished !== false && p.status !== 'Draft' && p.status !== 'DRAFT');
     }
 
-    // 2. Category filter
+    // 2. Dynamic Category filter (matches exact category or subcategory)
     if (options.category && options.category !== 'All') {
-      const catLower = options.category.toLowerCase();
+      const catLower = options.category.toLowerCase().trim();
       products = products.filter(p => {
-        const pCat = (p.category || '').toLowerCase();
-        if (pCat === catLower) return true;
-        if (catLower === 'dsa notes' || catLower === 'dsa') return pCat.includes('dsa');
-        if (catLower === 'python') return pCat.includes('python');
-        if (catLower === 'mysql / dbms' || catLower === 'mysql' || catLower === 'dbms') return pCat.includes('sql') || pCat.includes('dbms');
-        if (catLower === 'aptitude notes' || catLower === 'aptitude') return pCat.includes('aptitude');
-        if (catLower === 'projects') return pCat.includes('project');
-        if (catLower === 'placement bundles') return pCat.includes('placement') || pCat.includes('bundle') || pCat.includes('resume');
-        return false;
+        const pCat = (p.category || '').toLowerCase().trim();
+        const pSub = (p.subcategory || '').toLowerCase().trim();
+        return pCat === catLower || pSub === catLower;
       });
     }
 
-    // 3. Search query
+    // 3. Dynamic Subcategory filter
+    if (options.subcategory && options.subcategory !== 'All') {
+      const subLower = options.subcategory.toLowerCase().trim();
+      products = products.filter(p => (p.subcategory || '').toLowerCase().trim() === subLower);
+    }
+
+    // 4. Search query
     if (options.search && options.search.trim()) {
       const q = options.search.trim().toLowerCase();
       products = products.filter(p =>
         (p.title && p.title.toLowerCase().includes(q)) ||
         (p.cardDescription && p.cardDescription.toLowerCase().includes(q)) ||
         (p.description && p.description.toLowerCase().includes(q)) ||
+        (p.category && p.category.toLowerCase().includes(q)) ||
+        (p.subcategory && p.subcategory.toLowerCase().includes(q)) ||
+        (p.targetAudience && p.targetAudience.toLowerCase().includes(q)) ||
         (p.tags && p.tags.some(t => t.toLowerCase().includes(q))) ||
         (p.techStack && p.techStack.some(t => t.toLowerCase().includes(q)))
       );
     }
 
-    // 4. Sorting
+    // 5. Sorting
     if (options.sort === 'price_asc') {
       products.sort((a, b) => a.price - b.price);
     } else if (options.sort === 'price_desc') {
@@ -198,16 +381,13 @@ export class StoreStorage {
       products.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
     }
 
-    // 5. Attach file existence status gracefully
+    // 6. Attach file existence status
     return products.map(p => ({
       ...p,
       isFileAvailable: this.isDocumentAvailable(p.digitalFile)
     }));
   }
 
-  /**
-   * Retrieves single product by ID or Slug.
-   */
   public getProduct(idOrSlug: string): (Product & { isFileAvailable: boolean }) | null {
     const products = this.loadProducts();
     const target = idOrSlug.trim().toLowerCase();
@@ -226,9 +406,6 @@ export class StoreStorage {
     };
   }
 
-  /**
-   * Creates a new store product and atomically saves to products.json.
-   */
   public createProduct(data: Partial<Product>): Product {
     const products = this.loadProducts();
 
@@ -251,36 +428,40 @@ export class StoreStorage {
 
     const cardDesc = data.cardDescription || data.shortDescription || (data.description ? data.description.substring(0, 160) : '');
     const stepDesc = data.stepDescription || data.detailedDescription || data.description || '';
-    const mainDesc = stepDesc || cardDesc || 'Comprehensive educational placement material.';
+    const mainDesc = stepDesc || cardDesc || '';
 
     const isDraft = data.status === 'Draft' || data.status === 'DRAFT' || data.isPublished === false;
     const status = isDraft ? 'Draft' : 'Published';
     const isPublished = !isDraft;
 
+    // Use admin-supplied category without auto-defaulting to DSA
+    const category = data.category ? String(data.category).trim() : 'General Notes';
+    const subcategory = data.subcategory ? String(data.subcategory).trim() : undefined;
+
     const newProduct: Product = {
       id,
       title: data.title || 'Untitled Resource',
       slug: uniqueSlug,
-      category: data.category || 'DSA Notes',
-      subcategory: data.subcategory || '',
+      category,
+      subcategory,
       cardDescription: cardDesc,
       shortDescription: cardDesc,
       stepDescription: stepDesc,
       detailedDescription: stepDesc,
       description: mainDesc,
       price: Number(data.price) || 0,
-      originalPrice: Number(data.originalPrice) || (Number(data.price) > 0 ? Number(data.price) * 2 : 0),
+      originalPrice: Number(data.originalPrice) || 0,
       salePrice: data.salePrice !== undefined ? Number(data.salePrice) : undefined,
       discountPercent: Number(data.discountPercent) || (data.originalPrice && data.originalPrice > (data.price || 0) ? Math.round(((data.originalPrice - (data.price || 0)) / data.originalPrice) * 100) : 0),
       thumbnail: data.thumbnail ? data.thumbnail.trim() : '',
       previewImages: Array.isArray(data.previewImages) ? data.previewImages : [],
       digitalFile: data.digitalFile ? path.basename(data.digitalFile) : '',
-      fileFormat: data.fileFormat || 'PDF Document',
-      pageCount: data.pageCount || 100,
+      fileFormat: data.fileFormat || 'PDF',
+      pageCount: data.pageCount ? Number(data.pageCount) : undefined,
       rating: data.rating ? Number(data.rating) : 4.9,
       reviewsCount: data.reviewsCount !== undefined ? Number(data.reviewsCount) : (Math.floor(Math.random() * (200 - 50 + 1)) + 50),
-      whatIncluded: Array.isArray(data.whatIncluded) ? data.whatIncluded : (data.whatIncluded ? String(data.whatIncluded).split(',').map((s: string) => s.trim()).filter(Boolean) : ['Visual Diagrams', 'Pattern Cheat Sheets', 'Interview Questions']),
-      tags: Array.isArray(data.tags) ? data.tags : ['DSA', 'Placement'],
+      whatIncluded: Array.isArray(data.whatIncluded) ? data.whatIncluded : (data.whatIncluded ? String(data.whatIncluded).split(',').map((s: string) => s.trim()).filter(Boolean) : []),
+      tags: Array.isArray(data.tags) ? data.tags : (data.tags ? String(data.tags).split(',').map((s: string) => s.trim()).filter(Boolean) : []),
       techStack: Array.isArray(data.techStack) ? data.techStack : [],
       githubRepoUrl: data.githubRepoUrl || '',
       liveDemoUrl: data.liveDemoUrl || '',
@@ -288,7 +469,15 @@ export class StoreStorage {
       sourceCodeZip: data.sourceCodeZip || '',
       presentationPpt: data.presentationPpt || '',
       synopsis: data.synopsis || '',
-      difficulty: data.difficulty || 'Intermediate',
+      difficulty: data.difficulty || undefined,
+      targetAudience: data.targetAudience ? String(data.targetAudience).trim() : undefined,
+      learningOutcomes: Array.isArray(data.learningOutcomes) 
+        ? data.learningOutcomes 
+        : (data.learningOutcomes ? String(data.learningOutcomes).split('\n').map((s: string) => s.trim()).filter(Boolean) : []),
+      estimatedTime: data.estimatedTime ? String(data.estimatedTime).trim() : undefined,
+      adminReview: data.adminReview ? String(data.adminReview).trim() : undefined,
+      qualityIndicators: Array.isArray(data.qualityIndicators) ? data.qualityIndicators : [],
+      lastUpdatedDate: data.lastUpdatedDate ? String(data.lastUpdatedDate).trim() : new Date().toISOString().split('T')[0],
       seoTitle: data.seoTitle || data.title,
       seoDescription: data.seoDescription || cardDesc || mainDesc,
       isFeatured: Boolean(data.isFeatured),
@@ -301,14 +490,11 @@ export class StoreStorage {
     // Prepend (newest first)
     products.unshift(newProduct);
     this.saveProductsAtomic(products);
-    console.log(`[STORE-STORAGE] Created product: "${newProduct.title}" (ID: ${newProduct.id}, Slug: ${newProduct.slug}, Status: ${newProduct.status})`);
+    console.log(`[STORE-STORAGE] Created product: "${newProduct.title}" (ID: ${newProduct.id}, Category: "${newProduct.category}", Subcategory: "${newProduct.subcategory || 'None'}")`);
 
     return newProduct;
   }
 
-  /**
-   * Updates an existing product and atomically writes to products.json.
-   */
   public updateProduct(id: string, updates: Partial<Product>): Product | null {
     const products = this.loadProducts();
     const idx = products.findIndex(p => p.id === id);
@@ -351,11 +537,20 @@ export class StoreStorage {
       id: existing.id, // ID is permanent and immutable
       status: status as any,
       isPublished,
+      category: updates.category !== undefined ? String(updates.category).trim() : existing.category,
+      subcategory: updates.subcategory !== undefined ? (updates.subcategory ? String(updates.subcategory).trim() : undefined) : existing.subcategory,
       cardDescription: cardDesc,
       shortDescription: cardDesc,
       stepDescription: stepDesc,
       detailedDescription: stepDesc,
       description: mainDesc,
+      targetAudience: updates.targetAudience !== undefined ? (updates.targetAudience ? String(updates.targetAudience).trim() : undefined) : existing.targetAudience,
+      learningOutcomes: updates.learningOutcomes !== undefined ? (Array.isArray(updates.learningOutcomes) ? updates.learningOutcomes : String(updates.learningOutcomes).split('\n').map(s => s.trim()).filter(Boolean)) : existing.learningOutcomes,
+      estimatedTime: updates.estimatedTime !== undefined ? (updates.estimatedTime ? String(updates.estimatedTime).trim() : undefined) : existing.estimatedTime,
+      adminReview: updates.adminReview !== undefined ? (updates.adminReview ? String(updates.adminReview).trim() : undefined) : existing.adminReview,
+      qualityIndicators: updates.qualityIndicators !== undefined ? (Array.isArray(updates.qualityIndicators) ? updates.qualityIndicators : []) : existing.qualityIndicators,
+      lastUpdatedDate: updates.lastUpdatedDate !== undefined ? (updates.lastUpdatedDate ? String(updates.lastUpdatedDate).trim() : undefined) : existing.lastUpdatedDate,
+      isFeatured: updates.isFeatured !== undefined ? Boolean(updates.isFeatured) : existing.isFeatured,
       digitalFile: updates.digitalFile !== undefined ? (updates.digitalFile ? path.basename(updates.digitalFile) : '') : existing.digitalFile,
       thumbnail: updates.thumbnail !== undefined ? updates.thumbnail.trim() : existing.thumbnail,
       updatedAt: new Date().toISOString()
@@ -368,9 +563,6 @@ export class StoreStorage {
     return updated;
   }
 
-  /**
-   * PERMANENTLY deletes a product from products.json and removes its uploaded files from disk.
-   */
   public deleteProduct(id: string): { success: boolean; deletedProduct?: Product } {
     const products = this.loadProducts();
     const idx = products.findIndex(p => p.id === id);
@@ -378,7 +570,7 @@ export class StoreStorage {
 
     const [deleted] = products.splice(idx, 1);
 
-    // Clean up associated physical document and thumbnail from disk
+    // Clean up physical document and thumbnail from disk
     if (deleted.digitalFile) {
       this.safeDeleteUploadFile(deleted.digitalFile, 'pdf');
     }
@@ -391,14 +583,11 @@ export class StoreStorage {
     return { success: true, deletedProduct: deleted };
   }
 
-  /**
-   * Safely deletes an uploaded file from disk (ignores public static core assets).
-   */
   public safeDeleteUploadFile(filenameOrUrl: string, type: 'pdf' | 'thumbnail'): void {
     if (!filenameOrUrl) return;
     const cleanName = path.basename(filenameOrUrl);
 
-    // Guard essential core templates from deletion
+    // Guard core starter assets from accidental deletion
     if (cleanName === 'ats_friendly_resume_template.pdf' || cleanName === 'conceptifyyy_dsa_prep_2026_thumb.svg' || cleanName === 'ats_resume_thumb.jpg') {
       return;
     }
@@ -428,9 +617,6 @@ export class StoreStorage {
     }
   }
 
-  /**
-   * Checks whether the digital document file actually exists on disk.
-   */
   public isDocumentAvailable(digitalFile?: string): boolean {
     if (!digitalFile) return false;
     const cleanName = path.basename(digitalFile);
@@ -446,9 +632,6 @@ export class StoreStorage {
     return candidates.some(p => fs.existsSync(p) && fs.statSync(p).isFile());
   }
 
-  /**
-   * Resolves the full physical path on disk for digital document download.
-   */
   public resolvePhysicalDocumentPath(digitalFile?: string): string | null {
     if (!digitalFile) return null;
     const cleanName = path.basename(digitalFile);
@@ -468,6 +651,327 @@ export class StoreStorage {
     }
 
     return null;
+  }
+
+  // ================= 2. DYNAMIC CATEGORIES & SUBCATEGORIES =================
+
+  private saveCategoriesAtomic(categories: Category[]): void {
+    this.writeJsonAtomic(this.config.categoriesFile, categories);
+    this.categoriesCache = [...categories];
+  }
+
+  public loadCategories(): Category[] {
+    try {
+      if (!fs.existsSync(this.config.categoriesFile)) {
+        return [];
+      }
+      const raw = fs.readFileSync(this.config.categoriesFile, 'utf8');
+      const data = JSON.parse(raw);
+      if (Array.isArray(data)) {
+        this.categoriesCache = data;
+        return [...data];
+      }
+      return [];
+    } catch (err: any) {
+      console.error('[STORE-STORAGE] Error loading categories.json:', err.message);
+      return this.categoriesCache ? [...this.categoriesCache] : [];
+    }
+  }
+
+  public getAllCategories(): Category[] {
+    const categories = this.loadCategories();
+    return categories.sort((a, b) => (a.order || 99) - (b.order || 99));
+  }
+
+  public getCategory(idOrSlug: string): Category | null {
+    const categories = this.loadCategories();
+    const target = idOrSlug.trim().toLowerCase();
+    return categories.find(c => c.id.toLowerCase() === target || c.slug.toLowerCase() === target) || null;
+  }
+
+  public createCategory(data: Partial<Category>): Category {
+    const categories = this.loadCategories();
+
+    const name = (data.name || 'New Category').trim();
+    let baseSlug = (data.slug || name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    if (!baseSlug) baseSlug = 'category';
+
+    let uniqueSlug = baseSlug;
+    let counter = 1;
+    while (categories.some(c => c.slug === uniqueSlug)) {
+      uniqueSlug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    const id = 'cat_' + uuidv4().replace(/-/g, '').substring(0, 10);
+    const subcategories = Array.isArray(data.subcategories) 
+      ? data.subcategories.map(s => String(s).trim()).filter(Boolean)
+      : (data.subcategories ? String(data.subcategories).split(',').map(s => s.trim()).filter(Boolean) : []);
+
+    const newCategory: Category = {
+      id,
+      name,
+      slug: uniqueSlug,
+      description: data.description ? String(data.description).trim() : '',
+      subcategories,
+      order: data.order !== undefined ? Number(data.order) : categories.length + 1,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    categories.push(newCategory);
+    this.saveCategoriesAtomic(categories);
+    console.log(`[STORE-STORAGE] Created category "${newCategory.name}" (ID: ${newCategory.id})`);
+    return newCategory;
+  }
+
+  public updateCategory(id: string, updates: Partial<Category>): Category | null {
+    const categories = this.loadCategories();
+    const idx = categories.findIndex(c => c.id === id);
+    if (idx === -1) return null;
+
+    const existing = categories[idx];
+    const oldName = existing.name;
+
+    const subcategories = updates.subcategories !== undefined
+      ? (Array.isArray(updates.subcategories) 
+          ? updates.subcategories.map(s => String(s).trim()).filter(Boolean)
+          : String(updates.subcategories).split(',').map(s => s.trim()).filter(Boolean))
+      : existing.subcategories;
+
+    const updated: Category = {
+      ...existing,
+      ...updates,
+      id: existing.id,
+      name: updates.name ? updates.name.trim() : existing.name,
+      description: updates.description !== undefined ? String(updates.description).trim() : existing.description,
+      subcategories,
+      updatedAt: new Date().toISOString()
+    };
+
+    categories[idx] = updated;
+    this.saveCategoriesAtomic(categories);
+
+    // If category was renamed, also update products referencing old category name
+    if (updates.name && updates.name.trim() !== oldName) {
+      const products = this.loadProducts();
+      let changed = false;
+      products.forEach(p => {
+        if (p.category === oldName) {
+          p.category = updated.name;
+          changed = true;
+        }
+      });
+      if (changed) {
+        this.saveProductsAtomic(products);
+        console.log(`[STORE-STORAGE] Synchronized category name change in products catalog.`);
+      }
+    }
+
+    console.log(`[STORE-STORAGE] Updated category "${updated.name}" (ID: ${id})`);
+    return updated;
+  }
+
+  public deleteCategory(id: string): boolean {
+    const categories = this.loadCategories();
+    const idx = categories.findIndex(c => c.id === id);
+    if (idx === -1) return false;
+
+    const [deleted] = categories.splice(idx, 1);
+    this.saveCategoriesAtomic(categories);
+    console.log(`[STORE-STORAGE] Deleted category "${deleted.name}" (ID: ${id})`);
+    return true;
+  }
+
+  // ================= 3. REVIEWS & TRUST MANAGEMENT =================
+
+  private saveReviewsAtomic(reviews: Review[]): void {
+    this.writeJsonAtomic(this.config.reviewsFile, reviews);
+    this.reviewsCache = [...reviews];
+  }
+
+  public loadReviews(): Review[] {
+    try {
+      if (!fs.existsSync(this.config.reviewsFile)) {
+        return [];
+      }
+      const raw = fs.readFileSync(this.config.reviewsFile, 'utf8');
+      const data = JSON.parse(raw);
+      if (Array.isArray(data)) {
+        this.reviewsCache = data;
+        return [...data];
+      }
+      return [];
+    } catch (err: any) {
+      console.error('[STORE-STORAGE] Error loading reviews.json:', err.message);
+      return this.reviewsCache ? [...this.reviewsCache] : [];
+    }
+  }
+
+  public getAllReviews(options: {
+    productId?: string;
+    includeDrafts?: boolean;
+    featuredOnly?: boolean;
+  } = {}): Review[] {
+    let reviews = this.loadReviews();
+
+    if (!options.includeDrafts) {
+      reviews = reviews.filter(r => r.status === 'Published');
+    }
+
+    if (options.productId) {
+      reviews = reviews.filter(r => r.productId === options.productId || !r.productId);
+    }
+
+    if (options.featuredOnly) {
+      reviews = reviews.filter(r => r.isFeatured);
+    }
+
+    // Newest review date first
+    return reviews.sort((a, b) => new Date(b.reviewDate || b.createdAt).getTime() - new Date(a.reviewDate || a.createdAt).getTime());
+  }
+
+  public getReview(id: string): Review | null {
+    const reviews = this.loadReviews();
+    return reviews.find(r => r.id === id) || null;
+  }
+
+  public createReview(data: Partial<Review>): Review {
+    const reviews = this.loadReviews();
+    const id = 'rev_' + uuidv4().replace(/-/g, '').substring(0, 10);
+
+    const isEditorial = data.isEditorial !== undefined ? Boolean(data.isEditorial) : true;
+    const badge = data.badge || (isEditorial ? 'Editorial Recommendation' : 'Student Feedback');
+
+    const newReview: Review = {
+      id,
+      reviewerName: data.reviewerName ? data.reviewerName.trim() : 'Anonymous Student',
+      reviewerRole: data.reviewerRole ? data.reviewerRole.trim() : 'Student',
+      reviewTitle: data.reviewTitle ? data.reviewTitle.trim() : 'Helpful Study Resource',
+      reviewDescription: data.reviewDescription ? data.reviewDescription.trim() : '',
+      productId: data.productId ? String(data.productId).trim() : undefined,
+      productTitle: data.productTitle ? String(data.productTitle).trim() : undefined,
+      reviewerImage: data.reviewerImage ? String(data.reviewerImage).trim() : undefined,
+      rating: Math.min(5, Math.max(1, Number(data.rating) || 5)),
+      reviewDate: data.reviewDate ? String(data.reviewDate).trim() : new Date().toISOString().split('T')[0],
+      isFeatured: Boolean(data.isFeatured),
+      isEditorial,
+      badge,
+      status: (data.status === 'Draft' ? 'Draft' : 'Published'),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    reviews.unshift(newReview);
+    this.saveReviewsAtomic(reviews);
+    console.log(`[STORE-STORAGE] Created review "${newReview.reviewTitle}" (ID: ${newReview.id})`);
+    return newReview;
+  }
+
+  public updateReview(id: string, updates: Partial<Review>): Review | null {
+    const reviews = this.loadReviews();
+    const idx = reviews.findIndex(r => r.id === id);
+    if (idx === -1) return null;
+
+    const existing = reviews[idx];
+    const updated: Review = {
+      ...existing,
+      ...updates,
+      id: existing.id,
+      reviewerName: updates.reviewerName !== undefined ? updates.reviewerName.trim() : existing.reviewerName,
+      reviewerRole: updates.reviewerRole !== undefined ? updates.reviewerRole.trim() : existing.reviewerRole,
+      reviewTitle: updates.reviewTitle !== undefined ? updates.reviewTitle.trim() : existing.reviewTitle,
+      reviewDescription: updates.reviewDescription !== undefined ? updates.reviewDescription.trim() : existing.reviewDescription,
+      productId: updates.productId !== undefined ? (updates.productId ? String(updates.productId).trim() : undefined) : existing.productId,
+      productTitle: updates.productTitle !== undefined ? (updates.productTitle ? String(updates.productTitle).trim() : undefined) : existing.productTitle,
+      rating: updates.rating !== undefined ? Math.min(5, Math.max(1, Number(updates.rating))) : existing.rating,
+      isFeatured: updates.isFeatured !== undefined ? Boolean(updates.isFeatured) : existing.isFeatured,
+      isEditorial: updates.isEditorial !== undefined ? Boolean(updates.isEditorial) : existing.isEditorial,
+      badge: updates.badge !== undefined ? updates.badge : existing.badge,
+      status: updates.status === 'Draft' ? 'Draft' : 'Published',
+      updatedAt: new Date().toISOString()
+    };
+
+    reviews[idx] = updated;
+    this.saveReviewsAtomic(reviews);
+    console.log(`[STORE-STORAGE] Updated review ID: ${id}`);
+    return updated;
+  }
+
+  public deleteReview(id: string): boolean {
+    const reviews = this.loadReviews();
+    const idx = reviews.findIndex(r => r.id === id);
+    if (idx === -1) return false;
+
+    reviews.splice(idx, 1);
+    this.saveReviewsAtomic(reviews);
+    console.log(`[STORE-STORAGE] Deleted review ID: ${id}`);
+    return true;
+  }
+
+  // ================= 4. HOMEPAGE CONTENT & ANNOUNCEMENTS =================
+
+  private saveHomepageAtomic(content: HomepageContent): void {
+    this.writeJsonAtomic(this.config.homepageFile, content);
+    this.homepageCache = { ...content };
+  }
+
+  public loadHomepage(): HomepageContent {
+    try {
+      if (!fs.existsSync(this.config.homepageFile)) {
+        return {
+          heroHeading: 'Learn the idea. Not just the answer.',
+          heroHighlight: 'placement ace.',
+          heroSubtitle: 'Comprehensive handwritten study notes, campus company question packs, and production-ready project source code.',
+          heroCtaText: 'Explore Notes & Store',
+          heroCtaLink: '/store',
+          announcement: { enabled: true, text: '⚡ Verified 2026 Campus Placement Notes & Roadmaps are live!', link: '/store' },
+          whyTrustSection: { heading: 'Why Trust Conceptifyyy?', subtitle: 'Built with academic rigor, full transparency, and student-focused preparation.', items: [] },
+          featuredProductIds: []
+        };
+      }
+      const raw = fs.readFileSync(this.config.homepageFile, 'utf8');
+      const data = JSON.parse(raw);
+      this.homepageCache = data;
+      return data;
+    } catch (err: any) {
+      console.error('[STORE-STORAGE] Error loading homepage.json:', err.message);
+      return this.homepageCache || {
+        heroHeading: 'Learn the idea. Not just the answer.',
+        heroHighlight: 'placement ace.',
+        heroSubtitle: 'Comprehensive handwritten study notes, campus company question packs, and production-ready project source code.',
+        heroCtaText: 'Explore Notes & Store',
+        heroCtaLink: '/store',
+        announcement: { enabled: true, text: '⚡ Verified 2026 Campus Placement Notes & Roadmaps are live!', link: '/store' },
+        whyTrustSection: { heading: 'Why Trust Conceptifyyy?', subtitle: 'Built with academic rigor, full transparency, and student-focused preparation.', items: [] },
+        featuredProductIds: []
+      };
+    }
+  }
+
+  public getHomepageContent(): HomepageContent {
+    return this.loadHomepage();
+  }
+
+  public updateHomepageContent(updates: Partial<HomepageContent>): HomepageContent {
+    const current = this.loadHomepage();
+    const updated: HomepageContent = {
+      ...current,
+      ...updates,
+      announcement: {
+        ...current.announcement,
+        ...(updates.announcement || {})
+      },
+      whyTrustSection: {
+        ...current.whyTrustSection,
+        ...(updates.whyTrustSection || {})
+      },
+      updatedAt: new Date().toISOString()
+    };
+
+    this.saveHomepageAtomic(updated);
+    console.log(`[STORE-STORAGE] Updated homepage content and announcement settings.`);
+    return updated;
   }
 }
 

@@ -11,13 +11,20 @@ import {
   Download,
   Code2,
   Brain,
-  ShoppingBag
+  ShoppingBag,
+  ShieldCheck,
+  Tag,
+  GraduationCap,
+  DownloadCloud,
+  FileCheck,
+  Bell
 } from 'lucide-react';
 import { api } from '../services/api';
 import { getAssetUrl, handleImageError } from '../utils/imageUrl';
 
 export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
   const [topProducts, setTopProducts] = useState<any[]>([]);
+  const [homepageData, setHomepageData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [emailInput, setEmailInput] = useState<string>('');
   const [quizSelected, setQuizSelected] = useState<'linear' | 'constant'>('constant');
@@ -25,12 +32,26 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
 
   const navigate = useNavigate();
 
-  const fetchTopProducts = async () => {
+  const fetchHomeData = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/store/products');
-      if (res.success && Array.isArray(res.data)) {
-        setTopProducts(res.data.slice(0, 6));
+      const [prodRes, hpRes] = await Promise.all([
+        api.get('/store/products'),
+        api.get('/store/homepage')
+      ]);
+
+      if (prodRes.success && Array.isArray(prodRes.data)) {
+        // Prioritize featured products
+        const sorted = [...prodRes.data].sort((a, b) => {
+          if (a.isFeatured && !b.isFeatured) return -1;
+          if (!a.isFeatured && b.isFeatured) return 1;
+          return 0;
+        });
+        setTopProducts(sorted.slice(0, 6));
+      }
+
+      if (hpRes.success && hpRes.data) {
+        setHomepageData(hpRes.data);
       }
     } catch (err: any) {
       console.error('[HOME] Failed to fetch top products:', err);
@@ -40,7 +61,7 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
   };
 
   useEffect(() => {
-    fetchTopProducts();
+    fetchHomeData();
   }, []);
 
   const handleCtaSubmit = (e: React.FormEvent) => {
@@ -51,6 +72,21 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
   return (
     <div style={{ width: '100%', overflow: 'hidden', background: 'var(--bg-cosmic)' }}>
       
+      {/* Top Announcement Banner (Configurable from Admin) */}
+      {homepageData?.announcement?.enabled && homepageData.announcement.text && (
+        <div style={{ background: '#4F46E5', color: '#FFFFFF', padding: '10px 16px', textAlign: 'center', fontSize: '13.5px', fontWeight: 700 }}>
+          <div className="wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            <Bell size={16} />
+            <span>{homepageData.announcement.text}</span>
+            {homepageData.announcement.link && (
+              <Link to={homepageData.announcement.link} style={{ color: '#FFD700', textDecoration: 'underline', marginLeft: '6px' }}>
+                Explore Now →
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ================= 1. HERO SECTION (REFERENCE SCREENSHOT MATCH) ================= */}
       <section className="wrap" style={{ paddingTop: 'clamp(40px, 6vw, 72px)', paddingBottom: 'clamp(48px, 6vw, 84px)' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 460px), 1fr))', gap: '48px', alignItems: 'center' }}>
@@ -66,21 +102,27 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
 
             {/* Giant Title: "Learn the idea. Not just the answer." */}
             <h1 className="d" style={{ fontSize: 'clamp(44px, 6vw, 76px)', lineHeight: 1.05, color: '#FFFFFF', fontWeight: 800 }}>
-              Learn the<br />
-              idea.<br />
-              <span style={{ color: 'var(--yellow)', fontStyle: 'italic', fontWeight: 800 }}>Not just</span><br />
-              the answer.
+              {homepageData?.heroHeading ? (
+                homepageData.heroHeading
+              ) : (
+                <>
+                  Learn the<br />
+                  idea.<br />
+                  <span style={{ color: 'var(--yellow)', fontStyle: 'italic', fontWeight: 800 }}>Not just</span><br />
+                  the answer.
+                </>
+              )}
             </h1>
 
             {/* Subtitle */}
             <p className="mu" style={{ fontSize: 'clamp(16px, 2vw, 19px)', lineHeight: 1.6, maxWidth: '480px', color: 'var(--text-muted)' }}>
-              Master Python, MySQL, DSA, Aptitude, and Full-Stack projects with verified concept-first notes, interview cheat sheets, and source code.
+              {homepageData?.heroSubtitle || 'Master Python, MySQL, DSA, Aptitude, and Full-Stack projects with verified concept-first notes, interview cheat sheets, and source code.'}
             </p>
 
             {/* CTA Buttons */}
             <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
-              <Link to="/store" className="btn btn-yellow btn-lg">
-                Explore Notes & Vault
+              <Link to={homepageData?.heroCtaLink || '/store'} className="btn btn-yellow btn-lg">
+                {homepageData?.heroCtaText || 'Explore Notes & Vault'}
               </Link>
               <a href="#how-it-works" className="btn btn-dark btn-lg">
                 How It Works
@@ -588,6 +630,97 @@ export const Home: React.FC<{ onOpenAuth: () => void }> = ({ onOpenAuth }) => {
           ))}
         </div>
 
+      </section>
+
+      {/* ================= 5B. DEDICATED "WHY TRUST CONCEPTIFYYY?" SECTION ================= */}
+      <section className="wrap" style={{ paddingTop: '20px', paddingBottom: '70px' }}>
+        <div style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 40px' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 800, color: '#10B981', background: 'rgba(16, 185, 129, 0.1)', padding: '4px 14px', borderRadius: '999px', marginBottom: '12px' }}>
+            <ShieldCheck size={14} /> Academic Transparency Standard
+          </span>
+          <h2 className="d" style={{ fontSize: 'clamp(28px, 4vw, 42px)', color: '#FFFFFF', fontWeight: 800, margin: '0 0 12px 0' }}>
+            {homepageData?.whyTrustSection?.heading || 'Why Trust Conceptifyyy?'}
+          </h2>
+          <p className="mu" style={{ fontSize: '15px', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
+            {homepageData?.whyTrustSection?.subtitle || 'Built with academic rigor, full transparency, and student-focused preparation.'}
+          </p>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(310px, 1fr))', gap: '20px' }}>
+          
+          <div className="pop" style={{ background: 'var(--bg-card)', padding: '26px', borderRadius: '20px', border: '1px solid var(--bg-card-border)' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(79, 70, 229, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' }}>
+              <BookOpen size={22} color="#818CF8" />
+            </div>
+            <h3 className="d" style={{ fontSize: '17px', color: '#FFFFFF', marginBottom: '8px' }}>
+              Curated Learning Resources
+            </h3>
+            <p className="mu" style={{ fontSize: '13.5px', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
+              Every resource is selected and organized to help students prepare for academics, technical interviews, and placements.
+            </p>
+          </div>
+
+          <div className="pop" style={{ background: 'var(--bg-card)', padding: '26px', borderRadius: '20px', border: '1px solid var(--bg-card-border)' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' }}>
+              <FileCheck size={22} color="#34D399" />
+            </div>
+            <h3 className="d" style={{ fontSize: '17px', color: '#FFFFFF', marginBottom: '8px' }}>
+              Clear Product Information
+            </h3>
+            <p className="mu" style={{ fontSize: '13.5px', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
+              Students can check the topics, file format, learning outcomes, and pricing before purchasing.
+            </p>
+          </div>
+
+          <div className="pop" style={{ background: 'var(--bg-card)', padding: '26px', borderRadius: '20px', border: '1px solid var(--bg-card-border)' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(124, 58, 237, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' }}>
+              <GraduationCap size={22} color="#A78BFA" />
+            </div>
+            <h3 className="d" style={{ fontSize: '17px', color: '#FFFFFF', marginBottom: '8px' }}>
+              Student-Focused Platform
+            </h3>
+            <p className="mu" style={{ fontSize: '13.5px', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
+              Resources are organized around real student learning and placement preparation needs.
+            </p>
+          </div>
+
+          <div className="pop" style={{ background: 'var(--bg-card)', padding: '26px', borderRadius: '20px', border: '1px solid var(--bg-card-border)' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' }}>
+              <Tag size={22} color="#FBBF24" />
+            </div>
+            <h3 className="d" style={{ fontSize: '17px', color: '#FFFFFF', marginBottom: '8px' }}>
+              Transparent Pricing
+            </h3>
+            <p className="mu" style={{ fontSize: '13.5px', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
+              Display accurate prices without hidden charges. Zero surprise fees or forced recurring subscriptions.
+            </p>
+          </div>
+
+          <div className="pop" style={{ background: 'var(--bg-card)', padding: '26px', borderRadius: '20px', border: '1px solid var(--bg-card-border)' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(6, 182, 212, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' }}>
+              <ShieldCheck size={22} color="#22D3EE" />
+            </div>
+            <h3 className="d" style={{ fontSize: '17px', color: '#FFFFFF', marginBottom: '8px' }}>
+              Secure Payments
+            </h3>
+            <p className="mu" style={{ fontSize: '13.5px', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
+              Official 256-bit SSL encrypted checkout powered securely by Razorpay with instant payment verification.
+            </p>
+          </div>
+
+          <div className="pop" style={{ background: 'var(--bg-card)', padding: '26px', borderRadius: '20px', border: '1px solid var(--bg-card-border)' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(239, 68, 68, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '14px' }}>
+              <DownloadCloud size={22} color="#F87171" />
+            </div>
+            <h3 className="d" style={{ fontSize: '17px', color: '#FFFFFF', marginBottom: '8px' }}>
+              Easy Access to Resources
+            </h3>
+            <p className="mu" style={{ fontSize: '13.5px', color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
+              Instant digital downloads and permanent lifetime access in your personal student vault.
+            </p>
+          </div>
+
+        </div>
       </section>
 
       {/* ================= 6. BIG CTA BANNER (PAGE 2 BOTTOM SCREENSHOT) ================= */}

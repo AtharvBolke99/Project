@@ -17,7 +17,17 @@ import {
   getAdminOrders,
   getAdminUsers,
   updateUserStatus,
-  uploadAdminFile
+  uploadAdminFile,
+  getAdminCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  getAdminReviews,
+  createReview,
+  updateReview,
+  deleteReview,
+  getAdminHomepage,
+  updateAdminHomepage
 } from '../controllers/adminController';
 import { authenticateToken, requireAdmin } from '../middleware/auth';
 import { uploadMiddleware } from '../middleware/upload';
@@ -31,6 +41,22 @@ router.get('/overview', getAdminOverview);
 
 // File & Thumbnail Upload
 router.post('/upload', uploadMiddleware.single('file'), uploadAdminFile);
+
+// Categories & Subcategories CMS
+router.get('/categories', getAdminCategories);
+router.post('/categories', createCategory);
+router.put('/categories/:id', updateCategory);
+router.delete('/categories/:id', deleteCategory);
+
+// Reviews & Trust Management CMS
+router.get('/reviews', getAdminReviews);
+router.post('/reviews', createReview);
+router.put('/reviews/:id', updateReview);
+router.delete('/reviews/:id', deleteReview);
+
+// Homepage Content & Announcements CMS
+router.get('/homepage', getAdminHomepage);
+router.put('/homepage', updateAdminHomepage);
 
 // DSA Problems CMS
 router.post('/problems', createProblem);

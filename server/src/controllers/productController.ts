@@ -5,11 +5,12 @@ import { storeStorage } from '../storage/storeStorage';
 
 export const getProducts = async (req: AuthRequest, res: Response) => {
   try {
-    const { category, search, tag, sort, minPrice, maxPrice } = req.query as Record<string, string>;
+    const { category, subcategory, search, tag, sort, minPrice, maxPrice } = req.query as Record<string, string>;
     const userId = req.user?.id;
 
     let products = storeStorage.getAllProducts({
       category,
+      subcategory,
       search,
       sort,
       includeDrafts: false
@@ -40,6 +41,7 @@ export const getProducts = async (req: AuthRequest, res: Response) => {
         title: p.title,
         slug: p.slug,
         category: p.category,
+        subcategory: p.subcategory,
         cardDescription: cardDesc,
         shortDescription: cardDesc,
         stepDescription: stepDesc,
@@ -53,11 +55,21 @@ export const getProducts = async (req: AuthRequest, res: Response) => {
         reviewsCount: p.reviewsCount,
         fileFormat: p.fileFormat,
         pageCount: p.pageCount,
+        difficulty: p.difficulty,
+        targetAudience: p.targetAudience,
+        learningOutcomes: p.learningOutcomes,
+        estimatedTime: p.estimatedTime,
+        adminReview: p.adminReview,
+        qualityIndicators: p.qualityIndicators,
+        lastUpdatedDate: p.lastUpdatedDate,
+        whatIncluded: p.whatIncluded,
         techStack: p.techStack,
         tags: p.tags,
         isFeatured: p.isFeatured,
         isPurchased: purchasedProductIds.has(p.id),
-        isFileAvailable: p.isFileAvailable
+        isFileAvailable: p.isFileAvailable,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt
       };
     });
 
@@ -96,6 +108,17 @@ export const getProductBySlug = async (req: AuthRequest, res: Response) => {
       }
     }
 
+    // Fetch related published reviews for this product or editorial feedback
+    const productReviews = storeStorage.getAllReviews({ productId: product.id });
+
+    // Fetch related products in same category (excluding current)
+    const relatedProducts = storeStorage.getAllProducts({
+      category: product.category,
+      includeDrafts: false
+    })
+      .filter(p => p.id !== product.id)
+      .slice(0, 3);
+
     const cardDesc = product.cardDescription || product.shortDescription || product.description;
     const stepDesc = product.stepDescription || product.detailedDescription || product.description;
 
@@ -107,6 +130,8 @@ export const getProductBySlug = async (req: AuthRequest, res: Response) => {
         shortDescription: cardDesc,
         stepDescription: stepDesc,
         detailedDescription: stepDesc,
+        reviews: productReviews,
+        relatedProducts,
         isPurchased,
         purchaseInfo
       }
@@ -116,9 +141,50 @@ export const getProductBySlug = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const getCategories = async (req: AuthRequest, res: Response) => {
+  try {
+    const categories = storeStorage.getAllCategories();
+    return res.json({
+      success: true,
+      data: categories
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getReviews = async (req: AuthRequest, res: Response) => {
+  try {
+    const { productId, featured } = req.query as { productId?: string; featured?: string };
+    const reviews = storeStorage.getAllReviews({
+      productId,
+      featuredOnly: featured === 'true',
+      includeDrafts: false
+    });
+    return res.json({
+      success: true,
+      data: reviews
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const getHomepageContent = async (req: AuthRequest, res: Response) => {
+  try {
+    const content = storeStorage.getHomepageContent();
+    return res.json({
+      success: true,
+      data: content
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export const getFeaturedProjects = async (req: AuthRequest, res: Response) => {
   try {
-    const rawProjects = db.find('products', p => p.category === 'Projects' && p.isPublished);
+    const rawProjects = storeStorage.getAllProducts({ category: 'Projects', includeDrafts: false });
     const projects = rawProjects.map(p => ({
       ...p,
       cardDescription: p.cardDescription || p.shortDescription || p.description,

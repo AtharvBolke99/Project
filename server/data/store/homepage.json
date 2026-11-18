@@ -1,0 +1,49 @@
+{
+  "heroHeading": "Learn the idea. Not just the answer.",
+  "heroHighlight": "placement ace.",
+  "heroSubtitle": "Comprehensive handwritten study notes, campus company question packs, and production-ready project source code.",
+  "heroCtaText": "Explore Notes & Store",
+  "heroCtaLink": "/store",
+  "announcement": {
+    "enabled": true,
+    "text": "⚡ Verified 2026 Campus Placement Notes & Visual Roadmaps are live!",
+    "link": "/store"
+  },
+  "whyTrustSection": {
+    "heading": "Why Trust Conceptifyyy?",
+    "subtitle": "Built with academic rigor, full transparency, and student-focused preparation.",
+    "items": [
+      {
+        "title": "Curated Learning Resources",
+        "description": "Every resource is selected and organized to help students prepare for academics, technical interviews, and placements.",
+        "icon": "BookOpen"
+      },
+      {
+        "title": "Clear Product Information",
+        "description": "Students can check the topics, file format, learning outcomes, and pricing before purchasing.",
+        "icon": "FileCheck"
+      },
+      {
+        "title": "Student-Focused Platform",
+        "description": "Resources are organized around real student learning and placement preparation needs.",
+        "icon": "GraduationCap"
+      },
+      {
+        "title": "Transparent Pricing",
+        "description": "Display accurate prices without hidden charges. Zero surprise fees.",
+        "icon": "Tag"
+      },
+      {
+        "title": "Secure Payments",
+        "description": "Official 256-bit SSL encrypted checkout powered securely by Razorpay.",
+        "icon": "ShieldCheck"
+      },
+      {
+        "title": "Easy Access to Resources",
+        "description": "Instant digital downloads and lifetime perpetual access in your personal student vault.",
+        "icon": "Download"
+      }
+    ]
+  },
+  "featuredProductIds": []
+}

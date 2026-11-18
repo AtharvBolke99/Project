@@ -59,10 +59,14 @@ export const getAdminOverview = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    const activeProducts = products.filter(p => !p.isDeleted);
-    const publishedProducts = activeProducts.filter(p => p.isPublished !== false);
-    const draftProducts = activeProducts.filter(p => p.isPublished === false);
-    const categoriesCount = new Set(activeProducts.map(p => p.category)).size;
+    const allProducts = storeStorage.getAllProducts({ includeDrafts: true });
+    const publishedProducts = allProducts.filter(p => p.isPublished !== false && p.status !== 'Draft');
+    const draftProducts = allProducts.filter(p => p.isPublished === false || p.status === 'Draft');
+    const featuredProducts = allProducts.filter(p => p.isFeatured);
+    const allCategories = storeStorage.getAllCategories();
+    const allReviews = storeStorage.getAllReviews({ includeDrafts: true });
+    const recentAdditions = [...allProducts].sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()).slice(0, 5);
+    const recentlyUpdated = [...allProducts].sort((a, b) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime()).slice(0, 5);
 
     return res.json({
       success: true,
@@ -70,10 +74,13 @@ export const getAdminOverview = async (req: AuthRequest, res: Response) => {
         stats: {
           totalUsers: users.length,
           activeUsers: users.filter(u => u.status === 'ACTIVE').length,
-          totalProducts: activeProducts.length,
+          totalProducts: allProducts.length,
           publishedProducts: publishedProducts.length,
           draftProducts: draftProducts.length,
-          categoriesCount,
+          categoriesCount: allCategories.length,
+          totalCategories: allCategories.length,
+          featuredProductsCount: featuredProducts.length,
+          totalReviews: allReviews.length,
           totalProblems: problems.length,
           totalSubmissions: submissions.length,
           acceptedSubmissions: submissions.filter(s => s.status === 'Accepted').length,
@@ -85,6 +92,8 @@ export const getAdminOverview = async (req: AuthRequest, res: Response) => {
           todayRevenue,
           conversionRate
         },
+        recentAdditions,
+        recentlyUpdated,
         topProducts,
         revenueTrend: last7Days
       }
@@ -660,5 +669,126 @@ export const uploadAdminFile = async (req: AuthRequest, res: Response) => {
     });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message || 'File upload failed.' });
+  }
+};
+
+// ================= CATEGORIES CMS =================
+export const getAdminCategories = async (req: AuthRequest, res: Response) => {
+  try {
+    const categories = storeStorage.getAllCategories();
+    return res.json({ success: true, data: categories });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const createCategory = async (req: AuthRequest, res: Response) => {
+  try {
+    const data = req.body;
+    if (!data.name) {
+      return res.status(400).json({ success: false, message: 'Category name is required.' });
+    }
+    const newCategory = storeStorage.createCategory(data);
+    return res.status(201).json({ success: true, message: 'Category created successfully!', data: newCategory });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateCategory = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const data = req.body;
+    const updated = storeStorage.updateCategory(id, data);
+    if (!updated) {
+      return res.status(404).json({ success: false, message: 'Category not found.' });
+    }
+    return res.json({ success: true, message: 'Category updated successfully!', data: updated });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteCategory = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const deleted = storeStorage.deleteCategory(id);
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: 'Category not found.' });
+    }
+    return res.json({ success: true, message: 'Category deleted successfully!' });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ================= REVIEWS & TRUST MANAGEMENT =================
+export const getAdminReviews = async (req: AuthRequest, res: Response) => {
+  try {
+    const { productId } = req.query as { productId?: string };
+    const reviews = storeStorage.getAllReviews({ productId, includeDrafts: true });
+    return res.json({ success: true, data: reviews });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const createReview = async (req: AuthRequest, res: Response) => {
+  try {
+    const data = req.body;
+    if (!data.reviewerName || !data.reviewDescription) {
+      return res.status(400).json({ success: false, message: 'Reviewer name and review text are required.' });
+    }
+    const newReview = storeStorage.createReview(data);
+    return res.status(201).json({ success: true, message: 'Review / editorial feedback added!', data: newReview });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateReview = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const data = req.body;
+    const updated = storeStorage.updateReview(id, data);
+    if (!updated) {
+      return res.status(404).json({ success: false, message: 'Review not found.' });
+    }
+    return res.json({ success: true, message: 'Review updated successfully!', data: updated });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteReview = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const deleted = storeStorage.deleteReview(id);
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: 'Review not found.' });
+    }
+    return res.json({ success: true, message: 'Review deleted successfully!' });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// ================= HOMEPAGE CONTENT & ANNOUNCEMENTS =================
+export const getAdminHomepage = async (req: AuthRequest, res: Response) => {
+  try {
+    const content = storeStorage.getHomepageContent();
+    return res.json({ success: true, data: content });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const updateAdminHomepage = async (req: AuthRequest, res: Response) => {
+  try {
+    const data = req.body;
+    const updated = storeStorage.updateHomepageContent(data);
+    return res.json({ success: true, message: 'Homepage content updated successfully!', data: updated });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, message: error.message });
   }
 };

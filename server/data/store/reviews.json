@@ -1,0 +1,34 @@
+[
+  {
+    "id": "rev_editorial_1",
+    "reviewerName": "Conceptifyyy Academic Team",
+    "reviewerRole": "Curriculum & Placement Editorial Team",
+    "reviewTitle": "Curated for FAANG & Tier-1 Campus Hiring",
+    "reviewDescription": "Every concept in this visual guide is formatted around common interview patterns: recurrence trees, edge-case detection, and optimal memory layouts.",
+    "reviewerImage": "",
+    "rating": 5,
+    "reviewDate": "2026-02-10",
+    "isFeatured": true,
+    "isEditorial": true,
+    "badge": "Editorial Recommendation",
+    "status": "Published",
+    "createdAt": "2026-11-18T11:52:06.354Z",
+    "updatedAt": "2026-11-18T11:52:06.354Z"
+  },
+  {
+    "id": "rev_editorial_2",
+    "reviewerName": "Campus Placement Mentor",
+    "reviewerRole": "Technical Instructor & Interviewer",
+    "reviewTitle": "Clear diagrams eliminate rote memorization",
+    "reviewDescription": "Students frequently struggle with pointer manipulation and tree traversals. The visual diagrams break down pointer updates step by step.",
+    "reviewerImage": "",
+    "rating": 5,
+    "reviewDate": "2026-02-18",
+    "isFeatured": true,
+    "isEditorial": true,
+    "badge": "Instructor Note",
+    "status": "Published",
+    "createdAt": "2026-11-18T11:52:06.354Z",
+    "updatedAt": "2026-11-18T11:52:06.354Z"
+  }
+]

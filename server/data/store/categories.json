@@ -1,0 +1,89 @@
+[
+  {
+    "id": "cat_dsa_notes",
+    "name": "DSA Notes",
+    "slug": "dsa-notes",
+    "description": "Comprehensive Data Structures & Algorithms notes with visual diagrams",
+    "subcategories": [
+      "Arrays & Strings",
+      "Linked Lists",
+      "Trees & Graphs",
+      "Dynamic Programming",
+      "Recursion & Backtracking"
+    ],
+    "order": 1,
+    "createdAt": "2026-11-18T11:52:06.351Z",
+    "updatedAt": "2026-11-18T11:52:06.352Z"
+  },
+  {
+    "id": "cat_python",
+    "name": "Python",
+    "slug": "python",
+    "description": "Complete Python programming guide from fundamentals to OOP",
+    "subcategories": [
+      "Basics & Syntax",
+      "OOP Concepts",
+      "Data Structures",
+      "Projects & Modules"
+    ],
+    "order": 2,
+    "createdAt": "2026-11-18T11:52:06.352Z",
+    "updatedAt": "2026-11-18T11:52:06.352Z"
+  },
+  {
+    "id": "cat_mysql_dbms",
+    "name": "MySQL / DBMS",
+    "slug": "mysql-dbms",
+    "description": "Database management systems, SQL queries, normalization, and indexing",
+    "subcategories": [
+      "SQL Queries & Joins",
+      "Database Design & Normalization",
+      "Transactions & Indexing"
+    ],
+    "order": 3,
+    "createdAt": "2026-11-18T11:52:06.352Z",
+    "updatedAt": "2026-11-18T11:52:06.352Z"
+  },
+  {
+    "id": "cat_aptitude",
+    "name": "Aptitude Notes",
+    "slug": "aptitude-notes",
+    "description": "Quantitative aptitude, logical reasoning, and shortcut formula guides",
+    "subcategories": [
+      "Quantitative Aptitude",
+      "Logical Reasoning",
+      "Speed Math & Shortcuts"
+    ],
+    "order": 4,
+    "createdAt": "2026-11-18T11:52:06.352Z",
+    "updatedAt": "2026-11-18T11:52:06.352Z"
+  },
+  {
+    "id": "cat_projects",
+    "name": "Projects",
+    "slug": "projects",
+    "description": "Full-stack production projects with source code and documentation",
+    "subcategories": [
+      "MERN Stack",
+      "Full-Stack Web",
+      "API & Backend"
+    ],
+    "order": 5,
+    "createdAt": "2026-11-18T11:52:06.352Z",
+    "updatedAt": "2026-11-18T11:52:06.352Z"
+  },
+  {
+    "id": "cat_placement_bundles",
+    "name": "Placement Bundles",
+    "slug": "placement-bundles",
+    "description": "ATS-friendly resumes, HR round guides, and company interview packs",
+    "subcategories": [
+      "Resume Templates",
+      "Interview Question Packs",
+      "HR & Technical Prep"
+    ],
+    "order": 6,
+    "createdAt": "2026-11-18T11:52:06.352Z",
+    "updatedAt": "2026-11-18T11:52:06.352Z"
+  }
+]

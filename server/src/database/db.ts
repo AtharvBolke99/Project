@@ -146,11 +146,65 @@ export interface AptitudeSubmission {
   createdAt: string;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  subcategories: string[];
+  order?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Review {
+  id: string;
+  reviewerName: string;
+  reviewerRole: string; // e.g. "Student", "Developer", "Learner", "Placement Prep Candidate"
+  reviewTitle: string;
+  reviewDescription: string;
+  productId?: string; // Optional: associated product ID
+  productTitle?: string; // Optional
+  reviewerImage?: string;
+  rating: number; // 1-5
+  reviewDate: string; // YYYY-MM-DD
+  isFeatured: boolean;
+  isEditorial: boolean; // Clearly marks editorial recommendation vs customer review
+  badge?: string; // "Editorial Recommendation", "Instructor Review", "Student Testimonial"
+  status: 'Published' | 'Draft';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface HomepageContent {
+  heroHeading: string;
+  heroHighlight: string;
+  heroSubtitle: string;
+  heroCtaText: string;
+  heroCtaLink: string;
+  announcement: {
+    enabled: boolean;
+    text: string;
+    link?: string;
+  };
+  whyTrustSection: {
+    heading: string;
+    subtitle: string;
+    items: Array<{
+      title: string;
+      description: string;
+      icon: string;
+    }>;
+  };
+  featuredProductIds: string[];
+  updatedAt?: string;
+}
+
 export interface Product {
   id: string;
   title: string;
   slug: string;
-  category: 'DSA Notes' | 'Aptitude Notes' | 'Cheat Sheets' | 'Interview Prep' | 'Placement Bundles' | 'Projects' | 'Test Mode' | string;
+  category: string;
   subcategory?: string;
   shortDescription?: string;
   cardDescription?: string;
@@ -177,7 +231,13 @@ export interface Product {
   sourceCodeZip?: string;
   presentationPpt?: string;
   synopsis?: string;
-  difficulty?: 'Beginner' | 'Intermediate' | 'Advanced';
+  difficulty?: 'Beginner' | 'Intermediate' | 'Advanced' | string;
+  targetAudience?: string;
+  learningOutcomes?: string[];
+  estimatedTime?: string;
+  adminReview?: string; // Admin Review / Trust Message / Editorial Recommendation
+  qualityIndicators?: string[]; // 'Beginner Friendly', 'Intermediate', 'Advanced', 'Interview Focused', 'Exam Preparation', 'Practice-Oriented', 'Updated Resource', 'Free Resource'
+  lastUpdatedDate?: string;
   seoTitle?: string;
   seoDescription?: string;
   isFeatured: boolean;

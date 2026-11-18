@@ -10,7 +10,15 @@ import {
   X,
   CheckCircle2,
   BookOpen,
-  Sparkles
+  Sparkles,
+  ShieldCheck,
+  Tag,
+  GraduationCap,
+  DownloadCloud,
+  FileCheck,
+  Bell,
+  Clock,
+  Layers
 } from 'lucide-react';
 import { api } from '../services/api';
 import { getAssetUrl, handleImageError } from '../utils/imageUrl';
@@ -18,27 +26,45 @@ import { getAssetUrl, handleImageError } from '../utils/imageUrl';
 export const Store: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialCat = searchParams.get('category') || 'All';
+  const initialSubCat = searchParams.get('subcategory') || 'All';
 
   const [allProducts, setAllProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [homepageData, setHomepageData] = useState<any>(null);
+
   const [category, setCategory] = useState<string>(initialCat);
+  const [subcategory, setSubcategory] = useState<string>(initialSubCat);
   const [search, setSearch] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('newest');
   const [priceFilter, setPriceFilter] = useState<string>('all');
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProducts = async () => {
+  const fetchData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get('/store/products');
-      if (res.success && Array.isArray(res.data)) {
-        setAllProducts(res.data);
+      const [prodRes, catRes, hpRes] = await Promise.all([
+        api.get('/store/products'),
+        api.get('/store/categories'),
+        api.get('/store/homepage')
+      ]);
+
+      if (prodRes.success && Array.isArray(prodRes.data)) {
+        setAllProducts(prodRes.data);
       } else {
-        setError(res.message || 'Unable to load notes. Please try again.');
+        setError(prodRes.message || 'Unable to load notes. Please try again.');
+      }
+
+      if (catRes.success && Array.isArray(catRes.data)) {
+        setCategories(catRes.data);
+      }
+
+      if (hpRes.success && hpRes.data) {
+        setHomepageData(hpRes.data);
       }
     } catch (e: any) {
-      console.warn('[STORE] Failed to fetch store products:', e);
+      console.warn('[STORE] Failed to fetch store data:', e);
       setError('Unable to connect to the backend server. Please try again.');
     } finally {
       setLoading(false);
@@ -46,7 +72,7 @@ export const Store: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchProducts();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -54,74 +80,80 @@ export const Store: React.FC = () => {
     if (cat) {
       setCategory(cat);
     }
+    const sub = searchParams.get('subcategory');
+    if (sub) {
+      setSubcategory(sub);
+    }
     const q = searchParams.get('search');
     if (q) {
       setSearch(q);
     }
   }, [searchParams]);
 
-  const categories = [
-    { id: 'All', label: 'All Resources' },
-    { id: 'DSA Notes', label: 'DSA Placement Prep' },
-    { id: 'Python', label: 'Python Course' },
-    { id: 'MySQL / DBMS', label: 'MySQL & DBMS' },
-    { id: 'Aptitude Notes', label: 'Aptitude & Reasoning' },
-    { id: 'Projects', label: 'Full-Stack Projects' },
-    { id: 'Placement Bundles', label: 'Resume & Bundles' }
-  ];
+  // Selected Category Object to extract dynamic subcategories
+  const selectedCategoryObj = useMemo(() => {
+    return categories.find(c => c.name.toLowerCase() === category.toLowerCase());
+  }, [categories, category]);
 
-  const handleCategorySelect = (catId: string) => {
-    setCategory(catId);
-    if (catId === 'All') {
-      searchParams.delete('category');
-      setSearchParams(searchParams);
-    } else {
-      setSearchParams({ category: catId });
+  const availableSubcategories = useMemo(() => {
+    return selectedCategoryObj?.subcategories || [];
+  }, [selectedCategoryObj]);
+
+  const handleCategorySelect = (catName: string) => {
+    setCategory(catName);
+    setSubcategory('All');
+    const newParams: Record<string, string> = {};
+    if (catName !== 'All') {
+      newParams.category = catName;
     }
+    if (search) {
+      newParams.search = search;
+    }
+    setSearchParams(newParams);
   };
 
-  const matchesCategory = (p: any, cat: string): boolean => {
-    if (cat === 'All') return true;
-    const catLower = cat.toLowerCase();
-    const pCatLower = (p.category || '').toLowerCase();
-    if (pCatLower === catLower) return true;
-
-    const titleLower = (p.title || '').toLowerCase();
-    const tagsLower = (p.tags || []).map((t: string) => t.toLowerCase());
-
-    if (cat === 'Python') {
-      return pCatLower.includes('python') || titleLower.includes('python') || tagsLower.includes('python');
+  const handleSubcategorySelect = (subName: string) => {
+    setSubcategory(subName);
+    const newParams: Record<string, string> = {};
+    if (category !== 'All') {
+      newParams.category = category;
     }
-    if (cat === 'MySQL / DBMS') {
-      return pCatLower.includes('sql') || pCatLower.includes('dbms') || titleLower.includes('sql') || titleLower.includes('database') || tagsLower.includes('mysql');
+    if (subName !== 'All') {
+      newParams.subcategory = subName;
     }
-    if (cat === 'DSA Notes') {
-      return pCatLower.includes('dsa') || titleLower.includes('dsa') || tagsLower.includes('dsa');
+    if (search) {
+      newParams.search = search;
     }
-    if (cat === 'Aptitude Notes') {
-      return pCatLower.includes('aptitude') || titleLower.includes('aptitude') || tagsLower.includes('aptitude');
-    }
-    if (cat === 'Projects') {
-      return pCatLower.includes('project') || tagsLower.includes('mern') || tagsLower.includes('project');
-    }
-    if (cat === 'Placement Bundles') {
-      return pCatLower.includes('placement') || pCatLower.includes('bundle') || titleLower.includes('resume');
-    }
-    return pCatLower === catLower;
+    setSearchParams(newParams);
   };
 
+  // Dynamic matching function
+  const matchesCategoryAndSub = (p: any, cat: string, sub: string): boolean => {
+    if (cat !== 'All') {
+      const catLower = cat.toLowerCase().trim();
+      const pCatLower = (p.category || '').toLowerCase().trim();
+      const pSubLower = (p.subcategory || '').toLowerCase().trim();
+      if (pCatLower !== catLower && pSubLower !== catLower) return false;
+    }
+    if (sub !== 'All') {
+      const subLower = sub.toLowerCase().trim();
+      const pSubLower = (p.subcategory || '').toLowerCase().trim();
+      if (pSubLower !== subLower) return false;
+    }
+    return true;
+  };
+
+  // Category counts
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = { All: allProducts.length };
     categories.forEach(c => {
-      if (c.id !== 'All') {
-        counts[c.id] = allProducts.filter(p => matchesCategory(p, c.id)).length;
-      }
+      counts[c.name] = allProducts.filter(p => matchesCategoryAndSub(p, c.name, 'All')).length;
     });
     return counts;
-  }, [allProducts]);
+  }, [allProducts, categories]);
 
   const filteredProducts = useMemo(() => {
-    let result = allProducts.filter(p => matchesCategory(p, category));
+    let result = allProducts.filter(p => matchesCategoryAndSub(p, category, subcategory));
 
     if (priceFilter === 'free') {
       result = result.filter(p => p.price === 0);
@@ -137,6 +169,9 @@ export const Store: React.FC = () => {
         (p.title && p.title.toLowerCase().includes(q)) ||
         (p.description && p.description.toLowerCase().includes(q)) ||
         (p.cardDescription && p.cardDescription.toLowerCase().includes(q)) ||
+        (p.category && p.category.toLowerCase().includes(q)) ||
+        (p.subcategory && p.subcategory.toLowerCase().includes(q)) ||
+        (p.targetAudience && p.targetAudience.toLowerCase().includes(q)) ||
         (p.tags && p.tags.some((t: string) => t.toLowerCase().includes(q))) ||
         (p.techStack && p.techStack.some((t: string) => t.toLowerCase().includes(q)))
       );
@@ -153,28 +188,71 @@ export const Store: React.FC = () => {
     }
 
     return result;
-  }, [allProducts, category, priceFilter, search, sortBy]);
+  }, [allProducts, category, subcategory, priceFilter, search, sortBy]);
 
-  const getBadgeClass = (cat: string) => {
-    const c = (cat || '').toLowerCase();
-    if (c.includes('dsa')) return 'store-badge store-badge-dsa';
-    if (c.includes('python')) return 'store-badge store-badge-python';
-    if (c.includes('sql') || c.includes('dbms')) return 'store-badge store-badge-mysql';
-    if (c.includes('aptitude')) return 'store-badge store-badge-aptitude';
-    if (c.includes('project')) return 'store-badge store-badge-projects';
-    if (c.includes('placement') || c.includes('bundle') || c.includes('resume')) return 'store-badge store-badge-bundles';
-    return 'store-badge store-badge-default';
-  };
+  const defaultTrustItems = [
+    {
+      title: 'Curated Learning Resources',
+      description: 'Every resource is selected and organized to help students prepare for academics, technical interviews, and placements.',
+      icon: 'BookOpen'
+    },
+    {
+      title: 'Clear Product Information',
+      description: 'Students can check the topics, file format, learning outcomes, and pricing before purchasing.',
+      icon: 'FileCheck'
+    },
+    {
+      title: 'Student-Focused Platform',
+      description: 'Resources are organized around real student learning and placement preparation needs.',
+      icon: 'GraduationCap'
+    },
+    {
+      title: 'Transparent Pricing',
+      description: 'Display accurate prices without hidden charges. Zero surprise fees.',
+      icon: 'Tag'
+    },
+    {
+      title: 'Secure Payments',
+      description: 'Official 256-bit SSL encrypted checkout powered securely by Razorpay.',
+      icon: 'ShieldCheck'
+    },
+    {
+      title: 'Easy Access to Resources',
+      description: 'Instant digital downloads and lifetime perpetual access in your personal student vault.',
+      icon: 'Download'
+    }
+  ];
+
+  const trustItems = (homepageData?.whyTrustSection?.items && homepageData.whyTrustSection.items.length > 0)
+    ? homepageData.whyTrustSection.items
+    : defaultTrustItems;
+
+  const announcement = homepageData?.announcement;
 
   return (
     <div className="store-modern-page animate-fade-in" style={{ paddingBottom: '96px' }}>
       
-      {/* ================= 1. STORE HERO BANNER ================= */}
+      {/* ================= 1. OPTIONAL ANNOUNCEMENT BANNER ================= */}
+      {announcement?.enabled && announcement.text && (
+        <div style={{ background: '#4F46E5', color: '#FFFFFF', padding: '10px 16px', textAlign: 'center', fontSize: '13.5px', fontWeight: 700 }}>
+          <div className="store-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            <Bell size={16} />
+            <span>{announcement.text}</span>
+            {announcement.link && (
+              <Link to={announcement.link} style={{ color: '#FFD700', textDecoration: 'underline', marginLeft: '6px' }}>
+                Learn More →
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ================= 2. STORE HERO BANNER ================= */}
       <section className="store-hero">
         <div className="store-container">
           <div className="store-pill-badge">
             <span className="store-pill-dot"></span>
-            <span>Instant Digital Download Store</span>
+            <span>Transparent Student Digital Store</span>
           </div>
 
           <h1 className="store-title">
@@ -182,12 +260,12 @@ export const Store: React.FC = () => {
           </h1>
 
           <p className="store-subtitle">
-            Comprehensive handwritten study notes, campus company question packs, and production-ready project source code.
+            Curated handwritten study notes, campus company question packs, and production-ready project source code with complete learning breakdown.
           </p>
         </div>
       </section>
 
-      {/* ================= 2. SEARCH & CONTROLS ================= */}
+      {/* ================= 3. SEARCH & CONTROLS ================= */}
       <section className="store-controls-section">
         <div className="store-container">
           
@@ -200,7 +278,7 @@ export const Store: React.FC = () => {
               <input
                 type="text"
                 className="store-search-input"
-                placeholder="Search Python, MySQL, Aptitude, Projects, Resume..."
+                placeholder="Search notes, topics, languages, target companies..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
               />
@@ -244,39 +322,73 @@ export const Store: React.FC = () => {
 
           </div>
 
-          {/* Category Pills Strip */}
+          {/* Dynamic Main Category Pills Strip */}
           <div className="store-category-scroll">
+            <button
+              onClick={() => handleCategorySelect('All')}
+              className={`store-cat-pill ${category === 'All' ? 'active' : ''}`}
+            >
+              <span>All Resources</span>
+              <span className="store-cat-count">{categoryCounts['All'] || 0}</span>
+            </button>
             {categories.map(cat => {
-              const isSelected = category === cat.id;
-              const count = categoryCounts[cat.id] ?? 0;
+              const isSelected = category.toLowerCase() === cat.name.toLowerCase();
+              const count = categoryCounts[cat.name] || 0;
               return (
                 <button
                   key={cat.id}
-                  onClick={() => handleCategorySelect(cat.id)}
+                  onClick={() => handleCategorySelect(cat.name)}
                   className={`store-cat-pill ${isSelected ? 'active' : ''}`}
                 >
-                  <span>{cat.label}</span>
+                  <span>{cat.name}</span>
                   <span className="store-cat-count">{count}</span>
                 </button>
               );
             })}
           </div>
 
+          {/* Dynamic Dependent Subcategory Pills Strip (Appears only when category has subcategories) */}
+          {availableSubcategories.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', padding: '2px 0 16px', scrollbarWidth: 'none' }}>
+              <span style={{ fontSize: '12px', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.04em', marginRight: '6px' }}>
+                Topics:
+              </span>
+              <button
+                onClick={() => handleSubcategorySelect('All')}
+                className={`store-cat-pill ${subcategory === 'All' ? 'active' : ''}`}
+                style={{ height: '32px', fontSize: '12px', padding: '0 12px' }}
+              >
+                All Topics in {category}
+              </button>
+              {availableSubcategories.map(sub => (
+                <button
+                  key={sub}
+                  onClick={() => handleSubcategorySelect(sub)}
+                  className={`store-cat-pill ${subcategory === sub ? 'active' : ''}`}
+                  style={{ height: '32px', fontSize: '12px', padding: '0 12px' }}
+                >
+                  {sub}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Active Filter Counter & Clear Button */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <span style={{ fontSize: '14px', color: '#64748B', fontWeight: 600 }}>
               Showing {filteredProducts.length} verified {filteredProducts.length === 1 ? 'material' : 'materials'}
+              {category !== 'All' && ` in ${category}`}
+              {subcategory !== 'All' && ` > ${subcategory}`}
             </span>
 
-            {(category !== 'All' || search || priceFilter !== 'all') && (
+            {(category !== 'All' || subcategory !== 'All' || search || priceFilter !== 'all') && (
               <button
                 onClick={() => {
                   setCategory('All');
+                  setSubcategory('All');
                   setSearch('');
                   setPriceFilter('all');
-                  searchParams.delete('category');
-                  searchParams.delete('search');
-                  setSearchParams(searchParams);
+                  setSearchParams({});
                 }}
                 style={{ 
                   display: 'inline-flex', 
@@ -298,8 +410,8 @@ export const Store: React.FC = () => {
         </div>
       </section>
 
-      {/* ================= 3. PRODUCT CARDS GRID ================= */}
-      <section>
+      {/* ================= 4. PRODUCT CARDS GRID ================= */}
+      <section style={{ marginBottom: '60px' }}>
         <div className="store-container">
           
           {loading ? (
@@ -311,7 +423,7 @@ export const Store: React.FC = () => {
           ) : error ? (
             <div className="store-empty-card">
               <p style={{ color: '#EF4444', fontWeight: 700, fontSize: '16px', marginBottom: '16px' }}>{error}</p>
-              <button onClick={fetchProducts} className="store-btn-action">
+              <button onClick={fetchData} className="store-btn-action">
                 <RefreshCw size={14} /> Refresh Catalog
               </button>
             </div>
@@ -322,16 +434,15 @@ export const Store: React.FC = () => {
                 No materials match your selection
               </h3>
               <p style={{ fontSize: '14px', color: '#64748B', marginBottom: '20px' }}>
-                {search ? `No materials found matching "${search}".` : 'No materials available in this category yet.'}
+                {search ? `No materials found matching "${search}".` : 'No materials available in this filter yet.'}
               </p>
               <button
                 onClick={() => {
                   setCategory('All');
+                  setSubcategory('All');
                   setSearch('');
                   setPriceFilter('all');
-                  searchParams.delete('category');
-                  searchParams.delete('search');
-                  setSearchParams(searchParams);
+                  setSearchParams({});
                 }}
                 className="store-btn-action"
               >
@@ -366,9 +477,14 @@ export const Store: React.FC = () => {
 
                       {/* Top Badges */}
                       <div className="store-card-badges">
-                        <span className={getBadgeClass(prod.category)}>
+                        <span className="store-badge store-badge-dsa">
                           {prod.category}
                         </span>
+                        {prod.subcategory && (
+                          <span className="store-badge" style={{ background: '#F8FAFC', color: '#334155', border: '1px solid #E2E8F0' }}>
+                            {prod.subcategory}
+                          </span>
+                        )}
                         {prod.discountPercent > 0 && prod.price > 0 && (
                           <span className="store-badge store-badge-discount">
                             {prod.discountPercent}% OFF
@@ -387,6 +503,28 @@ export const Store: React.FC = () => {
                     {/* Card Body */}
                     <div className="store-card-body">
                       
+                      {/* Quality Indicators (Only if explicitly selected by Admin) */}
+                      {prod.qualityIndicators && prod.qualityIndicators.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '8px' }}>
+                          {prod.qualityIndicators.slice(0, 2).map((qi: string) => (
+                            <span 
+                              key={qi} 
+                              style={{ 
+                                fontSize: '10.5px', 
+                                fontWeight: 800, 
+                                padding: '2px 8px', 
+                                borderRadius: '6px', 
+                                background: '#ECFDF5', 
+                                color: '#059669',
+                                border: '1px solid #D1FAE5'
+                              }}
+                            >
+                              ✓ {qi}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
                       {/* Rating & Reviews */}
                       <div className="store-card-rating">
                         <div style={{ display: 'flex', gap: '2px' }}>
@@ -409,6 +547,17 @@ export const Store: React.FC = () => {
                       <p className="store-card-desc">
                         {prod.cardDescription || prod.shortDescription || prod.description}
                       </p>
+
+                      {/* Target Audience / Difficulty if available */}
+                      {(prod.targetAudience || prod.difficulty) && (
+                        <div style={{ fontSize: '11.5px', color: '#64748B', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <GraduationCap size={13} color="#4F46E5" />
+                          <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {prod.difficulty ? `${prod.difficulty} • ` : ''}
+                            {prod.targetAudience ? `For: ${prod.targetAudience}` : ''}
+                          </span>
+                        </div>
+                      )}
 
                       {/* Card Footer: Pricing & Action */}
                       <div className="store-card-footer">
@@ -444,6 +593,101 @@ export const Store: React.FC = () => {
               })}
             </div>
           )}
+
+        </div>
+      </section>
+
+      {/* ================= 5. DEDICATED "WHY TRUST CONCEPTIFYYY?" SECTION ================= */}
+      <section style={{ background: '#FFFFFF', padding: '64px 0', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0' }}>
+        <div className="store-container">
+          
+          <div style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 48px' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: 800, color: '#059669', background: '#ECFDF5', padding: '4px 12px', borderRadius: '999px', marginBottom: '12px' }}>
+              <ShieldCheck size={14} /> Academic Transparency Standard
+            </span>
+            <h2 style={{ fontSize: 'clamp(28px, 4vw, 38px)', fontWeight: 800, color: '#0F172A', margin: '0 0 12px 0' }}>
+              {homepageData?.whyTrustSection?.heading || 'Why Trust Conceptifyyy?'}
+            </h2>
+            <p style={{ fontSize: '15px', color: '#64748B', lineHeight: 1.6, margin: 0 }}>
+              {homepageData?.whyTrustSection?.subtitle || 'Built with academic rigor, verified learning outcomes, and student-focused preparation.'}
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(310px, 1fr))', gap: '24px' }}>
+            
+            <div style={{ background: '#F8FAFC', padding: '28px', borderRadius: '20px', border: '1px solid #E2E8F0' }}>
+              <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                <BookOpen size={22} color="#4F46E5" />
+              </div>
+              <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+                Curated Learning Resources
+              </h3>
+              <p style={{ fontSize: '14px', color: '#64748B', lineHeight: 1.6, margin: 0 }}>
+                Every resource is selected and organized to help students prepare for academics, technical interviews, and placements.
+              </p>
+            </div>
+
+            <div style={{ background: '#F8FAFC', padding: '28px', borderRadius: '20px', border: '1px solid #E2E8F0' }}>
+              <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#ECFDF5', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                <FileCheck size={22} color="#059669" />
+              </div>
+              <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+                Clear Product Information
+              </h3>
+              <p style={{ fontSize: '14px', color: '#64748B', lineHeight: 1.6, margin: 0 }}>
+                Students can check the topics, file format, learning outcomes, and pricing before purchasing.
+              </p>
+            </div>
+
+            <div style={{ background: '#F8FAFC', padding: '28px', borderRadius: '20px', border: '1px solid #E2E8F0' }}>
+              <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#F5F3FF', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                <GraduationCap size={22} color="#7C3AED" />
+              </div>
+              <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+                Student-Focused Platform
+              </h3>
+              <p style={{ fontSize: '14px', color: '#64748B', lineHeight: 1.6, margin: 0 }}>
+                Resources are organized around real student learning and placement preparation needs.
+              </p>
+            </div>
+
+            <div style={{ background: '#F8FAFC', padding: '28px', borderRadius: '20px', border: '1px solid #E2E8F0' }}>
+              <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#FFFBEB', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                <Tag size={22} color="#D97706" />
+              </div>
+              <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+                Transparent Pricing
+              </h3>
+              <p style={{ fontSize: '14px', color: '#64748B', lineHeight: 1.6, margin: 0 }}>
+                Display accurate prices without hidden charges. Zero surprise fees or forced recurring subscriptions.
+              </p>
+            </div>
+
+            <div style={{ background: '#F8FAFC', padding: '28px', borderRadius: '20px', border: '1px solid #E2E8F0' }}>
+              <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#ECFEFF', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                <ShieldCheck size={22} color="#0891B2" />
+              </div>
+              <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+                Secure Payments
+              </h3>
+              <p style={{ fontSize: '14px', color: '#64748B', lineHeight: 1.6, margin: 0 }}>
+                Official 256-bit SSL encrypted checkout powered securely by Razorpay with instant payment verification.
+              </p>
+            </div>
+
+            <div style={{ background: '#F8FAFC', padding: '28px', borderRadius: '20px', border: '1px solid #E2E8F0' }}>
+              <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                <DownloadCloud size={22} color="#DC2626" />
+              </div>
+              <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#0F172A', marginBottom: '8px' }}>
+                Easy Access to Resources
+              </h3>
+              <p style={{ fontSize: '14px', color: '#64748B', lineHeight: 1.6, margin: 0 }}>
+                Instant digital downloads and permanent lifetime access in your personal student vault.
+              </p>
+            </div>
+
+          </div>
 
         </div>
       </section>
