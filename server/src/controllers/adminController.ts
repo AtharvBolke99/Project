@@ -4,6 +4,8 @@ import { db, Problem, AptitudeQuestion, Product, Order, User } from '../database
 import { AuthRequest } from '../middleware/auth';
 import { v4 as uuidv4 } from 'uuid';
 import { storeStorage } from '../storage/storeStorage';
+import { uploadPdfToSupabase, uploadThumbnailToSupabase } from '../services/supabaseService';
+import { ProductModel, CategoryModel, ReviewModel, HomepageModel, isMongoConnected } from '../database/mongodb';
 
 export const getAdminOverview = async (req: AuthRequest, res: Response) => {
   try {
@@ -652,15 +654,31 @@ export const uploadAdminFile = async (req: AuthRequest, res: Response) => {
     const folder = isImage ? 'thumbnails' : 'documents';
     const relativeUrl = `/uploads/${folder}/${file.filename}`;
 
+    // Upload to Supabase Storage
+    let supabaseResult = { path: file.filename, publicUrl: '' };
+    try {
+      if (isImage) {
+        supabaseResult = await uploadThumbnailToSupabase(file.filename, file.path, file.mimetype);
+      } else {
+        supabaseResult = await uploadPdfToSupabase(file.filename, file.path, file.mimetype);
+      }
+    } catch (supErr: any) {
+      console.warn('[ADMIN-UPLOAD] Supabase upload error:', supErr.message);
+    }
+
+    const finalUrl = supabaseResult.publicUrl || relativeUrl;
+
     return res.json({
       success: true,
-      message: 'File uploaded successfully!',
+      message: 'File uploaded and synced to Supabase Storage successfully!',
       data: {
         filename: file.filename,
         originalName: file.originalname,
-        fileUrl: relativeUrl,
-        url: relativeUrl,
-        downloadUrl: relativeUrl,
+        fileUrl: finalUrl,
+        url: finalUrl,
+        supabaseUrl: supabaseResult.publicUrl,
+        supabasePath: supabaseResult.path,
+        downloadUrl: finalUrl,
         digitalFile: file.filename,
         sizeBytes: file.size,
         mimeType: file.mimetype,

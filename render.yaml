@@ -23,6 +23,16 @@ services:
         sync: false
       - key: RAZORPAY_KEY_SECRET
         sync: false
+      - key: SUPABASE_URL
+        value: https://waacxgunczcbbapsxbay.supabase.co
+      - key: SUPABASE_PUBLISHABLE_KEY
+        value: sb_publishable_v0FP8o0WFiNYgHMCVR_n-g_dv-jJS6v
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: SUPABASE_JWKS_URL
+        value: https://waacxgunczcbbapsxbay.supabase.co/auth/v1/.well-known/jwks.json
+      - key: MONGODB_URI
+        sync: false
 
   - type: static
     name: conceptifyyy-frontend

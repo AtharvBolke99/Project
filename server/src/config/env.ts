@@ -47,5 +47,18 @@ export const config = {
       !keyId.includes('demo') &&
       keyId.startsWith('rzp_')
     )
+  },
+
+  // Supabase Storage & Auth Configuration
+  supabase: {
+    url: process.env.SUPABASE_URL || 'https://waacxgunczcbbapsxbay.supabase.co',
+    publishableKey: process.env.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_v0FP8o0WFiNYgHMCVR_n-g_dv-jJS6v',
+    secretKey: process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+    jwksUrl: process.env.SUPABASE_JWKS_URL || 'https://waacxgunczcbbapsxbay.supabase.co/auth/v1/.well-known/jwks.json'
+  },
+
+  // MongoDB Database Configuration
+  mongodb: {
+    uri: process.env.MONGODB_URI || ''
   }
 };

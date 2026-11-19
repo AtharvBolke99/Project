@@ -216,6 +216,8 @@ export interface Product {
   salePrice?: number;
   discountPercent: number;
   thumbnail: string;
+  supabasePdfUrl?: string;
+  supabaseThumbnailUrl?: string;
   previewImages: string[];
   digitalFile: string;
   fileFormat: string; // PDF, DOCX, PPTX, ZIP, RAR, Images, CSV

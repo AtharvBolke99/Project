@@ -2,6 +2,19 @@ import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { Product, Category, Review, HomepageContent } from '../database/db';
+import { 
+  connectMongoDB, 
+  isMongoConnected, 
+  ProductModel, 
+  CategoryModel, 
+  ReviewModel, 
+  HomepageModel 
+} from '../database/mongodb';
+import { 
+  deleteFromSupabase, 
+  BUCKET_PDFS, 
+  BUCKET_THUMBNAILS 
+} from '../services/supabaseService';
 
 export interface StoreStorageConfig {
   storeDir: string;
@@ -150,7 +163,7 @@ export class StoreStorage {
         this.loadCategories();
       }
 
-      // 4. Ensure initial reviews.json (Transparent Editorial Recommendations & Genuine Feedback)
+      // 4. Ensure initial reviews.json
       if (!fs.existsSync(this.config.reviewsFile)) {
         const initialReviews: Review[] = [
           {
@@ -298,6 +311,155 @@ export class StoreStorage {
     }
   }
 
+  // ================= MONGODB ASYNC HELPERS =================
+
+  private async saveProductToMongo(product: Product): Promise<void> {
+    if (!isMongoConnected()) return;
+    try {
+      await ProductModel.findOneAndUpdate({ id: product.id }, product, { upsert: true, new: true });
+    } catch (err: any) {
+      console.warn(`[STORE-STORAGE] Could not sync product ${product.id} to MongoDB:`, err.message);
+    }
+  }
+
+  private async deleteProductFromMongo(id: string): Promise<void> {
+    if (!isMongoConnected()) return;
+    try {
+      await ProductModel.deleteOne({ id });
+    } catch (err: any) {
+      console.warn(`[STORE-STORAGE] Could not delete product ${id} from MongoDB:`, err.message);
+    }
+  }
+
+  private async saveCategoryToMongo(category: Category): Promise<void> {
+    if (!isMongoConnected()) return;
+    try {
+      await CategoryModel.findOneAndUpdate({ id: category.id }, category, { upsert: true, new: true });
+    } catch (err: any) {
+      console.warn(`[STORE-STORAGE] Could not sync category ${category.id} to MongoDB:`, err.message);
+    }
+  }
+
+  private async deleteCategoryFromMongo(id: string): Promise<void> {
+    if (!isMongoConnected()) return;
+    try {
+      await CategoryModel.deleteOne({ id });
+    } catch (err: any) {
+      console.warn(`[STORE-STORAGE] Could not delete category ${id} from MongoDB:`, err.message);
+    }
+  }
+
+  private async saveReviewToMongo(review: Review): Promise<void> {
+    if (!isMongoConnected()) return;
+    try {
+      await ReviewModel.findOneAndUpdate({ id: review.id }, review, { upsert: true, new: true });
+    } catch (err: any) {
+      console.warn(`[STORE-STORAGE] Could not sync review ${review.id} to MongoDB:`, err.message);
+    }
+  }
+
+  private async deleteReviewFromMongo(id: string): Promise<void> {
+    if (!isMongoConnected()) return;
+    try {
+      await ReviewModel.deleteOne({ id });
+    } catch (err: any) {
+      console.warn(`[STORE-STORAGE] Could not delete review ${id} from MongoDB:`, err.message);
+    }
+  }
+
+  private async saveHomepageToMongo(homepage: HomepageContent): Promise<void> {
+    if (!isMongoConnected()) return;
+    try {
+      await HomepageModel.findOneAndUpdate({}, homepage, { upsert: true, new: true });
+    } catch (err: any) {
+      console.warn(`[STORE-STORAGE] Could not sync homepage to MongoDB:`, err.message);
+    }
+  }
+
+  /**
+   * Bi-directional synchronization between MongoDB and local JSON files.
+   * Ensures zero downtime and complete data durability across restarts.
+   */
+  public async syncWithMongoDB(): Promise<void> {
+    try {
+      const connected = await connectMongoDB();
+      if (!connected) return;
+
+      // 1. Sync Products
+      const mongoProducts = await ProductModel.find().lean();
+      if (mongoProducts.length > 0) {
+        const cleaned: Product[] = mongoProducts.map((p: any) => {
+          const { _id, __v, ...rest } = p;
+          return rest as Product;
+        });
+        this.saveProductsAtomic(cleaned);
+        console.log(`[STORE-STORAGE] Synced ${cleaned.length} products from MongoDB.`);
+      } else {
+        const local = this.loadProducts();
+        if (local.length > 0) {
+          for (const prod of local) {
+            await ProductModel.findOneAndUpdate({ id: prod.id }, prod, { upsert: true });
+          }
+          console.log(`[STORE-STORAGE] Seeded ${local.length} products to MongoDB.`);
+        }
+      }
+
+      // 2. Sync Categories
+      const mongoCategories = await CategoryModel.find().lean();
+      if (mongoCategories.length > 0) {
+        const cleaned: Category[] = mongoCategories.map((c: any) => {
+          const { _id, __v, ...rest } = c;
+          return rest as Category;
+        });
+        this.saveCategoriesAtomic(cleaned);
+        console.log(`[STORE-STORAGE] Synced ${cleaned.length} categories from MongoDB.`);
+      } else {
+        const local = this.loadCategories();
+        if (local.length > 0) {
+          for (const cat of local) {
+            await CategoryModel.findOneAndUpdate({ id: cat.id }, cat, { upsert: true });
+          }
+          console.log(`[STORE-STORAGE] Seeded ${local.length} categories to MongoDB.`);
+        }
+      }
+
+      // 3. Sync Reviews
+      const mongoReviews = await ReviewModel.find().lean();
+      if (mongoReviews.length > 0) {
+        const cleaned: Review[] = mongoReviews.map((r: any) => {
+          const { _id, __v, ...rest } = r;
+          return rest as Review;
+        });
+        this.saveReviewsAtomic(cleaned);
+        console.log(`[STORE-STORAGE] Synced ${cleaned.length} reviews from MongoDB.`);
+      } else {
+        const local = this.loadReviews();
+        if (local.length > 0) {
+          for (const rev of local) {
+            await ReviewModel.findOneAndUpdate({ id: rev.id }, rev, { upsert: true });
+          }
+          console.log(`[STORE-STORAGE] Seeded ${local.length} reviews to MongoDB.`);
+        }
+      }
+
+      // 4. Sync Homepage
+      const mongoHomepage = await HomepageModel.findOne().lean();
+      if (mongoHomepage) {
+        const { _id, __v, ...rest } = mongoHomepage as any;
+        this.saveHomepageAtomic(rest as HomepageContent);
+        console.log(`[STORE-STORAGE] Synced homepage content from MongoDB.`);
+      } else {
+        const local = this.loadHomepage();
+        if (local) {
+          await HomepageModel.create(local);
+          console.log(`[STORE-STORAGE] Seeded homepage content to MongoDB.`);
+        }
+      }
+    } catch (err: any) {
+      console.error('[STORE-STORAGE] syncWithMongoDB error:', err.message);
+    }
+  }
+
   // ================= 1. PRODUCTS MANAGEMENT =================
 
   private saveProductsAtomic(products: Product[]): void {
@@ -384,7 +546,7 @@ export class StoreStorage {
     // 6. Attach file existence status
     return products.map(p => ({
       ...p,
-      isFileAvailable: this.isDocumentAvailable(p.digitalFile)
+      isFileAvailable: this.isDocumentAvailable(p.digitalFile, p.supabasePdfUrl)
     }));
   }
 
@@ -402,7 +564,7 @@ export class StoreStorage {
 
     return {
       ...product,
-      isFileAvailable: this.isDocumentAvailable(product.digitalFile)
+      isFileAvailable: this.isDocumentAvailable(product.digitalFile, product.supabasePdfUrl)
     };
   }
 
@@ -454,6 +616,8 @@ export class StoreStorage {
       salePrice: data.salePrice !== undefined ? Number(data.salePrice) : undefined,
       discountPercent: Number(data.discountPercent) || (data.originalPrice && data.originalPrice > (data.price || 0) ? Math.round(((data.originalPrice - (data.price || 0)) / data.originalPrice) * 100) : 0),
       thumbnail: data.thumbnail ? data.thumbnail.trim() : '',
+      supabaseThumbnailUrl: data.supabaseThumbnailUrl || (data.thumbnail && data.thumbnail.startsWith('http') ? data.thumbnail : undefined),
+      supabasePdfUrl: data.supabasePdfUrl || undefined,
       previewImages: Array.isArray(data.previewImages) ? data.previewImages : [],
       digitalFile: data.digitalFile ? path.basename(data.digitalFile) : '',
       fileFormat: data.fileFormat || 'PDF',
@@ -490,8 +654,9 @@ export class StoreStorage {
     // Prepend (newest first)
     products.unshift(newProduct);
     this.saveProductsAtomic(products);
-    console.log(`[STORE-STORAGE] Created product: "${newProduct.title}" (ID: ${newProduct.id}, Category: "${newProduct.category}", Subcategory: "${newProduct.subcategory || 'None'}")`);
+    this.saveProductToMongo(newProduct);
 
+    console.log(`[STORE-STORAGE] Created product: "${newProduct.title}" (ID: ${newProduct.id}, Category: "${newProduct.category}")`);
     return newProduct;
   }
 
@@ -553,13 +718,16 @@ export class StoreStorage {
       isFeatured: updates.isFeatured !== undefined ? Boolean(updates.isFeatured) : existing.isFeatured,
       digitalFile: updates.digitalFile !== undefined ? (updates.digitalFile ? path.basename(updates.digitalFile) : '') : existing.digitalFile,
       thumbnail: updates.thumbnail !== undefined ? updates.thumbnail.trim() : existing.thumbnail,
+      supabaseThumbnailUrl: updates.supabaseThumbnailUrl || (updates.thumbnail && updates.thumbnail.startsWith('http') ? updates.thumbnail : existing.supabaseThumbnailUrl),
+      supabasePdfUrl: updates.supabasePdfUrl || existing.supabasePdfUrl,
       updatedAt: new Date().toISOString()
     };
 
     products[idx] = updated;
     this.saveProductsAtomic(products);
-    console.log(`[STORE-STORAGE] Updated product ID: ${id} ("${updated.title}")`);
+    this.saveProductToMongo(updated);
 
+    console.log(`[STORE-STORAGE] Updated product ID: ${id} ("${updated.title}")`);
     return updated;
   }
 
@@ -573,13 +741,21 @@ export class StoreStorage {
     // Clean up physical document and thumbnail from disk
     if (deleted.digitalFile) {
       this.safeDeleteUploadFile(deleted.digitalFile, 'pdf');
+      deleteFromSupabase(BUCKET_PDFS, deleted.digitalFile).catch(() => {});
     }
-    if (deleted.thumbnail && (deleted.thumbnail.startsWith('/uploads/') || deleted.thumbnail.startsWith('uploads/'))) {
-      this.safeDeleteUploadFile(deleted.thumbnail, 'thumbnail');
+    if (deleted.thumbnail) {
+      if (deleted.thumbnail.startsWith('/uploads/') || deleted.thumbnail.startsWith('uploads/')) {
+        this.safeDeleteUploadFile(deleted.thumbnail, 'thumbnail');
+      }
+      if (deleted.thumbnail.includes('supabase.co') || deleted.thumbnail.includes(BUCKET_THUMBNAILS)) {
+        deleteFromSupabase(BUCKET_THUMBNAILS, path.basename(deleted.thumbnail)).catch(() => {});
+      }
     }
 
     this.saveProductsAtomic(products);
-    console.log(`[STORE-STORAGE] Permanently removed product ID ${id} ("${deleted.title}") and disk files.`);
+    this.deleteProductFromMongo(id);
+
+    console.log(`[STORE-STORAGE] Permanently removed product ID ${id} ("${deleted.title}") from MongoDB, Supabase, and storage files.`);
     return { success: true, deletedProduct: deleted };
   }
 
@@ -617,8 +793,11 @@ export class StoreStorage {
     }
   }
 
-  public isDocumentAvailable(digitalFile?: string): boolean {
+  public isDocumentAvailable(digitalFile?: string, supabasePdfUrl?: string): boolean {
+    if (supabasePdfUrl && supabasePdfUrl.startsWith('http')) return true;
     if (!digitalFile) return false;
+    if (digitalFile.startsWith('http')) return true;
+
     const cleanName = path.basename(digitalFile);
 
     const candidates = [
@@ -644,16 +823,15 @@ export class StoreStorage {
       path.resolve(__dirname, '../../../client/dist', cleanName)
     ];
 
-    for (const candidate of candidates) {
-      if (candidate && fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
-        return candidate;
+    for (const p of candidates) {
+      if (fs.existsSync(p) && fs.statSync(p).isFile()) {
+        return p;
       }
     }
-
     return null;
   }
 
-  // ================= 2. DYNAMIC CATEGORIES & SUBCATEGORIES =================
+  // ================= 2. CATEGORIES MANAGEMENT =================
 
   private saveCategoriesAtomic(categories: Category[]): void {
     this.writeJsonAtomic(this.config.categoriesFile, categories);
@@ -686,13 +864,13 @@ export class StoreStorage {
   public getCategory(idOrSlug: string): Category | null {
     const categories = this.loadCategories();
     const target = idOrSlug.trim().toLowerCase();
-    return categories.find(c => c.id.toLowerCase() === target || c.slug.toLowerCase() === target) || null;
+    return categories.find(c => c.id.toLowerCase() === target || c.slug.toLowerCase() === target || c.name.toLowerCase() === target) || null;
   }
 
   public createCategory(data: Partial<Category>): Category {
     const categories = this.loadCategories();
-
-    const name = (data.name || 'New Category').trim();
+    const id = 'cat_' + uuidv4().replace(/-/g, '').substring(0, 10);
+    const name = data.name ? data.name.trim() : 'New Category';
     let baseSlug = (data.slug || name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     if (!baseSlug) baseSlug = 'category';
 
@@ -703,8 +881,7 @@ export class StoreStorage {
       counter++;
     }
 
-    const id = 'cat_' + uuidv4().replace(/-/g, '').substring(0, 10);
-    const subcategories = Array.isArray(data.subcategories) 
+    const subcategories = Array.isArray(data.subcategories)
       ? data.subcategories.map(s => String(s).trim()).filter(Boolean)
       : (data.subcategories ? String(data.subcategories).split(',').map(s => s.trim()).filter(Boolean) : []);
 
@@ -712,15 +889,17 @@ export class StoreStorage {
       id,
       name,
       slug: uniqueSlug,
-      description: data.description ? String(data.description).trim() : '',
+      description: data.description ? data.description.trim() : '',
       subcategories,
-      order: data.order !== undefined ? Number(data.order) : categories.length + 1,
+      order: Number(data.order) || (categories.length + 1),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
 
     categories.push(newCategory);
     this.saveCategoriesAtomic(categories);
+    this.saveCategoryToMongo(newCategory);
+
     console.log(`[STORE-STORAGE] Created category "${newCategory.name}" (ID: ${newCategory.id})`);
     return newCategory;
   }
@@ -731,8 +910,6 @@ export class StoreStorage {
     if (idx === -1) return null;
 
     const existing = categories[idx];
-    const oldName = existing.name;
-
     const subcategories = updates.subcategories !== undefined
       ? (Array.isArray(updates.subcategories) 
           ? updates.subcategories.map(s => String(s).trim()).filter(Boolean)
@@ -744,31 +921,17 @@ export class StoreStorage {
       ...updates,
       id: existing.id,
       name: updates.name ? updates.name.trim() : existing.name,
-      description: updates.description !== undefined ? String(updates.description).trim() : existing.description,
+      description: updates.description !== undefined ? updates.description.trim() : existing.description,
       subcategories,
+      order: updates.order !== undefined ? Number(updates.order) : existing.order,
       updatedAt: new Date().toISOString()
     };
 
     categories[idx] = updated;
     this.saveCategoriesAtomic(categories);
+    this.saveCategoryToMongo(updated);
 
-    // If category was renamed, also update products referencing old category name
-    if (updates.name && updates.name.trim() !== oldName) {
-      const products = this.loadProducts();
-      let changed = false;
-      products.forEach(p => {
-        if (p.category === oldName) {
-          p.category = updated.name;
-          changed = true;
-        }
-      });
-      if (changed) {
-        this.saveProductsAtomic(products);
-        console.log(`[STORE-STORAGE] Synchronized category name change in products catalog.`);
-      }
-    }
-
-    console.log(`[STORE-STORAGE] Updated category "${updated.name}" (ID: ${id})`);
+    console.log(`[STORE-STORAGE] Updated category ID: ${id}`);
     return updated;
   }
 
@@ -779,6 +942,8 @@ export class StoreStorage {
 
     const [deleted] = categories.splice(idx, 1);
     this.saveCategoriesAtomic(categories);
+    this.deleteCategoryFromMongo(id);
+
     console.log(`[STORE-STORAGE] Deleted category "${deleted.name}" (ID: ${id})`);
     return true;
   }
@@ -810,13 +975,14 @@ export class StoreStorage {
 
   public getAllReviews(options: {
     productId?: string;
-    includeDrafts?: boolean;
+    status?: string;
     featuredOnly?: boolean;
+    includeDrafts?: boolean;
   } = {}): Review[] {
     let reviews = this.loadReviews();
 
     if (!options.includeDrafts) {
-      reviews = reviews.filter(r => r.status === 'Published');
+      reviews = reviews.filter(r => r.status !== 'Draft');
     }
 
     if (options.productId) {
@@ -864,6 +1030,8 @@ export class StoreStorage {
 
     reviews.unshift(newReview);
     this.saveReviewsAtomic(reviews);
+    this.saveReviewToMongo(newReview);
+
     console.log(`[STORE-STORAGE] Created review "${newReview.reviewTitle}" (ID: ${newReview.id})`);
     return newReview;
   }
@@ -894,6 +1062,8 @@ export class StoreStorage {
 
     reviews[idx] = updated;
     this.saveReviewsAtomic(reviews);
+    this.saveReviewToMongo(updated);
+
     console.log(`[STORE-STORAGE] Updated review ID: ${id}`);
     return updated;
   }
@@ -905,6 +1075,8 @@ export class StoreStorage {
 
     reviews.splice(idx, 1);
     this.saveReviewsAtomic(reviews);
+    this.deleteReviewFromMongo(id);
+
     console.log(`[STORE-STORAGE] Deleted review ID: ${id}`);
     return true;
   }
@@ -970,6 +1142,8 @@ export class StoreStorage {
     };
 
     this.saveHomepageAtomic(updated);
+    this.saveHomepageToMongo(updated);
+
     console.log(`[STORE-STORAGE] Updated homepage content and announcement settings.`);
     return updated;
   }

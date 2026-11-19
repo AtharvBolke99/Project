@@ -7,6 +7,8 @@ import { config } from './config/env';
 import apiRouter from './routes';
 import { seedDatabaseIfEmpty } from './database/seed';
 import { storeStorage } from './storage/storeStorage';
+import { connectMongoDB } from './database/mongodb';
+import { ensureBucketsExist } from './services/supabaseService';
 
 const app = express();
 
@@ -162,6 +164,15 @@ const server = app.listen(config.port, '0.0.0.0', async () => {
   console.log(`  🔗 Health Check: http://localhost:${config.port}/api/health`);
   console.log(`  💳 Razorpay Mode: ${config.razorpay.isConfigured ? 'LIVE/TEST (Connected)' : 'DEVELOPMENT TEST SANDBOX'}`);
   console.log(`=======================================================`);
+
+  // Connect to MongoDB Atlas & Supabase Storage
+  try {
+    await connectMongoDB();
+    await ensureBucketsExist();
+    await storeStorage.syncWithMongoDB();
+  } catch (dbErr: any) {
+    console.error('Database connection / sync warning:', dbErr.message);
+  }
 
   // Auto-seed initial content if needed
   try {

@@ -4,6 +4,7 @@ import { AuthRequest } from '../middleware/auth';
 import path from 'path';
 import fs from 'fs';
 import { storeStorage } from '../storage/storeStorage';
+import { downloadFromSupabase, BUCKET_PDFS } from '../services/supabaseService';
 
 const MIME_MAP: Record<string, string> = {
   '.pdf': 'application/pdf',
@@ -90,33 +91,54 @@ export const downloadDigitalAsset = async (req: AuthRequest, res: Response) => {
       }
     }
 
-    // 3. Check for physical file in file-based store, uploads directory, data directory, or client assets
+    // 3. Check Supabase Storage first for cloud-stored PDF / resource
     const cleanTitle = (product?.title || 'Conceptifyyy_Placement_Notes').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const fileTarget = (product?.digitalFile || product?.supabasePdfUrl || '').trim();
+    const cleanFileName = path.basename(fileTarget);
+
+    if (cleanFileName) {
+      try {
+        const supabaseBuffer = await downloadFromSupabase(BUCKET_PDFS, cleanFileName);
+        if (supabaseBuffer) {
+          const ext = path.extname(cleanFileName).toLowerCase() || '.pdf';
+          const mimeType = MIME_MAP[ext] || 'application/pdf';
+          const disposition = isViewMode && ext === '.pdf' ? 'inline' : 'attachment';
+
+          res.setHeader('Content-Type', mimeType);
+          res.setHeader('Content-Disposition', `${disposition}; filename="${cleanTitle}${ext}"`);
+          return res.send(supabaseBuffer);
+        }
+      } catch (supErr: any) {
+        console.warn(`[DOWNLOAD] Supabase fetch error for "${cleanFileName}":`, supErr.message);
+      }
+    }
+
+    // 4. Fallback: Check for physical file in file-based store, uploads directory, data directory, or client assets
     const uploadsDir = path.resolve(__dirname, '../../uploads/documents');
     const uploadsRoot = path.resolve(__dirname, '../../uploads');
     const dataDir = path.resolve(__dirname, '../../data');
     const clientPublic = path.resolve(__dirname, '../../../client/public');
     const clientDist = path.resolve(__dirname, '../../../client/dist');
 
-    const fileTarget = (product?.digitalFile || '').trim();
-    let physicalFilePath: string | null = storeStorage.resolvePhysicalDocumentPath(fileTarget);
+    const localFileTarget = (product?.digitalFile || '').trim();
+    let physicalFilePath: string | null = storeStorage.resolvePhysicalDocumentPath(localFileTarget);
 
     if (!physicalFilePath) {
-      const cleanFileName = path.basename(fileTarget);
-      const cleanTarget = fileTarget.replace(/^\/?(uploads\/documents\/|uploads\/pdfs\/|uploads\/|documents\/)?/, '');
+      const cleanLocalFileName = path.basename(localFileTarget);
+      const cleanTarget = localFileTarget.replace(/^\/?(uploads\/documents\/|uploads\/pdfs\/|uploads\/|documents\/)?/, '');
 
       const candidates = [
-        path.join(storeStorage.getPdfsDir(), cleanFileName),
+        path.join(storeStorage.getPdfsDir(), cleanLocalFileName),
         path.join(storeStorage.getPdfsDir(), cleanTarget),
-        path.join(uploadsDir, cleanFileName),
+        path.join(uploadsDir, cleanLocalFileName),
         path.join(uploadsDir, cleanTarget),
-        path.join(uploadsDir, fileTarget),
-        path.join(uploadsRoot, cleanFileName),
+        path.join(uploadsDir, localFileTarget),
+        path.join(uploadsRoot, cleanLocalFileName),
         path.join(uploadsRoot, cleanTarget),
-        path.join(dataDir, cleanFileName),
+        path.join(dataDir, cleanLocalFileName),
         path.join(dataDir, cleanTarget),
-        path.join(clientPublic, cleanFileName),
-        path.join(clientDist, cleanFileName)
+        path.join(clientPublic, cleanLocalFileName),
+        path.join(clientDist, cleanLocalFileName)
       ];
 
       for (const candidate of candidates) {

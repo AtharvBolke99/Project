@@ -37,3 +37,6 @@ server/data/backups/
 server/data/*.backup.*
 server/data/*.backup.json
 
+# Internal test & utility scripts
+server/scripts/
+
