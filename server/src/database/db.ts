@@ -475,8 +475,8 @@ class Database {
     item: DatabaseSchema[T][number]
   ): DatabaseSchema[T][number] {
     if (collection === 'products') {
-      const created = storeStorage.createProduct(item as any);
-      return created as any;
+      storeStorage.createProduct(item as any).catch(err => console.error('[DB] createProduct async error:', err));
+      return item;
     }
     (this.data[collection] as any[]).push(item);
     this.save();
@@ -493,8 +493,8 @@ class Database {
       const existing = (list as any[]).find(predicate);
       if (!existing) return null;
       const updates = updater(existing);
-      const updated = storeStorage.updateProduct(existing.id, updates as any);
-      return updated as any;
+      storeStorage.updateProduct(existing.id, updates as any).catch(err => console.error('[DB] updateProduct async error:', err));
+      return { ...existing, ...updates } as any;
     }
     const list = this.data[collection] as any[];
     const index = list.findIndex(predicate);
@@ -512,8 +512,8 @@ class Database {
       const list = storeStorage.loadProducts();
       const existing = (list as any[]).find(predicate);
       if (!existing) return false;
-      const res = storeStorage.deleteProduct(existing.id);
-      return res.success;
+      storeStorage.deleteProduct(existing.id).catch(err => console.error('[DB] deleteProduct async error:', err));
+      return true;
     }
     const list = this.data[collection] as any[];
     const index = list.findIndex(predicate);

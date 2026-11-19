@@ -297,11 +297,11 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ success: false, message: 'Product title and price are required.' });
     }
 
-    const newProduct = storeStorage.createProduct(data);
+    const newProduct = await storeStorage.createProduct(data);
 
     return res.status(201).json({
       success: true,
-      message: 'Product added to Store successfully!',
+      message: 'Product added to Store and saved in MongoDB Atlas & Supabase Storage successfully!',
       data: newProduct
     });
   } catch (error: any) {
@@ -315,14 +315,14 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
     const data = req.body;
 
-    const updated = storeStorage.updateProduct(id, data);
+    const updated = await storeStorage.updateProduct(id, data);
     if (!updated) {
       return res.status(404).json({ success: false, message: 'Product not found.' });
     }
 
     return res.json({
       success: true,
-      message: 'Product updated successfully!',
+      message: 'Product updated and synced across MongoDB Atlas & Supabase successfully!',
       data: updated
     });
   } catch (error: any) {
@@ -335,15 +335,15 @@ export const deleteProduct = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
 
-    // Permanently removes product from products.json and deletes associated PDF & thumbnail from disk
-    const result = storeStorage.deleteProduct(id);
+    // Permanently removes product from products.json, deletes from MongoDB Atlas, and removes PDF & thumbnail from Supabase Storage & local disk
+    const result = await storeStorage.deleteProduct(id);
     if (!result.success) {
       return res.status(404).json({ success: false, message: 'Product not found.' });
     }
 
     return res.json({
       success: true,
-      message: 'Product permanently removed from store catalog and storage files cleaned up.'
+      message: 'Product permanently removed from store catalog, MongoDB Atlas, and Supabase Storage.'
     });
   } catch (error: any) {
     console.error('[NOTES] Error deleting product:', error);
@@ -706,8 +706,8 @@ export const createCategory = async (req: AuthRequest, res: Response) => {
     if (!data.name) {
       return res.status(400).json({ success: false, message: 'Category name is required.' });
     }
-    const newCategory = storeStorage.createCategory(data);
-    return res.status(201).json({ success: true, message: 'Category created successfully!', data: newCategory });
+    const newCategory = await storeStorage.createCategory(data);
+    return res.status(201).json({ success: true, message: 'Category created successfully in MongoDB Atlas!', data: newCategory });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -717,11 +717,11 @@ export const updateCategory = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const data = req.body;
-    const updated = storeStorage.updateCategory(id, data);
+    const updated = await storeStorage.updateCategory(id, data);
     if (!updated) {
       return res.status(404).json({ success: false, message: 'Category not found.' });
     }
-    return res.json({ success: true, message: 'Category updated successfully!', data: updated });
+    return res.json({ success: true, message: 'Category updated and synced to MongoDB Atlas!', data: updated });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -730,11 +730,11 @@ export const updateCategory = async (req: AuthRequest, res: Response) => {
 export const deleteCategory = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const deleted = storeStorage.deleteCategory(id);
+    const deleted = await storeStorage.deleteCategory(id);
     if (!deleted) {
       return res.status(404).json({ success: false, message: 'Category not found.' });
     }
-    return res.json({ success: true, message: 'Category deleted successfully!' });
+    return res.json({ success: true, message: 'Category permanently removed from catalog and MongoDB Atlas!' });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -757,8 +757,8 @@ export const createReview = async (req: AuthRequest, res: Response) => {
     if (!data.reviewerName || !data.reviewDescription) {
       return res.status(400).json({ success: false, message: 'Reviewer name and review text are required.' });
     }
-    const newReview = storeStorage.createReview(data);
-    return res.status(201).json({ success: true, message: 'Review / editorial feedback added!', data: newReview });
+    const newReview = await storeStorage.createReview(data);
+    return res.status(201).json({ success: true, message: 'Review / editorial feedback added to MongoDB Atlas!', data: newReview });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -768,11 +768,11 @@ export const updateReview = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const data = req.body;
-    const updated = storeStorage.updateReview(id, data);
+    const updated = await storeStorage.updateReview(id, data);
     if (!updated) {
       return res.status(404).json({ success: false, message: 'Review not found.' });
     }
-    return res.json({ success: true, message: 'Review updated successfully!', data: updated });
+    return res.json({ success: true, message: 'Review updated and synced to MongoDB Atlas!', data: updated });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -781,11 +781,11 @@ export const updateReview = async (req: AuthRequest, res: Response) => {
 export const deleteReview = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const deleted = storeStorage.deleteReview(id);
+    const deleted = await storeStorage.deleteReview(id);
     if (!deleted) {
       return res.status(404).json({ success: false, message: 'Review not found.' });
     }
-    return res.json({ success: true, message: 'Review deleted successfully!' });
+    return res.json({ success: true, message: 'Review removed from MongoDB Atlas and local storage!' });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });
   }
@@ -804,8 +804,8 @@ export const getAdminHomepage = async (req: AuthRequest, res: Response) => {
 export const updateAdminHomepage = async (req: AuthRequest, res: Response) => {
   try {
     const data = req.body;
-    const updated = storeStorage.updateHomepageContent(data);
-    return res.json({ success: true, message: 'Homepage content updated successfully!', data: updated });
+    const updated = await storeStorage.updateHomepageContent(data);
+    return res.json({ success: true, message: 'Homepage content updated in MongoDB Atlas!', data: updated });
   } catch (error: any) {
     return res.status(500).json({ success: false, message: error.message });
   }

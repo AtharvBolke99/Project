@@ -76,6 +76,7 @@ export const AdminProducts: React.FC = () => {
   const [fileFormat, setFileFormat] = useState('PDF');
   const [digitalFile, setDigitalFile] = useState('');
   const [digitalFileName, setDigitalFileName] = useState('');
+  const [supabasePdfUrl, setSupabasePdfUrl] = useState('');
   const [uploadProgressDigitalFile, setUploadProgressDigitalFile] = useState<number>(0);
   const [whatIncluded, setWhatIncluded] = useState('');
   const [tags, setTags] = useState('');
@@ -220,6 +221,7 @@ export const AdminProducts: React.FC = () => {
     setFileFormat('PDF');
     setDigitalFile('');
     setDigitalFileName('');
+    setSupabasePdfUrl('');
     setUploadProgressDigitalFile(0);
     setWhatIncluded('');
     setTags('');
@@ -270,6 +272,7 @@ export const AdminProducts: React.FC = () => {
     setFileFormat(p.fileFormat || 'PDF');
     setDigitalFile(p.digitalFile || '');
     setDigitalFileName(p.digitalFile ? p.digitalFile.split('/').pop() || p.digitalFile : '');
+    setSupabasePdfUrl(p.supabasePdfUrl || '');
     setUploadProgressDigitalFile(0);
     setGithubRepoUrl(p.githubRepoUrl || '');
     setLiveDemoUrl(p.liveDemoUrl || '');
@@ -366,6 +369,9 @@ export const AdminProducts: React.FC = () => {
         if (res.success && uploadedFilename) {
           setDigitalFile(uploadedFilename);
           setDigitalFileName(file.name);
+          if (res.data?.supabaseUrl || res.data?.fileUrl) {
+            setSupabasePdfUrl(res.data.supabaseUrl || res.data.fileUrl);
+          }
           showToast(`Digital resource "${file.name}" uploaded to secure storage!`, 'success');
         } else {
           showToast(res.message || 'Digital resource upload failed.', 'error');
@@ -424,7 +430,9 @@ export const AdminProducts: React.FC = () => {
         detailedDescription: stepDescription.trim(),
         description: stepDescription.trim() || cardDescription.trim(),
         thumbnail: finalThumbnail,
+        supabaseThumbnailUrl: finalThumbnail.startsWith('http') ? finalThumbnail : undefined,
         digitalFile: digitalFile ? digitalFile.split('/').pop() : undefined,
+        supabasePdfUrl: supabasePdfUrl || undefined,
         difficulty: difficulty || undefined,
         targetAudience: targetAudience.trim() || undefined,
         learningOutcomes: outcomesArray,
